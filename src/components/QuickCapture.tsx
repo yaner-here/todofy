@@ -1,7 +1,7 @@
 import { Trans, useTranslation } from "react-i18next";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { emit } from "@tauri-apps/api/event";
 import { api } from "../lib/api";
 import { parseQuickAdd } from "../lib/nlp";
@@ -15,8 +15,6 @@ import { repeatLabel } from "../lib/repeat";
 import { combineDateTime, formatDue, formatTime, today } from "../lib/dates";
 import type { Label, NewTask } from "../types";
 import { BellIcon, CalendarIcon, FlagIcon, Logo, RepeatIcon } from "./Icons";
-import { VoiceInputButton } from "./VoiceInputButton";
-import { insertTranscript } from "../lib/voice";
 
 /**
  * The floating quick-capture window. Lives in its own transparent,
@@ -33,10 +31,7 @@ export function QuickCapture() {
   const [priorityProfiles, setPriorityProfiles] =
     useState<PriorityProfile[]>(DEFAULT_PROFILES);
   const inputRef = useRef<HTMLInputElement>(null);
-  const voicePanelRef = useRef<HTMLDivElement>(null);
   const shownAt = useRef(Date.now());
-  const voiceBusy = useRef(false);
-  const [busy, setBusy] = useState(false);
 
   const parsed = useMemo(() => parseQuickAdd(title, labels), [title, labels]);
   const hasChips =
@@ -57,7 +52,7 @@ export function QuickCapture() {
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const finalTitle = parsed.title.trim();
-    if (!finalTitle || voiceBusy.current) return;
+    if (!finalTitle) return;
 
     const finalTime = parsed.time;
     // A time or a recurrence needs a date to anchor to — default to today.
@@ -116,7 +111,7 @@ export function QuickCapture() {
     const unFocus = win.onFocusChanged(({ payload: focused }) => {
       if (focused) {
         focusInput();
-      } else if (!voiceBusy.current && Date.now() - shownAt.current > 200) {
+      } else if (Date.now() - shownAt.current > 200) {
         dismiss();
       }
     });
@@ -128,14 +123,6 @@ export function QuickCapture() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const win = getCurrentWindow();
-    void win
-      .setSize(new LogicalSize(640, busy ? 300 : 210))
-      .then(() => win.center())
-      .catch(() => {});
-  }, [busy]);
-
   return (
     <div className="quick-capture-stage">
       <form onSubmit={submit} className="quick-capture-card animate-fade-rise">
@@ -146,14 +133,13 @@ export function QuickCapture() {
           </div>
           <span>todofy</span>
         </header>
-        <div ref={voicePanelRef} className="voice-capture-host" />
         <div className="quick-capture-input-row">
           <input
             ref={inputRef}
             value={title}
             onInput={(e) => setTitle(e.currentTarget.value)}
             onKeyDown={(e) => {
-              if (e.key === "Escape" && !voiceBusy.current) {
+              if (e.key === "Escape") {
                 e.preventDefault();
                 dismiss();
               }
@@ -161,32 +147,9 @@ export function QuickCapture() {
             placeholder={t("tasks.whatNeedsDoingTryPayRentFriday5pm")}
             className="quick-capture-input"
           />
-          <VoiceInputButton
-            kind="task"
-            compactWindow
-            getPanelHost={() => voicePanelRef.current}
-            onBusyChange={(next) => {
-              voiceBusy.current = next;
-              setBusy(next);
-            }}
-            onTranscript={(text) => {
-              const input = inputRef.current;
-              const next = insertTranscript(
-                title,
-                text,
-                input?.selectionStart ?? title.length,
-                input?.selectionEnd ?? title.length,
-              );
-              setTitle(next.value);
-              requestAnimationFrame(() => {
-                input?.focus();
-                input?.setSelectionRange(next.caret, next.caret);
-              });
-            }}
-          />
           <button
             type="submit"
-            disabled={!parsed.title.trim() || busy}
+            disabled={!parsed.title.trim()}
             className="quick-capture-submit"
           >
             {t("tasks.addTask")} <kbd>↵</kbd>

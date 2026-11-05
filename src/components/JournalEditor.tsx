@@ -1,12 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useStore } from "../store";
 import { today } from "../lib/dates";
 import { daySummary, summaryText } from "../lib/journal";
 import type { SessionLog } from "../types";
 import { DatePicker } from "./DatePicker";
-import { VoiceInputButton } from "./VoiceInputButton";
-import { insertTranscript } from "../lib/voice";
 
 export const MOODS = ["😞", "😕", "😐", "🙂", "😄"];
 export const MOOD_LABELS = ["journal.rough", "journal.low", "journal.okay", "journal.good", "journal.great"] as const;
@@ -40,15 +38,12 @@ export function JournalEditor({
   const [mood, setMood] = useState<number | null>(initial?.mood ?? null);
   const [entryDate, setEntryDate] = useState(initial?.entryDate ?? today());
   const [saving, setSaving] = useState(false);
-  const [voiceBusy, setVoiceBusy] = useState(false);
-  const bodyRef = useRef<HTMLTextAreaElement>(null);
-  const voicePanelRef = useRef<HTMLDivElement>(null);
 
   const summary = daySummary(tasks, sessions, entryDate);
   const prompt = summaryText(summary);
 
   const submit = async () => {
-    if (voiceBusy || (!body.trim() && !title.trim())) return;
+    if (!body.trim() && !title.trim()) return;
     setSaving(true);
     try {
       await onSubmit({
@@ -69,7 +64,6 @@ export function JournalEditor({
 
   return (
     <div className="journal-composer">
-      <div ref={voicePanelRef} className="voice-capture-host" />
       <input
         className="journal-composer-title"
         value={title}
@@ -77,7 +71,6 @@ export function JournalEditor({
         placeholder={t("journal.titleOptional")}
       />
       <textarea
-        ref={bodyRef}
         id={initial ? undefined : "journal-add-input"}
         className="journal-composer-body"
         value={body}
@@ -103,25 +96,6 @@ export function JournalEditor({
       )}
 
       <div className="journal-toolbar">
-        <VoiceInputButton
-          kind="journal"
-          getPanelHost={() => voicePanelRef.current}
-          onBusyChange={setVoiceBusy}
-          onTranscript={(text) => {
-            const input = bodyRef.current;
-            const next = insertTranscript(
-              body,
-              text,
-              input?.selectionStart ?? body.length,
-              input?.selectionEnd ?? body.length,
-            );
-            setBody(next.value);
-            requestAnimationFrame(() => {
-              input?.focus();
-              input?.setSelectionRange(next.caret, next.caret);
-            });
-          }}
-        />
         <div className="mood-picker" role="group" aria-label={t("journal.mood")}>
           {MOODS.map((face, i) => {
             const value = i + 1;
@@ -160,7 +134,7 @@ export function JournalEditor({
           <button
             type="button"
             onClick={() => void submit()}
-            disabled={saving || voiceBusy || (!body.trim() && !title.trim())}
+            disabled={saving || (!body.trim() && !title.trim())}
             className="rounded-md bg-(--color-accent) px-3.5 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {submitLabel}

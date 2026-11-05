@@ -29,7 +29,6 @@ import {
   LightningIcon,
   ListIcon as PhListIcon,
   MagnifyingGlassIcon,
-  MicrophoneIcon as PhMicrophoneIcon,
   MoonIcon as PhMoonIcon,
   NotebookIcon as PhNotebookIcon,
   NotePencilIcon,
@@ -122,7 +121,6 @@ export const CloudIcon = icon(PhCloudIcon);
 export const CrownIcon = icon(CrownSimpleIcon);
 export const DevicesIcon = icon(PhDevicesIcon);
 export const DownloadIcon = icon(DownloadSimpleIcon);
-export const MicrophoneIcon = icon(PhMicrophoneIcon);
 export const KeyIcon = icon(PhKeyIcon);
 export const ShieldCheckIcon = icon(PhShieldCheckIcon);
 

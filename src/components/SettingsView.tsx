@@ -42,7 +42,6 @@ import type { TaskTimerMode } from "../types";
 import { AccountSection } from "./AccountSection";
 import { CalendarSection } from "./CalendarSection";
 import { PriorityProfilesSection } from "./PriorityProfilesSection";
-import { VoiceSettingsSection } from "./VoiceSettingsSection";
 import {
   BellIcon,
   BoltIcon,
@@ -415,7 +414,6 @@ export function SettingsView() {
         <AccountSection />
         <CalendarSection />
         <LanguageSection />
-        <VoiceSettingsSection />
 
         {/* Startup */}
         <Section title={t("settings.startup")}>

@@ -30,7 +30,6 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
 - 🎨 **Custom board columns** — create, rename, recolor, and reorder workflow columns, with optional WIP limits that count all active tasks and warn without blocking moves. Column settings sync with your account; deleting a column safely moves its tasks to a destination you choose. To do stays the default destination and Done keeps its completion behavior.
 - ⚡ **Global quick‑add** — hit **Ctrl+Alt+A** anywhere (even with todofy tucked in the tray) for a floating capture bar; type, press Enter, and you're back to what you were doing
 - ✍️ **Natural‑language quick‑add** — type _"pay rent friday 5pm #home p1"_ and the date, time, priority, and label are parsed out live and shown as chips
-- 🎙️ **Optional local voice input** — download the free whisper.cpp engine and a multilingual model in Settings, then enable Voice Mode to dictate a task or journal draft. A live waveform stays inside the editor while you speak. Nothing downloads or requests microphone access until you choose to use it
 - 🔁 **Recurring tasks** — repeat _daily, every weekday, weekly, monthly,_ or _yearly_; completing one rolls it forward to the next occurrence instead of finishing it (also from natural language — _"water plants every week"_)
 - 🍅 **Focus timers** — a built‑in **Pomodoro** (focus / short & long breaks) _and_ a **per‑task stopwatch** with **start, pause, and stop**, so a break isn't recorded as work; both keep counting while hidden in the tray and survive a restart, and never auto‑stop — they nudge you instead. Choose whether a task's play button is a plain stopwatch or launches a Pomodoro bound to that task
 - ⏳ **Estimates vs. actual** — give a task an expected length (**"90"**, **"1h30"**, **"1.5h"** all work), watch its time count up live on the task row, and see it turn **red** with the overrun once it runs past the estimate — in the app and on the tray clock
@@ -59,14 +58,6 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
 - 🗑️ **Delete your account** — cancel any linked recurring Todofy subscription first, then remove your current account and all of its cloud data; optionally wipe the copy on this device too. If cancellation cannot be confirmed, deletion stops safely so you can retry. You can register a fresh account later with the same email address
 - 💾 **Local‑first** — everything is stored in a local SQLite database and works fully offline; sync is additive, and with no account there's no cloud and no tracking
 
-### Voice Mode
-
-Voice Mode is free and off by default. Open **Settings → Voice**, download the voice engine and either the recommended multilingual Base model (about 142 MB) or the smaller Tiny model (about 75 MB), then turn on Voice Mode. The spoken language is detected automatically. Click the microphone icon in the task composer, global quick capture, or journal editor. A live waveform opens at the top of that editor; click the stop icon to insert editable text, or **X** to discard the recording. The existing Add or Save button remains a separate step. English scheduling phrases in a dictated task use the same quick-add parser as typed text; other languages stay as editable task text.
-
-The engine and model are stored outside the app bundle and can be removed in Settings. Downloads are verified against a signed catalog. Recording and transcription stay on your device; the temporary audio file is removed after transcription or cancellation. Saved task or journal text follows your existing local storage and optional account sync settings. The voice engine is [whisper.cpp](https://github.com/ggml-org/whisper.cpp) and the GGML speech models come from the [whisper.cpp model collection](https://huggingface.co/ggerganov/whisper.cpp). Their license notices are in [third party notices](docs/third_party/) and attached to the release.
-
-To test voice input from source with local engine and model files, follow [local voice testing](docs/local-voice-testing.md).
-
 ## 📸 Screenshots
 
 <table>
@@ -77,11 +68,7 @@ To test voice input from source with local engine and model files, follow [local
     </td>
   </tr>
   <tr>
-    <td width="50%">
-      <img src="docs/voice.png" alt="Voice settings with the local whisper.cpp engine and multilingual speech models installed" /><br />
-      <sub><b>Local voice</b> — private on-device dictation with whisper.cpp, downloadable multilingual models, and editable transcripts.</sub>
-    </td>
-    <td width="50%">
+    <td colspan="2">
       <img src="docs/onboarding.png" alt="Todofy welcome tour highlighting journal, calendar, labels, and repeating tasks" /><br />
       <sub><b>Welcome tour</b> — a polished first run through capture, focus, reminders, and the wider workspace.</sub>
     </td>
@@ -107,11 +94,7 @@ To test voice input from source with local engine and model files, follow [local
     </td>
   </tr>
   <tr>
-    <td width="50%">
-      <img src="docs/settings.png" alt="Settings view showing cloud account, calendar integration, and local voice options" /><br />
-      <sub><b>Settings</b> — cloud sync, calendar, and private on-device voice controls in one place.</sub>
-    </td>
-    <td width="50%">
+    <td colspan="2">
       <img src="docs/quickadd.png" alt="Floating global quick-capture window" /><br />
       <sub><b>Quick capture</b> — add a task from anywhere without leaving your flow.</sub>
     </td>
@@ -407,7 +390,6 @@ todofy/
 - [x] Task estimates with elapsed-vs-estimate tracking
 - [x] System clock and calendar conventions (12/24h, week start)
 - [x] Repeating reminders with sound, volume, and ramp-up
-- [x] Optional on-device voice input
 - [x] Signed app updates with optional automatic installation
 - [x] Kanban board with drag between columns
 - [x] Custom board columns (create, rename, recolor, reorder, safely delete, and sync) — v1.14.0

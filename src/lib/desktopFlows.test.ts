@@ -4,8 +4,7 @@ import { act, createElement as h, Fragment, useState } from "react";
 import type { Root } from "react-dom/client";
 import { clearMocks, mockIPC, mockWindows } from "@tauri-apps/api/mocks";
 import { emit } from "@tauri-apps/api/event";
-import type { LanguageSnapshot, NewTask, Task, TaskPatch } from "../types";
-import type { VoiceStatus } from "./voice";
+import type { LanguageSnapshot, NewJournalEntry, NewTask, Task, TaskPatch } from "../types";
 
 const dom = new Window({ url: "http://localhost" });
 Object.defineProperty(globalThis, "navigator", { configurable: true, value: dom.navigator });
@@ -40,10 +39,12 @@ const { visibleTaskIds } = await import("../store");
 const { EstimatePicker } = await import("../components/EstimatePicker");
 const { ContextMenu } = await import("../components/ContextMenu");
 const { QuickCapture } = await import("../components/QuickCapture");
+const { QuickAdd } = await import("../components/QuickAdd");
+const { JournalView } = await import("../components/JournalView");
 const { NotificationPopup } = await import("../components/NotificationPopup");
 const { SettingsView } = await import("../components/SettingsView");
 const { FocusWidget } = await import("../components/FocusWidget");
-const { DEFAULT_PROFILES } = await import("./priority");
+const { DEFAULT_PROFILES, clampPriority } = await import("./priority");
 const { i18n } = await import("./i18n");
 const { initLanguage, setLanguage, useLanguageState } = await import("./language");
 
@@ -51,13 +52,6 @@ const initialState = useStore.getState();
 let root: HTMLDivElement;
 let reactRoot: Root;
 const toggleTask = mock(async () => {});
-const disabledVoice: VoiceStatus = {
-  enabled: false, ready: false, engineInstalled: false,
-  modelsInstalled: { tiny: false, base: false }, selectedModel: "base",
-  catalogVersion: null, updateVersion: null, updateEngineInstalled: false,
-  updateModelsInstalled: { tiny: false, base: false },
-  platformSupported: true, developmentAssets: false,
-};
 
 function task(overrides: Partial<Task> = {}): Task {
   return {
@@ -163,7 +157,7 @@ test("holding a completion shortcut does not advance a recurring task repeatedly
   expect(toggleTask).toHaveBeenCalledTimes(1);
 });
 
-function input(field: HTMLInputElement, value: string) {
+function input(field: HTMLInputElement | HTMLTextAreaElement, value: string) {
   field.value = value;
   field.dispatchEvent(new Event("input", { bubbles: true }));
 }
@@ -443,6 +437,44 @@ test("context-menu paste updates the controlled task title and saves the pasted 
   } finally { clipboard.mockRestore(); save.mockRestore(); }
 });
 
+test("quick add creates a task and clears the draft", async () => {
+  mockIPC((command, args) => {
+    if (command === "create_task") {
+      const draft = (args as { task: NewTask }).task;
+      return task({ id: "new", title: draft.title, priority: clampPriority(draft.priority ?? 4) });
+    }
+    throw new Error(`Unexpected IPC command: ${command}`);
+  });
+  useStore.setState({ view: { kind: "inbox" }, labels: [], tasks: [] });
+  await act(async () => reactRoot.render(h(QuickAdd)));
+  const title = element<HTMLInputElement>("#quick-add-input");
+  await act(async () => input(title, "Write report p1"));
+  await act(async () => { element("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+  expect(useStore.getState().tasks[0]).toMatchObject({ title: "Write report", priority: 1 });
+  expect(title.value).toBe("");
+});
+
+test("journal drafts save with the keyboard shortcut", async () => {
+  mockIPC((command, args) => {
+    if (command === "focus_history") return [];
+    if (command === "create_journal") {
+      const draft = (args as { entry: NewJournalEntry }).entry;
+      return { ...draft, id: "entry", createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z" };
+    }
+    throw new Error(`Unexpected IPC command: ${command}`);
+  });
+  useStore.setState({ journal: [] });
+  await act(async () => reactRoot.render(h(JournalView)));
+  const title = element<HTMLInputElement>(".journal-composer-title");
+  const body = element<HTMLTextAreaElement>(".journal-composer-body");
+  await act(async () => { input(title, "  Notes  "); input(body, "  Draft text  "); });
+  await act(async () => body.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
+  expect(root.querySelector(".journal-entry")?.textContent).toContain("Notes");
+  expect(root.querySelector(".journal-entry")?.textContent).toContain("Draft text");
+  expect(title.value).toBe("");
+  expect(body.value).toBe("");
+});
+
 test("quick capture submits the controlled draft to the native backend and clears it", async () => {
   const created: NewTask[] = [];
   let hidden = false;
@@ -451,14 +483,11 @@ test("quick capture submits the controlled draft to the native backend and clear
     switch (command) {
       case "list_labels": return [];
       case "list_priority_profiles": return DEFAULT_PROFILES;
-      case "voice_status": return disabledVoice;
       case "create_task": {
         created.push((args as { task: NewTask }).task);
         return task({ title: created[0].title, priority: 1 });
       }
       case "plugin:window|hide": hidden = true; return;
-      case "plugin:window|set_size":
-      case "plugin:window|center": return;
       default: throw new Error(`Unexpected IPC command: ${command}`);
     }
   }, { shouldMockEvents: true });
@@ -497,7 +526,6 @@ test("the volume slider previews each step but persists only the committed value
     const setting = args as { key: string; value: string };
     if (command === "get_setting") return settings.get(setting.key) ?? null;
     if (command === "set_setting") settings.set(setting.key, setting.value);
-    if (command === "voice_status") return disabledVoice;
     if (command === "plugin:app|version") return "1.15.0";
   }, { shouldMockEvents: true });
   await act(async () => reactRoot.render(h(SettingsView)));
@@ -596,7 +624,6 @@ test("a language save failure keeps the previous selection and shows the error",
   mockIPC((command) => {
     if (command === "get_language") return { preference: "en", language: "en", revision: 0 };
     if (command === "set_language") throw new Error("Database is read-only");
-    if (command === "voice_status") return disabledVoice;
     if (command === "plugin:app|version") return "1.15.0";
   }, { shouldMockEvents: true });
   const off = await initLanguage();
