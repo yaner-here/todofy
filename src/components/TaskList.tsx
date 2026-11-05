@@ -1,3 +1,6 @@
+import { appLocale } from "../lib/locale";
+import { t } from "../lib/i18n";
+import { Trans, useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { lazy, Suspense } from "react";
 import { applySearchAndFilters, tasksForView, useStore } from "../store";
@@ -29,74 +32,75 @@ const JournalView = lazy(() =>
 function viewTitle(view: ViewId, labelName?: string): string {
   switch (view.kind) {
     case "inbox":
-      return "Inbox";
+      return t("navigation.inbox");
     case "today":
-      return new Date().toLocaleDateString(undefined, {
+      return new Date().toLocaleDateString(appLocale(), {
         weekday: "long",
         month: "long",
         day: "numeric",
       });
     case "upcoming":
-      return "Upcoming";
+      return t("navigation.upcoming");
     case "date":
-      return new Date(view.date + "T00:00:00").toLocaleDateString(undefined, {
+      return new Date(view.date + "T00:00:00").toLocaleDateString(appLocale(), {
         weekday: "long",
         month: "long",
         day: "numeric",
       });
     case "pinned":
-      return "Pinboard";
+      return t("navigation.pinboard");
     case "completed":
-      return "Completed";
+      return t("tasks.completed");
     case "labels":
-      return "Labels";
+      return t("labels.labels");
     case "settings":
-      return "Settings";
+      return t("settings.settings");
     case "focus":
-      return "Focus";
+      return t("focus.focus");
     case "journal":
-      return "Journal";
+      return t("journal.journal");
     case "calendar":
-      return "Calendar";
+      return t("calendar.calendar");
     case "board":
-      return "Board";
+      return t("board.board");
     case "label":
-      return labelName ?? "Label";
+      return labelName ?? t("tasks.label");
   }
 }
 
 function viewSubtitle(view: ViewId): string {
   switch (view.kind) {
     case "inbox":
-      return "Tasks without a date";
+      return t("tasks.tasksWithoutADate");
     case "today":
-      return "Due today and overdue";
+      return t("tasks.dueTodayAndOverdue");
     case "upcoming":
-      return "Scheduled for later";
+      return t("tasks.scheduledForLater");
     case "date":
-      return "A focused plan for this day";
+      return t("tasks.aFocusedPlanForThisDay");
     case "pinned":
-      return "Tasks you've pinned to the top";
+      return t("tasks.tasksYouVePinnedToTheTop");
     case "completed":
-      return "Everything you've finished";
+      return t("tasks.everythingYouVeFinished");
     case "labels":
-      return "Manage your labels";
+      return t("tasks.manageYourLabels");
     case "settings":
-      return "Startup, appearance, and about";
+      return t("settings.startupAppearanceAndAbout");
     case "focus":
-      return "Pomodoro and focus history";
+      return t("tasks.pomodoroAndFocusHistory");
     case "journal":
-      return "Write and reflect";
+      return t("tasks.writeAndReflect");
     case "calendar":
-      return "Tasks and events by month";
+      return t("tasks.tasksAndEventsByMonth");
     case "board":
-      return "Move work across stages";
+      return t("board.moveWorkAcrossStages");
     case "label":
-      return "Tagged tasks";
+      return t("tasks.taggedTasks");
   }
 }
 
 export function TaskList() {
+  const { t } = useTranslation();
   const {
     tasks,
     labels,
@@ -141,7 +145,7 @@ export function TaskList() {
       <Suspense
         fallback={
           <main className="redesign-main" aria-busy="true">
-            <div className="task-page-scroll" role="status">Opening view…</div>
+            <div className="task-page-scroll" role="status">{t("tasks.openingView")}</div>
           </main>
         }
       >
@@ -203,8 +207,8 @@ export function TaskList() {
         </div>
         {showStats && (
           <div className="daily-stats">
-            {stats.doneToday > 0 && <span>✓ {stats.doneToday} today</span>}
-            {stats.streak > 1 && <span>{stats.streak}-day streak</span>}
+            {stats.doneToday > 0 && <span>✓ {stats.doneToday} {t("tasks.today")}</span>}
+            {stats.streak > 1 && <span>{stats.streak}{t("tasks.dayStreak")}</span>}
           </div>
         )}
       </header>
@@ -214,10 +218,10 @@ export function TaskList() {
           <section className="next-up-section">
             <p className="section-kicker">
               {view.kind === "pinned"
-                ? "Pinned task"
+                ? t("tasks.pinnedTask")
                 : isCompletedView
-                  ? "Completed task"
-                  : "Next up"}
+                  ? t("tasks.completedTask")
+                  : t("tasks.nextUp")}
             </p>
             <TaskDetail taskId={detailTask.id} />
           </section>
@@ -226,8 +230,8 @@ export function TaskList() {
         <section className="agenda-section">
           <div className="agenda-heading">
             <div>
-              <h3>{isCompletedView ? "Completed tasks" : "Your day"}</h3>
-              <span>{inView.length} task{inView.length === 1 ? "" : "s"}</span>
+              <h3>{isCompletedView ? t("tasks.completedTasks") : t("tasks.yourDay")}</h3>
+              <span>{t("common.taskCount", { count: inView.length })}</span>
             </div>
             <SearchBar />
           </div>
@@ -236,7 +240,7 @@ export function TaskList() {
             <div className="load-error" role="alert">
               <p>{loadError}</p>
               <button type="button" onClick={() => load()}>
-                Try again
+                {t("common.retry")}
               </button>
             </div>
           )}
@@ -263,9 +267,9 @@ export function TaskList() {
                         <button
                           type="button"
                           onClick={() => rescheduleOverdue()}
-                          title="Move all overdue tasks to today"
+                          title={t("tasks.moveAllOverdueTasksToToday")}
                         >
-                          Reschedule to today
+                          {t("tasks.rescheduleToToday")}
                         </button>
                       )}
                     </div>
@@ -275,29 +279,28 @@ export function TaskList() {
               ))}
 
               {isCompletedView && completedPageCount > 1 && (
-                <nav className="completed-pagination" aria-label="Completed tasks pages">
+                <nav className="completed-pagination" aria-label={t("tasks.completedTasksPages")}>
                   <p>
-                    {completedPageStart + 1}–{Math.min(completedPageStart + COMPLETED_PAGE_SIZE, inView.length)}
-                    <span> of {inView.length}</span>
+                    {t("tasks.resultRange", { start: completedPageStart + 1, end: Math.min(completedPageStart + COMPLETED_PAGE_SIZE, inView.length), total: inView.length })}
                   </p>
                   <div>
                     <button
                       type="button"
                       onClick={() => changeCompletedPage(currentCompletedPage - 1)}
                       disabled={currentCompletedPage === 1}
-                      aria-label="Previous completed tasks page"
+                      aria-label={t("tasks.previousCompletedTasksPage")}
                     >
                       <ChevronLeftIcon width={14} height={14} />
-                      Previous
+                      {t("tasks.previous")}
                     </button>
-                    <span>Page {currentCompletedPage} of {completedPageCount}</span>
+                    <span>{t("tasks.pageProgress", { page: currentCompletedPage, total: completedPageCount })}</span>
                     <button
                       type="button"
                       onClick={() => changeCompletedPage(currentCompletedPage + 1)}
                       disabled={currentCompletedPage === completedPageCount}
-                      aria-label="Next completed tasks page"
+                      aria-label={t("tasks.nextCompletedTasksPage")}
                     >
-                      Next
+                      {t("focus.next")}
                       <ChevronRightIcon width={14} height={14} />
                     </button>
                   </div>
@@ -307,7 +310,7 @@ export function TaskList() {
               {done.length > 0 && !isCompletedView && (
                 <div className="task-group completed-group">
                   <div className="task-group-heading">
-                    <p>Completed <span>{done.length}</span></p>
+                    <p>{t("tasks.completed")} <span>{done.length}</span></p>
                   </div>
                   <div className="task-row-list is-completed">
                     {done.map((task: Task) => (
@@ -324,7 +327,7 @@ export function TaskList() {
       {showQuickAdd && (
         <footer className="capture-dock">
           <QuickAdd />
-          <p className="capture-hint">Press <kbd>N</kbd> to quick capture</p>
+          <p className="capture-hint"><Trans i18nKey="tasks.captureShortcut" components={{ kbd: <kbd /> }} /></p>
         </footer>
       )}
     </main>
@@ -332,35 +335,37 @@ export function TaskList() {
 }
 
 function FilteredEmpty({ clearFilters }: { clearFilters: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="empty-state">
       <InboxIcon width={28} height={28} />
-      <p>No tasks match your search or filters.</p>
-      <button type="button" onClick={clearFilters}>Clear filters</button>
+      <p>{t("tasks.noTasksMatchYourSearchOrFilters")}</p>
+      <button type="button" onClick={clearFilters}>{t("tasks.clearFilters")}</button>
     </div>
   );
 }
 
 function Empty({ view }: { view: ViewId }) {
+  const { t } = useTranslation();
   const message =
     view.kind === "today"
-      ? "Nothing due today. Enjoy the calm."
+      ? t("tasks.nothingDueTodayEnjoyTheCalm")
         : view.kind === "upcoming"
-          ? "No upcoming tasks scheduled."
+          ? t("tasks.noUpcomingTasksScheduled")
           : view.kind === "date"
-            ? "Nothing scheduled for this day yet."
+            ? t("tasks.nothingScheduledForThisDayYet")
         : view.kind === "inbox"
-          ? "Inbox zero. Add a task to get started."
+          ? t("tasks.inboxZeroAddATaskToGetStarted")
           : view.kind === "pinned"
-            ? "No pinned tasks yet."
+            ? t("tasks.noPinnedTasksYet")
             : view.kind === "completed"
-              ? "Nothing completed yet."
-              : "No tasks with this label yet.";
+              ? t("tasks.nothingCompletedYet")
+              : t("tasks.noTasksWithThisLabelYet");
   return (
     <div className="empty-state">
       <InboxIcon width={30} height={30} />
       <p>{message}</p>
-      <small>Use quick capture below, or press Ctrl + Alt + A from anywhere.</small>
+      <small>{t("tasks.useQuickCaptureBelowOrPressCtrlAltAFrom")}</small>
     </div>
   );
 }

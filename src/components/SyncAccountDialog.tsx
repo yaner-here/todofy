@@ -1,8 +1,10 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useSync, type AccountDataChoice } from "../lib/sync";
 
 export function SyncAccountDialog() {
+  const { t } = useTranslation();
   const { email, signOut } = useAuth();
   const { accountChoice, error, resolveAccountChoice } = useSync();
   const [busy, setBusy] = useState<AccountDataChoice | "signout" | null>(null);
@@ -32,12 +34,11 @@ export function SyncAccountDialog() {
     >
       <div className="w-full max-w-md animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
         <h3 id="sync-account-title" className="text-base font-semibold text-text">
-          Choose data for this account
+          {t("account.chooseDataForThisAccount")}
         </h3>
         <p className="mt-1.5 text-sm leading-relaxed text-muted">
-          This device already has tasks linked to another account. Before
-          syncing
-          {email ? ` ${email}` : " this account"}, choose what Todofy should do.
+          {t("account.thisDeviceAlreadyHasTasksLinkedToAnotherAccountBefore")}
+          {email ? ` ${email}` : t("account.thisAccount")}{t("account.chooseWhatTodofyShouldDo")}
         </p>
 
         <div className="mt-4 grid gap-2.5">
@@ -49,11 +50,10 @@ export function SyncAccountDialog() {
             className="rounded-xl border border-(--color-accent) bg-accent-soft px-4 py-3 text-left transition-colors hover:brightness-110 disabled:opacity-60"
           >
             <span className="block text-sm font-semibold text-text">
-              Copy this device's data
+              {t("account.copyThisDeviceSData")}
             </span>
             <span className="mt-0.5 block text-xs leading-relaxed text-muted">
-              Keep local tasks, labels, focus history, and journal entries and
-              add independent copies to this account.
+              {t("account.keepLocalTasksLabelsFocusHistoryAndJournalEntriesAnd")}
             </span>
           </button>
           <button
@@ -63,11 +63,10 @@ export function SyncAccountDialog() {
             className="rounded-xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-2 disabled:opacity-60"
           >
             <span className="block text-sm font-semibold text-text">
-              Use this account's data
+              {t("account.useThisAccountSData")}
             </span>
             <span className="mt-0.5 block text-xs leading-relaxed text-muted">
-              Remove the device's synced tasks and load this account's cloud
-              data. Standalone calendar events stay on this device.
+              {t("account.removeTheDeviceSSyncedTasksAndLoadThisAccount")}
             </span>
           </button>
         </div>
@@ -80,7 +79,7 @@ export function SyncAccountDialog() {
 
         <div className="mt-4 flex items-center justify-between">
           <span className="text-[11px] text-faint">
-            Nothing is uploaded until you choose.
+            {t("account.nothingIsUploadedUntilYouChoose")}
           </span>
           <button
             type="button"
@@ -88,7 +87,7 @@ export function SyncAccountDialog() {
             disabled={busy !== null}
             className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-60"
           >
-            Sign out
+            {t("account.signOut")}
           </button>
         </div>
       </div>

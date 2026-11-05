@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { clockHourText, composeClock, parseClock } from "../lib/dates";
 import { usesHour12 } from "../lib/locale";
@@ -31,6 +32,7 @@ export function TimeField({
   label,
   invalid = false,
 }: Props) {
+  const { t } = useTranslation();
   const hour12 = usesHour12();
   const initial = parseClock(value);
   const [hourText, setHourText] = useState(() =>
@@ -164,7 +166,7 @@ export function TimeField({
       <input
         type="text"
         inputMode="numeric"
-        aria-label={name("Hour")}
+        aria-label={name(t("date.hour"))}
         placeholder="HH"
         value={hourText}
         onInput={(event) => onHourInput(event.currentTarget.value)}
@@ -178,7 +180,7 @@ export function TimeField({
         ref={minuteRef}
         type="text"
         inputMode="numeric"
-        aria-label={name("Minute")}
+        aria-label={name(t("date.minute"))}
         placeholder="MM"
         value={minuteText}
         onInput={(event) => onMinuteInput(event.currentTarget.value)}

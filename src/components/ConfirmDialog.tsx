@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
 
 export function ConfirmDialog() {
+  const { t } = useTranslation();
   const { confirm, closeConfirm } = useStore();
   const [busy, setBusy] = useState(false);
   const running = useRef(false);
@@ -61,7 +63,7 @@ export function ConfirmDialog() {
             disabled={busy}
             className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             onClick={run}
@@ -73,7 +75,7 @@ export function ConfirmDialog() {
                 : "bg-(--color-accent) hover:bg-accent-hover"
             }`}
           >
-            {confirm.confirmLabel ?? "Confirm"}
+            {confirm.confirmLabel ?? t("common.confirm")}
           </button>
         </div>
       </div>

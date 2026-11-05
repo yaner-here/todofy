@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { FunctionComponent } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ONBOARDING_STEPS, useOnboarding } from "../../lib/onboarding";
@@ -23,14 +24,14 @@ const SLIDES: FunctionComponent[] = [
 ];
 
 const NEXT_LABEL = [
-  "Get started",
-  "Continue",
-  "Continue",
-  "Continue",
-  "Continue",
-  "Almost there",
-  "Open todofy",
-];
+  "onboarding.getStarted",
+  "onboarding.continue",
+  "onboarding.continue",
+  "onboarding.continue",
+  "onboarding.continue",
+  "onboarding.almostThere",
+  "onboarding.openTodofy",
+] as const;
 
 /** Matches the leave animations in global.css. */
 const TRANSITION_MS = 260;
@@ -40,6 +41,7 @@ const TRANSITION_MS = 260;
  * `initOnboarding`) and replayable from Settings → About.
  */
 export function Onboarding() {
+  const { t } = useTranslation();
   const open = useOnboarding((s) => s.open);
   const leaving = useOnboarding((s) => s.leaving);
   const step = useOnboarding((s) => s.step);
@@ -106,7 +108,7 @@ export function Onboarding() {
       }`}
       role="dialog"
       aria-modal="true"
-      aria-label="Welcome to todofy"
+      aria-label={t("onboarding.welcomeToTodofy")}
     >
       <div className="onb-card relative my-auto w-full max-w-155` overflow-hidden rounded-3xl border border-border-strong bg-elevated shadow-2xl shadow-black/60">
         <span className="pointer-events-none absolute inset-x-20 -top-32 h-56 rounded-full bg-(--color-accent) opacity-[0.1] blur-3xl" />
@@ -116,7 +118,7 @@ export function Onboarding() {
           onClick={() => void finish({ skipped: true })}
           className="absolute right-4 top-4 z-10 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
-          Skip
+          {t("onboarding.skip")}
         </button>
 
         <div className="relative px-7 pb-5 pt-9 sm:px-10">
@@ -146,7 +148,7 @@ export function Onboarding() {
             type="button"
             onClick={back}
             disabled={step === 0}
-            aria-label="Previous"
+            aria-label={t("tasks.previous")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:pointer-events-none disabled:opacity-0"
           >
             <ChevronLeftIcon width={17} height={17} />
@@ -158,7 +160,7 @@ export function Onboarding() {
                 key={index}
                 type="button"
                 onClick={() => goTo(index)}
-                aria-label={`Step ${index + 1} of ${ONBOARDING_STEPS}`}
+                aria-label={t("onboarding.stepProgress", { step: index + 1, total: ONBOARDING_STEPS })}
                 aria-current={index === step}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   index === step
@@ -176,7 +178,7 @@ export function Onboarding() {
             onClick={next}
             className="shrink-0 rounded-xl bg-(--color-accent) px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/15 transition-[background-color,transform] hover:bg-accent-hover active:translate-y-px"
           >
-            {NEXT_LABEL[step]}
+            {t(NEXT_LABEL[step])}
           </button>
         </div>
       </div>

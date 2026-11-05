@@ -1,18 +1,23 @@
+import { appLocale, usesHour12 } from "../lib/locale";
+import { t } from "../lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useStore } from "../store";
+import type { MessageKey } from "../lib/i18n";
 import type { PomodoroPhase, SessionLog } from "../types";
 import { api } from "../lib/api";
 import { clock, formatDuration, secondsSince } from "../lib/duration";
 import { toLocalDate, today } from "../lib/dates";
 import { PauseIcon, PlayIcon, RotateIcon, SkipIcon, TimerIcon } from "./Icons";
 
-const PHASE_LABEL: Record<PomodoroPhase, string> = {
-  focus: "Focus",
-  short: "Short break",
-  long: "Long break",
+const PHASE_LABEL: Record<PomodoroPhase, MessageKey> = {
+  focus: "focus.focus",
+  short: "focus.shortBreak",
+  long: "focus.longBreak",
 };
 
 export function FocusView() {
+  const { t } = useTranslation();
   const {
     pomodoro,
     pomodoroStart,
@@ -51,9 +56,9 @@ export function FocusView() {
   return (
     <main className="redesign-secondary focus-main flex flex-1 flex-col overflow-hidden bg-bg">
       <header className="app-page-header shrink-0 px-8 pt-8 pb-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Focus</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("focus.focus")}</h2>
         <p className="mt-0.5 text-sm text-muted">
-          Run a Pomodoro, tune its lengths, and review your focus history
+          {t("focus.runAPomodoroTuneItsLengthsAndReviewYourFocus")}
         </p>
       </header>
 
@@ -69,10 +74,10 @@ export function FocusView() {
                 }`}
               >
                 <TimerIcon width={14} height={14} />
-                {PHASE_LABEL[p.phase]} session
+                {t("focus.phaseSession", { phase: t(PHASE_LABEL[p.phase]) })}
               </span>
               <span>
-                Round {(p.completedFocus % p.longEvery) + 1} of {p.longEvery}
+                {t("focus.roundProgress", { round: (p.completedFocus % p.longEvery) + 1, total: p.longEvery })}
               </span>
             </div>
 
@@ -85,13 +90,13 @@ export function FocusView() {
             </span>
 
             <p className="focus-prompt">
-              Pick one outcome. Everything else can wait until the timer ends.
+              {t("focus.pickOneOutcomeEverythingElseCanWaitUntilTheTimer")}
             </p>
 
             <div className="focus-controls">
               <button
                 onClick={pomodoroReset}
-                title="Reset phase"
+                title={t("focus.resetPhase")}
                 className="grid h-11 w-11 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
               >
                 <RotateIcon width={18} height={18} />
@@ -99,7 +104,7 @@ export function FocusView() {
               <button
                 onClick={p.running ? pomodoroPause : pomodoroStart}
                 className="grid h-14 w-14 place-items-center rounded-full bg-(--color-accent) text-white transition-colors hover:bg-accent-hover"
-                title={p.running ? "Pause" : "Start"}
+                title={p.running ? t("focus.pause") : t("calendar.start")}
               >
                 {p.running ? (
                   <PauseIcon width={24} height={24} />
@@ -109,7 +114,7 @@ export function FocusView() {
               </button>
               <button
                 onClick={pomodoroNext}
-                title="Skip to next phase"
+                title={t("focus.skipToNextPhase")}
                 className="grid h-11 w-11 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
               >
                 <SkipIcon width={18} height={18} />
@@ -129,33 +134,33 @@ export function FocusView() {
         {p && (
           <aside className="focus-side-panel">
             <div className="focus-side-heading">
-              <p>Session plan</p>
-              <span>Adjust the rhythm to match your energy.</span>
+              <p>{t("focus.sessionPlan")}</p>
+              <span>{t("focus.adjustTheRhythmToMatchYourEnergy")}</span>
             </div>
             <div className="focus-length-grid">
               <NumberField
-                label="Focus"
+                label={t("focus.focus")}
                 value={p.focusMin}
                 onCommit={(v) =>
                   setPomodoroConfig(v, p.shortMin, p.longMin, p.longEvery)
                 }
               />
               <NumberField
-                label="Short break"
+                label={t("focus.shortBreak")}
                 value={p.shortMin}
                 onCommit={(v) =>
                   setPomodoroConfig(p.focusMin, v, p.longMin, p.longEvery)
                 }
               />
               <NumberField
-                label="Long break"
+                label={t("focus.longBreak")}
                 value={p.longMin}
                 onCommit={(v) =>
                   setPomodoroConfig(p.focusMin, p.shortMin, v, p.longEvery)
                 }
               />
               <NumberField
-                label="Long every"
+                label={t("focus.longEvery")}
                 value={p.longEvery}
                 onCommit={(v) =>
                   setPomodoroConfig(p.focusMin, p.shortMin, p.longMin, v)
@@ -163,14 +168,14 @@ export function FocusView() {
               />
             </div>
             <div className="focus-rhythm-note">
-              <span>Next</span>
+              <span>{t("focus.next")}</span>
               <strong>
-                {p.phase === "focus" ? "Short recovery" : "Focus session"}
+                {p.phase === "focus" ? t("focus.shortRecovery") : t("focus.focusSession")}
               </strong>
               <small>
                 {p.phase === "focus"
-                  ? `${p.shortMin} minutes away`
-                  : `${p.focusMin} minutes`}
+                  ? t("focus.minutesAway", { count: p.shortMin })
+                  : t("focus.minutes", { count: p.focusMin })}
               </small>
             </div>
           </aside>
@@ -185,10 +190,11 @@ export function FocusView() {
 }
 
 function History({ sessions }: { sessions: SessionLog[] }) {
-  const t = today();
+  const { t } = useTranslation();
+  const todayKey = today();
   const weekAgo = toLocalDate(new Date(Date.now() - 6 * 86400000));
   const todayTotal = sum(
-    sessions.filter((s) => toLocalDate(new Date(s.startAt)) === t),
+    sessions.filter((s) => toLocalDate(new Date(s.startAt)) === todayKey),
   );
   const weekTotal = sum(
     sessions.filter((s) => toLocalDate(new Date(s.startAt)) >= weekAgo),
@@ -207,18 +213,18 @@ function History({ sessions }: { sessions: SessionLog[] }) {
   return (
     <section>
       <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
-        History
+        {t("focus.history")}
       </h3>
 
       <div className="mb-3 grid grid-cols-3 gap-3">
-        <Stat label="Today" value={formatDuration(todayTotal)} />
-        <Stat label="This week" value={formatDuration(weekTotal)} />
-        <Stat label="Tracked total" value={formatDuration(allTotal)} />
+        <Stat label={t("common.today")} value={formatDuration(todayTotal)} />
+        <Stat label={t("focus.thisWeek")} value={formatDuration(weekTotal)} />
+        <Stat label={t("focus.trackedTotal")} value={formatDuration(allTotal)} />
       </div>
 
       {sessions.length === 0 ? (
         <div className="rounded-xl border border-border bg-surface px-4 py-8 text-center text-sm text-muted">
-          No focus sessions yet. Press play on a task to start tracking.
+          {t("focus.noFocusSessionsYetPressPlayOnATaskTo")}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border bg-surface">
@@ -314,10 +320,10 @@ function sum(sessions: SessionLog[]): number {
 }
 
 function dayLabel(day: string): string {
-  const t = today();
-  if (day === t) return "Today";
-  if (day === toLocalDate(new Date(Date.now() - 86400000))) return "Yesterday";
-  return new Date(day + "T00:00:00").toLocaleDateString(undefined, {
+  const todayKey = today();
+  if (day === todayKey) return t("common.today");
+  if (day === toLocalDate(new Date(Date.now() - 86400000))) return t("date.yesterday");
+  return new Date(day + "T00:00:00").toLocaleDateString(appLocale(), {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -326,9 +332,10 @@ function dayLabel(day: string): string {
 
 function timeRange(start: string, end: string): string {
   const fmt = (iso: string) =>
-    new Date(iso).toLocaleTimeString(undefined, {
+    new Date(iso).toLocaleTimeString(appLocale(), {
       hour: "numeric",
       minute: "2-digit",
+      hour12: usesHour12(),
     });
   return `${fmt(start)} – ${fmt(end)}`;
 }

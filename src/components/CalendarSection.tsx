@@ -1,3 +1,5 @@
+import { t } from "../lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { calendarConfigured, useCalendar } from "../lib/googleCalendar";
@@ -5,6 +7,7 @@ import { CalendarIcon, CloseIcon, GoogleIcon } from "./Icons";
 import { Checkbox } from "./Checkbox";
 
 export function CalendarSection() {
+  const { t } = useTranslation();
   const { session } = useAuth();
   const {
     ready,
@@ -34,7 +37,7 @@ export function CalendarSection() {
   return (
     <section className="mb-6">
       <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
-        Calendar
+        {t("calendar.calendar")}
       </h3>
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {!session ? (
@@ -43,12 +46,11 @@ export function CalendarSection() {
               <CalendarIcon width={18} height={18} />
             </span>
             <p className="text-sm text-muted">
-              Sign in to your account above to push your tasks to Google
-              Calendar.
+              {t("calendar.signInToYourAccountAboveToPushYourTasks")}
             </p>
           </div>
         ) : !ready ? (
-          <div className="px-4 py-3.5 text-sm text-muted">Loading…</div>
+          <div className="px-4 py-3.5 text-sm text-muted">{t("account.loading")}</div>
         ) : connected ? (
           <>
             <div className="flex items-center gap-3 px-4 py-3.5">
@@ -57,10 +59,10 @@ export function CalendarSection() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-text">
-                  {email ?? "Google Calendar connected"}
+                  {email ?? t("calendar.googleCalendarConnected")}
                 </p>
                 <p className="mt-0.5 text-xs text-muted">
-                  Your tasks push to a dedicated todofy calendar.
+                  {t("calendar.yourTasksPushToADedicatedTodofyCalendar")}
                 </p>
               </div>
               <button
@@ -71,18 +73,17 @@ export function CalendarSection() {
                 disabled={busy}
                 className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
               >
-                {busy ? "Disconnecting…" : "Disconnect"}
+                {busy ? t("calendar.disconnecting") : t("calendar.disconnect")}
               </button>
             </div>
             <PushStatusRow />
             <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-text">
-                  Keep completed tasks
+                  {t("calendar.keepCompletedTasks")}
                 </p>
                 <p className="mt-0.5 text-xs text-muted">
-                  Leave finished tasks on the calendar with a ✓ instead of
-                  removing them when done.
+                  {t("calendar.leaveFinishedTasksOnTheCalendarWithAInsteadOf")}
                 </p>
               </div>
               <Switch
@@ -93,11 +94,10 @@ export function CalendarSection() {
             <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-text">
-                  Only tasks with a set time
+                  {t("calendar.onlyTasksWithASetTime")}
                 </p>
                 <p className="mt-0.5 text-xs text-muted">
-                  Skip date-only tasks and push only those with a specific
-                  reminder time.
+                  {t("calendar.skipDateOnlyTasksAndPushOnlyThoseWithA")}
                 </p>
               </div>
               <Switch
@@ -114,10 +114,10 @@ export function CalendarSection() {
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-text">
-                  Connect Google Calendar
+                  {t("calendar.connectGoogleCalendar")}
                 </p>
                 <p className="mt-0.5 text-xs text-muted">
-                  Push tasks with a due date to a dedicated todofy calendar.
+                  {t("calendar.pushTasksWithADueDateToADedicatedTodofy")}
                 </p>
               </div>
               <button
@@ -126,7 +126,7 @@ export function CalendarSection() {
                 className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-bg px-3 py-1.5 text-xs font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
               >
                 <GoogleIcon width={14} height={14} />
-                {busy ? "Waiting for browser…" : "Connect"}
+                {busy ? t("account.waitingForBrowser") : t("calendar.connect")}
               </button>
             </div>
             {(error ?? pushError) && (
@@ -166,6 +166,7 @@ function DisconnectModal({
   onClose: () => void;
   onConfirm: (deleteRemote: boolean) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [deleteRemote, setDeleteRemote] = useState(false);
 
   useEffect(() => {
@@ -184,7 +185,7 @@ function DisconnectModal({
       <div className="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50">
         <button
           onClick={onClose}
-          title="Close"
+          title={t("common.close")}
           className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
           <CloseIcon width={16} height={16} />
@@ -195,10 +196,10 @@ function DisconnectModal({
             <CalendarIcon width={24} height={24} />
           </span>
           <h3 className="text-lg font-semibold text-text">
-            Disconnect Google Calendar
+            {t("calendar.disconnectGoogleCalendar")}
           </h3>
           <p className="text-xs text-muted">
-            todofy will stop pushing tasks to your calendar.
+            {t("calendar.todofyWillStopPushingTasksToYourCalendar")}
           </p>
         </div>
 
@@ -222,10 +223,9 @@ function DisconnectModal({
               />
             </span>
             <span className="text-xs text-text">
-              Also delete the todofy calendar and its events from Google.
+              {t("calendar.alsoDeleteTheTodofyCalendarAndItsEventsFromGoogle")}
               <span className="mt-0.5 block text-muted">
-                Leave unchecked to keep the calendar; reconnecting later resumes
-                where you left off.
+                {t("calendar.leaveUncheckedToKeepTheCalendarReconnectingLaterResumesWhere")}
               </span>
             </span>
           </button>
@@ -246,7 +246,7 @@ function DisconnectModal({
               disabled={busy}
               className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -258,7 +258,7 @@ function DisconnectModal({
                   : "bg-(--color-accent) hover:bg-accent-hover"
               }`}
             >
-              {busy ? "Disconnecting…" : "Disconnect"}
+              {busy ? t("calendar.disconnecting") : t("calendar.disconnect")}
             </button>
           </div>
         </div>
@@ -268,26 +268,27 @@ function DisconnectModal({
 }
 
 const PUSH_META = {
-  idle: { dot: "bg-[var(--color-success)]", label: "Up to date" },
-  pushing: { dot: "bg-[var(--color-warning)]", label: "Pushing…" },
-  error: { dot: "bg-(--color-danger)", label: "Push failed" },
+  idle: { dot: "bg-[var(--color-success)]", label: "calendar.upToDate" },
+  pushing: { dot: "bg-[var(--color-warning)]", label: "calendar.pushing" },
+  error: { dot: "bg-(--color-danger)", label: "calendar.pushFailed" },
 } as const;
 
 function PushStatusRow() {
+  const { t } = useTranslation();
   const { status, lastPushedAt, pushError, push } = useCalendar();
   const meta = PUSH_META[status];
   const detail =
     status === "error"
-      ? (pushError ?? "Something went wrong.")
+      ? (pushError ?? t("account.somethingWentWrong"))
       : lastPushedAt
-        ? `Last pushed ${relativeTime(lastPushedAt)}`
-        : "Nothing pushed yet";
+        ? t("calendar.lastPushed", { time: relativeTime(lastPushedAt) })
+        : t("calendar.nothingPushedYet");
 
   return (
     <div className="flex items-center gap-3 border-t border-border px-4 py-3">
       <span className={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-text">{meta.label}</p>
+        <p className="text-xs font-medium text-text">{t(meta.label)}</p>
         <p className="mt-0.5 truncate text-[11px] text-muted">{detail}</p>
       </div>
       <button
@@ -295,7 +296,7 @@ function PushStatusRow() {
         disabled={status === "pushing"}
         className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
       >
-        {status === "pushing" ? "Pushing…" : "Push now"}
+        {status === "pushing" ? t("calendar.pushing") : t("calendar.pushNow")}
       </button>
     </div>
   );
@@ -328,11 +329,11 @@ function Switch({
 
 function relativeTime(iso: string): string {
   const secs = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 1000));
-  if (secs < 10) return "just now";
-  if (secs < 60) return `${secs}s ago`;
+  if (secs < 10) return t("account.justNow");
+  if (secs < 60) return t("common.secondsAgo", { count: secs });
   const mins = Math.floor(secs / 60);
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return t("common.minutesAgo", { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return t("common.hoursAgo", { count: hours });
+  return t("common.daysAgo", { count: Math.floor(hours / 24) });
 }

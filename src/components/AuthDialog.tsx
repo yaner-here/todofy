@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { CloseIcon, EyeIcon, EyeOffIcon, GoogleIcon, UserIcon } from "./Icons";
@@ -5,6 +6,7 @@ import { CloseIcon, EyeIcon, EyeOffIcon, GoogleIcon, UserIcon } from "./Icons";
 type Mode = "signin" | "signup";
 
 export function AuthDialog() {
+  const { t } = useTranslation();
   const {
     dialogOpen,
     dialogIntent,
@@ -110,8 +112,8 @@ export function AuthDialog() {
           type="button"
           onClick={closeDialog}
           disabled={busy || googleBusy}
-          title="Close"
-          aria-label="Close account dialog"
+          title={t("common.close")}
+          aria-label={t("account.closeAccountDialog")}
           className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
           <CloseIcon width={16} height={16} />
@@ -123,15 +125,15 @@ export function AuthDialog() {
           </span>
           <h3 id="auth-dialog-title" className="text-lg font-semibold text-text">
             {signup
-              ? "Create your Todofy account"
+              ? t("account.createYourTodofyAccount")
               : proIntent
-                ? "Sign in to activate Pro"
-                : "Welcome back"}
+                ? t("account.signInToActivatePro")
+                : t("account.welcomeBack")}
           </h3>
           <p className="text-xs text-muted">
             {proIntent
-              ? "Your license is linked to the account you choose here."
-              : "An account is only needed for optional Cloud Sync."}
+              ? t("account.yourLicenseIsLinkedToTheAccountYouChooseHere")
+              : t("account.anAccountIsOnlyNeededForOptionalCloudSync")}
           </p>
         </div>
 
@@ -143,12 +145,12 @@ export function AuthDialog() {
             className="flex items-center justify-center gap-2.5 rounded-lg border border-border bg-bg px-3 py-2.5 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
             <GoogleIcon width={18} height={18} />
-            {googleBusy ? "Waiting for browser…" : "Continue with Google"}
+            {googleBusy ? t("account.waitingForBrowser") : t("account.continueWithGoogle")}
           </button>
           <div className="flex items-center gap-3">
             <span className="h-px flex-1 bg-border" />
             <span className="text-[10px] font-medium uppercase tracking-wider text-faint">
-              or
+              {t("account.or")}
             </span>
             <span className="h-px flex-1 bg-border" />
           </div>
@@ -156,7 +158,7 @@ export function AuthDialog() {
 
         <form onSubmit={submit} className="flex flex-col gap-3 px-6 pt-3 pb-6">
           <Field
-            label="Email"
+            label={t("account.email")}
             type="email"
             value={email}
             autocomplete="email"
@@ -164,11 +166,11 @@ export function AuthDialog() {
             onInput={setEmail}
           />
           <Field
-            label="Password"
+            label={t("account.password")}
             type="password"
             value={password}
             autocomplete={signup ? "new-password" : "current-password"}
-            placeholder={signup ? "At least 6 characters" : "••••••••"}
+            placeholder={signup ? t("account.atLeast6Characters") : "••••••••"}
             onInput={setPassword}
             revealable
           />
@@ -199,11 +201,11 @@ export function AuthDialog() {
           >
             {busy
               ? signup
-                ? "Creating account…"
-                : "Signing in…"
+                ? t("account.creatingAccount")
+                : t("account.signingIn")
               : signup
-                ? "Create account"
-                : "Sign in"}
+                ? t("account.createAccount")
+                : t("account.signIn")}
           </button>
         </form>
 
@@ -218,9 +220,9 @@ export function AuthDialog() {
             }}
             className="group text-xs text-muted"
           >
-            {signup ? "Already have an account? " : "New to Todofy? "}
+            {signup ? t("account.alreadyHaveAnAccount") : t("account.newToTodofy")}
             <span className="font-medium text-(--color-accent) transition-colors group-hover:text-[var(--color-accent-hover)]">
-              {signup ? "Sign in" : "Create an account"}
+              {signup ? t("account.signIn") : t("account.createAnAccount")}
             </span>
           </button>
         </div>
@@ -246,6 +248,7 @@ function Field({
   onInput: (value: string) => void;
   revealable?: boolean;
 }) {
+  const { t } = useTranslation();
   const [reveal, setReveal] = useState(false);
   const inputType = revealable && reveal ? "text" : type;
   return (
@@ -267,8 +270,8 @@ function Field({
             type="button"
             tabIndex={-1}
             onClick={() => setReveal((value) => !value)}
-            title={reveal ? "Hide password" : "Show password"}
-            aria-label={reveal ? "Hide password" : "Show password"}
+            title={reveal ? t("account.hidePassword") : t("account.showPassword")}
+            aria-label={reveal ? t("account.hidePassword") : t("account.showPassword")}
             className="absolute inset-y-0 right-0 grid w-10 place-items-center text-faint transition-colors hover:text-text"
           >
             {reveal ? (

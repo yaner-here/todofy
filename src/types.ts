@@ -196,3 +196,11 @@ export interface EventPatch {
   endAt?: string | null;
   allDay?: boolean;
 }
+
+export type AppLanguage = "en" | "zh-CN";
+export type LanguagePreference = "auto" | AppLanguage;
+export interface LanguageSnapshot {
+  preference: LanguagePreference;
+  language: AppLanguage;
+  revision: number;
+}

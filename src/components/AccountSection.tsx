@@ -1,3 +1,7 @@
+import { t } from "../lib/i18n";
+import { appLocale } from "../lib/locale";
+import type { MessageKey } from "../lib/i18n";
+import { Trans, useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useAuth, type AuthResult } from "../lib/auth";
 import { useSync, type SyncStatus } from "../lib/sync";
@@ -7,6 +11,7 @@ import { CloudIcon, CrownIcon, TrashIcon, UserIcon } from "./Icons";
 import { Checkbox } from "./Checkbox";
 
 export function AccountSection() {
+  const { t } = useTranslation();
   const { ready, session, email, openDialog, signOut, deleteAccount } =
     useAuth();
   const { openGate } = useBilling();
@@ -15,11 +20,11 @@ export function AccountSection() {
     return (
       <section className="mb-6">
         <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
-          Account
+          {t("account.account")}
         </h3>
         <div className="overflow-hidden rounded-xl border border-border bg-surface">
           <div className="px-4 py-3.5 text-sm text-muted">
-            Account sync isn't configured in this build.
+            {t("account.accountSyncIsnTConfiguredInThisBuild")}
           </div>
         </div>
       </section>
@@ -29,11 +34,11 @@ export function AccountSection() {
   return (
     <section className="mb-6">
       <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
-        Account
+        {t("account.account")}
       </h3>
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {!ready ? (
-          <div className="px-4 py-3.5 text-sm text-muted">Loading…</div>
+          <div className="px-4 py-3.5 text-sm text-muted">{t("account.loading")}</div>
         ) : session ? (
           <SignedInRow
             email={email}
@@ -58,15 +63,16 @@ function SignInRow({
   onSignIn: () => void;
   onExplorePro: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
         <UserIcon width={18} height={18} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-text">Cloud Sync account</p>
+        <p className="text-sm font-medium text-text">{t("account.cloudSyncAccount")}</p>
         <p className="mt-0.5 text-xs text-muted">
-          Local Todofy stays free. Sign in when you want Pro sync.
+          {t("account.localTodofyStaysFreeSignInWhenYouWantPro")}
         </p>
       </div>
       <div className="flex shrink-0 gap-2">
@@ -76,7 +82,7 @@ function SignInRow({
             onClick={onExplorePro}
             className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-(--color-accent) transition-colors hover:bg-accent-soft"
           >
-            View Pro
+            {t("account.viewPro")}
           </button>
         )}
         <button
@@ -84,7 +90,7 @@ function SignInRow({
           onClick={onSignIn}
           className="rounded-lg bg-(--color-accent) px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
         >
-          Sign in
+          {t("account.signIn")}
         </button>
       </div>
     </div>
@@ -100,6 +106,7 @@ function SignedInRow({
   onSignOut: () => Promise<void>;
   deleteAccount: (wipeLocal: boolean) => Promise<AuthResult>;
 }) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   return (
@@ -110,10 +117,10 @@ function SignedInRow({
         </span>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-text">
-            {email ?? "Signed in"}
+            {email ?? t("account.signedIn")}
           </p>
           <p className="mt-0.5 text-xs text-muted">
-            This is the account your license and cloud data belong to.
+            {t("account.thisIsTheAccountYourLicenseAndCloudDataBelong")}
           </p>
         </div>
         <button
@@ -129,21 +136,21 @@ function SignedInRow({
           disabled={busy}
           className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
-          {busy ? "Signing out…" : "Sign out"}
+          {busy ? t("account.signingOut") : t("account.signOut")}
         </button>
       </div>
       {billingConfigured && <CloudSyncPlanRow />}
       <SyncStatusRow />
       <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
         <p className="text-xs text-muted">
-          Delete your account, cloud data, and cancel linked billing.
+          {t("account.deleteYourAccountCloudDataAndCancelLinkedBilling")}
         </p>
         <button
           type="button"
           onClick={() => setDeleteOpen(true)}
           className="shrink-0 rounded-lg border border-(--color-danger)/40 px-3 py-1.5 text-xs font-medium text-(--color-danger) transition-colors hover:bg-(--color-danger)/10"
         >
-          Delete account
+          {t("account.deleteAccount")}
         </button>
       </div>
       {deleteOpen && (
@@ -157,32 +164,33 @@ function SignedInRow({
 }
 
 function CloudSyncPlanRow() {
+  const { t } = useTranslation();
   const { state, allowed, plan, validUntil, openGate } = useBilling();
   const title =
     state === "checking"
-      ? "Checking Todofy Pro…"
+      ? t("account.checkingTodofyPro")
       : state === "cancelled_active"
-        ? "Subscription cancelled"
+        ? t("account.subscriptionCancelled")
         : state === "grace"
-          ? "Payment issue — temporary access"
+          ? t("account.paymentIssueTemporaryAccess")
           : allowed
             ? plan === "transition"
-              ? "Cloud Sync transition access"
-              : "Todofy Pro active"
+              ? t("account.cloudSyncTransitionAccess")
+              : t("account.todofyProActive")
             : state === "unavailable"
-              ? "Could not verify Todofy Pro"
-              : "Cloud Sync needs Todofy Pro";
+              ? t("account.couldNotVerifyTodofyPro")
+              : t("account.cloudSyncNeedsTodofyPro");
   const formattedEnd = validUntil
-    ? new Date(validUntil).toLocaleDateString()
+    ? new Date(validUntil).toLocaleDateString(appLocale())
     : null;
   const detail =
     state === "cancelled_active" && formattedEnd
-      ? `Renewal is off. Cloud Sync remains available through ${formattedEnd}.`
+      ? t("account.renewalOffThrough", { date: formattedEnd })
       : state === "grace" && formattedEnd
-        ? `Update your billing details. Temporary access ends ${formattedEnd}.`
+        ? t("account.recoveryEnds", { date: formattedEnd })
         : allowed && formattedEnd
-          ? `Access verified through ${formattedEnd}.`
-          : "€3.99 monthly or €39 yearly. You can also activate an existing license.";
+          ? t("account.verifiedThrough", { date: formattedEnd })
+          : t("account.399MonthlyOr39YearlyYouCanAlsoActivate");
 
   return (
     <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
@@ -204,21 +212,22 @@ function CloudSyncPlanRow() {
         onClick={() => openGate(allowed ? "upgrade" : "license")}
         className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-(--color-accent) transition-colors hover:bg-accent-soft"
       >
-        {allowed ? "View plan" : "Unlock sync"}
+        {allowed ? t("account.viewPlan") : t("account.unlockSync")}
       </button>
     </div>
   );
 }
 
-const STATUS_META: Record<SyncStatus, { dot: string; label: string }> = {
-  idle: { dot: "bg-[var(--color-success)]", label: "Synced" },
-  syncing: { dot: "bg-[var(--color-warning)]", label: "Syncing…" },
-  offline: { dot: "bg-[var(--color-faint)]", label: "Offline — will retry" },
-  error: { dot: "bg-(--color-danger)", label: "Sync failed" },
-  paused: { dot: "bg-[var(--color-faint)]", label: "Cloud Sync paused" },
+const STATUS_META: Record<SyncStatus, { dot: string; label: MessageKey }> = {
+  idle: { dot: "bg-[var(--color-success)]", label: "account.synced" },
+  syncing: { dot: "bg-[var(--color-warning)]", label: "account.syncing" },
+  offline: { dot: "bg-[var(--color-faint)]", label: "account.offline" },
+  error: { dot: "bg-(--color-danger)", label: "account.syncFailed" },
+  paused: { dot: "bg-[var(--color-faint)]", label: "account.syncPaused" },
 };
 
 function SyncStatusRow() {
+  const { t } = useTranslation();
   const { status, lastSyncedAt, error, syncNow } = useSync();
   const { allowed, openGate } = useBilling();
   const meta = STATUS_META[status];
@@ -227,19 +236,19 @@ function SyncStatusRow() {
     status === "error" || status === "paused"
       ? (error ??
         (gated
-          ? "Activate Todofy Pro to begin syncing."
-          : "Something went wrong."))
+          ? t("account.activateTodofyProToBeginSyncing")
+          : t("account.somethingWentWrong")))
       : status === "idle" && !lastSyncedAt
-        ? "Not synced yet"
+        ? t("account.notSyncedYet")
         : lastSyncedAt
-          ? `Last synced ${relativeTime(lastSyncedAt)}`
+          ? t("account.lastSynced", { time: relativeTime(lastSyncedAt) })
           : "";
 
   return (
     <div className="flex items-center gap-3 border-t border-border bg-surface px-4 py-3">
       <span className={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-text">{meta.label}</p>
+        <p className="text-xs font-medium text-text">{t(meta.label)}</p>
         {detail && (
           <p className="mt-0.5 truncate text-[11px] text-muted">{detail}</p>
         )}
@@ -250,7 +259,7 @@ function SyncStatusRow() {
         disabled={status === "syncing"}
         className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
       >
-        {status === "syncing" ? "Syncing…" : gated ? "Unlock sync" : "Sync now"}
+        {status === "syncing" ? t("account.syncing") : gated ? t("account.unlockSync") : t("account.syncNow")}
       </button>
     </div>
   );
@@ -258,13 +267,13 @@ function SyncStatusRow() {
 
 function relativeTime(iso: string): string {
   const secs = Math.max(0, Math.floor((Date.now() - Date.parse(iso)) / 1000));
-  if (secs < 10) return "just now";
-  if (secs < 60) return `${secs}s ago`;
+  if (secs < 10) return t("account.justNow");
+  if (secs < 60) return t("common.secondsAgo", { count: secs });
   const mins = Math.floor(secs / 60);
-  if (mins < 60) return `${mins}m ago`;
+  if (mins < 60) return t("common.minutesAgo", { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+  if (hours < 24) return t("common.hoursAgo", { count: hours });
+  return t("common.daysAgo", { count: Math.floor(hours / 24) });
 }
 
 function DeleteAccountModal({
@@ -274,6 +283,7 @@ function DeleteAccountModal({
   deleteAccount: (wipeLocal: boolean) => Promise<AuthResult>;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   const [wipeLocal, setWipeLocal] = useState(false);
   const [confirm, setConfirm] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -317,12 +327,10 @@ function DeleteAccountModal({
             <TrashIcon width={24} height={24} />
           </span>
           <h3 id="delete-account-title" className="text-lg font-semibold text-text">
-            Delete account
+            {t("account.deleteAccount")}
           </h3>
           <p className="text-xs leading-5 text-muted">
-            This permanently deletes your Todofy account and cloud data. Any
-            linked recurring subscription is cancelled first. This can't be
-            undone.
+            {t("account.thisPermanentlyDeletesYourTodofyAccountAndCloudDataAny")}
           </p>
         </div>
 
@@ -346,21 +354,16 @@ function DeleteAccountModal({
               />
             </span>
             <span className="text-xs text-text">
-              Also delete app data stored on this device.
+              {t("account.alsoDeleteAppDataStoredOnThisDevice")}
               <span className="mt-0.5 block text-muted">
-                Leave unchecked to keep your local tasks, journal, and calendar
-                events.
+                {t("account.leaveUncheckedToKeepYourLocalTasksJournalAndCalendar")}
               </span>
             </span>
           </button>
 
           <label className="flex flex-col gap-1 text-left">
             <span className="text-[10px] font-medium uppercase tracking-wider text-faint">
-              Type{" "}
-              <code className="rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] normal-case tracking-normal text-(--color-danger)">
-                DELETE
-              </code>{" "}
-              to confirm
+              <Trans i18nKey="account.deleteConfirmation" components={{ code: <code className="rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] normal-case tracking-normal text-(--color-danger)" /> }} />
             </span>
             <input
               value={confirm}
@@ -386,7 +389,7 @@ function DeleteAccountModal({
               disabled={busy}
               className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -394,7 +397,7 @@ function DeleteAccountModal({
               disabled={!canDelete || busy}
               className="flex-1 rounded-lg bg-(--color-danger) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
             >
-              {busy ? "Cancelling and deleting…" : "Delete account"}
+              {busy ? t("account.cancellingAndDeleting") : t("account.deleteAccount")}
             </button>
           </div>
         </div>

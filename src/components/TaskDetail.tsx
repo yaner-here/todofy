@@ -1,3 +1,5 @@
+import { appLocale } from "../lib/locale";
+import { useTranslation } from "react-i18next";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { useStore } from "../store";
@@ -25,6 +27,7 @@ import { formatDuration, formatMinutes } from "../lib/duration";
 import { repeatLabel } from "../lib/repeat";
 import { overEstimateBy, trackedElapsed, trackingState } from "../lib/tracking";
 import {
+  displayPriorityName,
   priorityTag,
   PRIORITY_VALUES,
   profileFor,
@@ -52,6 +55,7 @@ export function TaskDetail({
 }
 
 function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean }) {
+  const { t } = useTranslation();
   const {
     labels,
     priorityProfiles,
@@ -90,7 +94,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
       await title.save(value, (title) => patchTask({ id: task.id, title }));
       setSaveError(null);
     } catch {
-      setSaveError("Could not save the title. Your edit is still here; try again.");
+      setSaveError(t("tasks.couldNotSaveTheTitleYourEditIsStillHere"));
     }
   };
   const saveNotes = async () => {
@@ -98,7 +102,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
       await notes.save(notes.value, (notes) => patchTask({ id: task.id, notes: notes || null }));
       setSaveError(null);
     } catch {
-      setSaveError("Could not save the notes. Your edit is still here; try again.");
+      setSaveError(t("tasks.couldNotSaveTheNotesYourEditIsStillHere"));
     }
   };
   const onDate = (value: string | null) => {
@@ -145,7 +149,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
             className="next-up-complete"
             onClick={() => toggleTask(task.id, !done)}
             style={!done ? { borderColor: priority.color } : undefined}
-            title={done ? "Mark active" : "Complete"}
+            title={done ? t("common.markActive") : t("common.complete")}
           >
             {done && <CheckIcon width={14} height={14} strokeWidth={3} />}
           </button>
@@ -156,7 +160,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
               onInput={(event) => title.setValue(event.currentTarget.value)}
               onBlur={saveTitle}
               onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}
-              aria-label="Task title"
+              aria-label={t("tasks.taskTitle")}
             />
             <div className="inline-note">
               <NoteIcon width={15} height={15} />
@@ -164,8 +168,8 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                 value={notes.value}
                 onInput={(event) => notes.setValue(event.currentTarget.value)}
                 onBlur={saveNotes}
-                placeholder="Add a short note…"
-                aria-label="Task notes"
+                placeholder={t("tasks.addAShortNote")}
+                aria-label={t("tasks.taskNotes")}
               />
             </div>
             {saveError && <p role="alert" className="text-xs text-(--color-danger)">{saveError}</p>}
@@ -186,19 +190,19 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                 <PlayIcon width={16} height={16} />
               )}
               {tracking === "running"
-                ? "Pause"
+                ? t("focus.pause")
                 : tracking === "paused"
-                  ? "Resume"
+                  ? t("tasks.resume")
                   : taskTimerMode === "pomodoro"
-                    ? "Start focus"
-                    : "Track time"}
+                    ? t("tasks.startFocus")
+                    : t("tasks.trackTime")}
             </button>
             {tracking !== "off" && (
               <button
                 type="button"
                 className="session-stop"
                 onClick={stopTaskTimer}
-                title="Stop tracking and bank the time"
+                title={t("tasks.stopTrackingAndBankTheTime")}
               >
                 <StopIcon width={16} height={16} />
               </button>
@@ -207,7 +211,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
         </div>
 
         <div className="next-up-meta">
-          <span style={{ color: priority.color }} title={priority.name}>
+          <span style={{ color: priority.color }} title={displayPriorityName(priority)}>
             <FlagIcon width={14} height={14} />
             {priorityTag(task.priority, priorityProfiles)}
           </span>
@@ -223,8 +227,8 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
             </span>
           )}
           {task.estimateMinutes !== null && (
-            <span title="Estimated time for this task">
-              <TimerIcon width={14} height={14} />{formatMinutes(task.estimateMinutes)} estimated
+            <span title={t("tasks.estimatedTimeForThisTask")}>
+              <TimerIcon width={14} height={14} />{formatMinutes(task.estimateMinutes)} {t("tasks.estimated")}
             </span>
           )}
           {elapsed > 0 && (
@@ -242,9 +246,9 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
               <TimerIcon width={14} height={14} />
               {formatDuration(elapsed)}{" "}
               {over > 0
-                ? `tracked — ${formatDuration(over)} over estimate`
+                ? t("tasks.trackedOver", { duration: formatDuration(over) })
                 : tracking === "running"
-                  ? "and counting"
+                  ? t("tasks.andCounting")
                   : tracking === "paused"
                     ? "tracked, paused"
                     : "tracked"}
@@ -262,24 +266,24 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
             className={task.pinned ? "is-pinned" : ""}
             onClick={() => patchTask({ id: task.id, pinned: !task.pinned })}
           >
-            <PinIcon width={14} height={14} />{task.pinned ? "Pinned" : "Pin"}
+            <PinIcon width={14} height={14} />{task.pinned ? t("tasks.pinned") : t("tasks.pin")}
           </button>
         </div>
 
         <div className="next-step-row">
           <div>
-            <p>Next step</p>
+            <p>{t("tasks.nextStep")}</p>
             {nextStep ? (
               <button type="button" onClick={toggleNextStep}>
                 <span><CheckIcon width={12} height={12} /></span>
                 {nextStep.text}
               </button>
             ) : (
-              <small>{task.subtasks.length ? "All checklist steps are complete." : "Add a first step to make this easier to start."}</small>
+              <small>{task.subtasks.length ? t("tasks.allChecklistStepsAreComplete") : t("tasks.addAFirstStepToMakeThisEasierToStart")}</small>
             )}
           </div>
           {task.subtasks.length > 0 && (
-            <span>{completedSteps}/{task.subtasks.length} complete</span>
+            <span>{completedSteps}/{task.subtasks.length} {t("tasks.complete")}</span>
           )}
           <button
             type="button"
@@ -287,7 +291,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
             onClick={() => setExpanded((value) => !value)}
             aria-expanded={expanded}
           >
-            {expanded ? "Less" : "More details"}
+            {expanded ? t("tasks.less") : t("tasks.moreDetails")}
             <ChevronRightIcon width={14} height={14} className={expanded ? "rotate-90" : ""} />
           </button>
         </div>
@@ -296,7 +300,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
           <div className="expanded-task-details">
             <SubtaskList task={task} onChange={onSubtasks} />
             <div className="detail-fields">
-              <DetailField icon={<CalendarIcon width={16} height={16} />} label="Schedule">
+              <DetailField icon={<CalendarIcon width={16} height={16} />} label={t("tasks.schedule")}>
                 <DatePicker
                   value={task.dueDate}
                   onChange={onDate}
@@ -308,7 +312,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                   onRepeatChange={onRepeat}
                 />
               </DetailField>
-              <DetailField icon={<TimerIcon width={16} height={16} />} label="Estimate">
+              <DetailField icon={<TimerIcon width={16} height={16} />} label={t("tasks.estimate")}>
                 <EstimatePicker
                   value={task.estimateMinutes}
                   onChange={(estimateMinutes) =>
@@ -316,7 +320,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                   }
                 />
               </DetailField>
-              <DetailField icon={<FlagIcon width={16} height={16} />} label="Priority">
+              <DetailField icon={<FlagIcon width={16} height={16} />} label={t("tasks.priority")}>
                 <div className="priority-inline">
                   {PRIORITY_VALUES.map((value) => {
                     const option = profileFor(value, priorityProfiles);
@@ -338,7 +342,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
               </DetailField>
             </div>
             <div className="detail-labels">
-              <p>Labels</p>
+              <p>{t("labels.labels")}</p>
               {labels.map((label) => {
                 const active = task.labelIds.includes(label.id);
                 return (
@@ -362,20 +366,20 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
               })}
             </div>
             <div className="detail-footer">
-              <small>Created {new Date(task.createdAt).toLocaleDateString()}</small>
+              <small>{t("tasks.created")} {new Date(task.createdAt).toLocaleDateString(appLocale())}</small>
               <button
                 type="button"
                 onClick={() =>
                   requestConfirm({
-                    title: "Delete task?",
-                    message: `“${task.title}” will be permanently deleted.`,
-                    confirmLabel: "Delete",
+                    title: t("tasks.deleteTitle"),
+                    message: t("common.deleteTaskMessage", { title: task.title }),
+                    confirmLabel: t("common.delete"),
                     danger: true,
                     onConfirm: () => removeTask(task.id),
                   })
                 }
               >
-                <TrashIcon width={14} height={14} />Delete
+                <TrashIcon width={14} height={14} />{t("common.delete")}
               </button>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../store";
@@ -34,6 +35,7 @@ function defaultDue(view: ViewId): string {
 }
 
 export function QuickAdd() {
+  const { t } = useTranslation();
   const { view, labels, addTask } = useStore();
   const [title, setTitle] = useState("");
   const [due, setDue] = useState(() => defaultDue(view));
@@ -106,7 +108,7 @@ export function QuickAdd() {
           onInput={(e) => setTitle(e.currentTarget.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          placeholder="Capture anything…  try “pay rent Friday 5pm”"
+          placeholder={t("tasks.captureAnythingTryPayRentFriday5pm")}
           className="quick-add-input"
         />
         <VoiceInputButton kind="task" getPanelHost={() => voicePanelRef.current} onBusyChange={setVoiceBusy} onTranscript={(text) => {
@@ -124,7 +126,7 @@ export function QuickAdd() {
         <EstimatePicker
           value={estimate}
           onChange={setEstimate}
-          placeholder="Est"
+          placeholder={t("tasks.est")}
           placement="top"
         />
         <DatePicker
@@ -140,7 +142,7 @@ export function QuickAdd() {
           disabled={!parsed.title.trim() || voiceBusy}
           className="quick-add-submit"
         >
-          Add
+          {t("tasks.add")}
         </button>
       </div>
 

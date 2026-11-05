@@ -10,7 +10,7 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
 
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-1a2029?style=flat-square&logo=linux&logoColor=white)
 ![Tauri](https://img.shields.io/badge/Tauri-2.x-24C8DB?style=flat-square&logo=tauri&logoColor=white)
-![Preact](https://img.shields.io/badge/Preact-10-673AB8?style=flat-square&logo=preact&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-stable-000000?style=flat-square&logo=rust&logoColor=white)
 ![License](https://img.shields.io/badge/license-source--available-6c7cff?style=flat-square)
@@ -348,7 +348,7 @@ bunx tauri icon app-icon.svg
 | Layer   | Choice                                                                |
 | ------- | --------------------------------------------------------------------- |
 | Shell   | [Tauri 2](https://tauri.app) (Rust)                                   |
-| UI      | [Preact](https://preactjs.com) + TypeScript                           |
+| UI      | [React](https://react.dev) + TypeScript                              |
 | Styling | [Tailwind CSS 4](https://tailwindcss.com) with a custom design system |
 | State   | [Zustand](https://github.com/pmndrs/zustand)                          |
 | Storage | SQLite via [rusqlite](https://github.com/rusqlite/rusqlite)           |

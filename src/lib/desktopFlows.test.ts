@@ -3,7 +3,8 @@ import { Window } from "happy-dom";
 import { act, createElement as h, Fragment, useState } from "react";
 import type { Root } from "react-dom/client";
 import { clearMocks, mockIPC, mockWindows } from "@tauri-apps/api/mocks";
-import type { NewTask, Task, TaskPatch } from "../types";
+import { emit } from "@tauri-apps/api/event";
+import type { LanguageSnapshot, NewTask, Task, TaskPatch } from "../types";
 import type { VoiceStatus } from "./voice";
 
 const dom = new Window({ url: "http://localhost" });
@@ -41,7 +42,10 @@ const { ContextMenu } = await import("../components/ContextMenu");
 const { QuickCapture } = await import("../components/QuickCapture");
 const { NotificationPopup } = await import("../components/NotificationPopup");
 const { SettingsView } = await import("../components/SettingsView");
+const { FocusWidget } = await import("../components/FocusWidget");
 const { DEFAULT_PROFILES } = await import("./priority");
+const { i18n } = await import("./i18n");
+const { initLanguage, setLanguage, useLanguageState } = await import("./language");
 
 const initialState = useStore.getState();
 let root: HTMLDivElement;
@@ -92,7 +96,9 @@ function key(target: EventTarget, key: string, repeat = false) {
   }));
 }
 
-beforeEach(() => {
+beforeEach(async () => {
+  await i18n.changeLanguage("en");
+  useLanguageState.setState({ preference: "auto", language: "en", revision: -1, error: null });
   dom.localStorage.clear();
   toggleTask.mockClear();
   useStore.setState({ ...initialState, view: { kind: "board" }, loading: false, tasks: [task()], toggleTask }, true);
@@ -106,6 +112,7 @@ afterEach(async () => {
   root.remove();
   useStore.setState(initialState, true);
   clearMocks();
+  await i18n.changeLanguage("en");
 });
 
 test("Enter opens a recurring board card without completing or advancing it", async () => {
@@ -500,4 +507,211 @@ test("the volume slider previews each step but persists only the committed value
   expect(settings.has("reminder_volume")).toBe(false);
   await act(async () => { slider.dispatchEvent(new Event("change", { bubbles: true })); });
   expect(settings.get("reminder_volume")).toBe("35");
+});
+
+test("a newer language event wins over a delayed startup read", async () => {
+  let resolveRead!: (snapshot: LanguageSnapshot) => void;
+  let readStarted!: () => void;
+  const reading = new Promise<void>((resolve) => { readStarted = resolve; });
+  mockIPC((command) => {
+    if (command === "get_language") {
+      readStarted();
+      return new Promise<LanguageSnapshot>((resolve) => { resolveRead = resolve; });
+    }
+  }, { shouldMockEvents: true });
+  const initializing = initLanguage();
+  await reading;
+  await emit("language-changed", { preference: "zh-CN", language: "zh-CN", revision: 2 });
+  resolveRead({ preference: "auto", language: "en", revision: 0 });
+  const off = await initializing;
+  expect(useLanguageState.getState().revision).toBe(2);
+  expect(i18n.resolvedLanguage).toBe("zh-CN");
+  expect(document.documentElement.lang).toBe("zh-CN");
+  off();
+});
+
+test("late windows restore the saved language and changing auto to the same language still saves the preference", async () => {
+  let saved: LanguageSnapshot = { preference: "auto", language: "zh-CN", revision: 0 };
+  mockIPC((command, args) => {
+    if (command === "get_language") return saved;
+    if (command === "set_language") {
+      saved = { ...saved, preference: (args as { preference: LanguageSnapshot["preference"] }).preference, revision: saved.revision + 1 };
+      return saved;
+    }
+  }, { shouldMockEvents: true });
+  const off = await initLanguage();
+  try {
+    expect(i18n.resolvedLanguage).toBe("zh-CN");
+    await setLanguage("zh-CN");
+    expect(useLanguageState.getState().preference).toBe("zh-CN");
+    expect(saved.revision).toBe(1);
+  } finally { off(); }
+  // A fresh webview has no prior revision and reads the native persisted value.
+  useLanguageState.setState({ preference: "auto", language: "en", revision: -1 });
+  await i18n.changeLanguage("en");
+  const offLate = await initLanguage();
+  try {
+    expect(useLanguageState.getState().preference).toBe("zh-CN");
+    expect(i18n.resolvedLanguage).toBe("zh-CN");
+  } finally { offLate(); }
+});
+
+test("a failed language event subscription stays visible even when the initial read succeeds", async () => {
+  mockIPC((command) => {
+    if (command === "plugin:event|listen") throw new Error("Event subscription failed");
+    if (command === "get_language") return { preference: "en", language: "en", revision: 0 };
+  });
+  const off = await initLanguage();
+  try {
+    expect(i18n.resolvedLanguage).toBe("en");
+    expect(useLanguageState.getState().error).toContain("Event subscription failed");
+  } finally { off(); }
+});
+
+test("language switching preserves an unsaved task draft, user text, and the mounted editor", async () => {
+  const commands: string[] = [];
+  useStore.setState({ tasks: [task({ notes: "用户原文 <b>notes</b>" })] });
+  mockIPC((command) => {
+    commands.push(command);
+    if (command === "get_language") return { preference: "en", language: "en", revision: 0 };
+  }, { shouldMockEvents: true });
+  const off = await initLanguage();
+  try {
+    await act(async () => reactRoot.render(h(TaskDetail, { taskId: "task" })));
+    const field = element<HTMLInputElement>('[aria-label="Task title"]');
+    await act(async () => input(field, 'My draft 中文 <script>alert(1)</script>'));
+    document.title = "todofy (3)";
+    await act(async () => emit("language-changed", { preference: "zh-CN", language: "zh-CN", revision: 1 }));
+    expect(element<HTMLInputElement>('[aria-label="任务标题"]')).toBe(field);
+    expect(field.value).toBe('My draft 中文 <script>alert(1)</script>');
+    expect(element<HTMLInputElement>('[aria-label="任务备注"]').value).toBe("用户原文 <b>notes</b>");
+    expect(root.querySelector("script")).toBeNull();
+    expect(document.title).toBe("todofy (3)");
+    expect(commands).not.toContain("update_task");
+  } finally { off(); }
+});
+
+test("a language save failure keeps the previous selection and shows the error", async () => {
+  mockWindows("main");
+  mockIPC((command) => {
+    if (command === "get_language") return { preference: "en", language: "en", revision: 0 };
+    if (command === "set_language") throw new Error("Database is read-only");
+    if (command === "voice_status") return disabledVoice;
+    if (command === "plugin:app|version") return "1.15.0";
+  }, { shouldMockEvents: true });
+  const off = await initLanguage();
+  try {
+    await act(async () => reactRoot.render(h(SettingsView)));
+    const select = element<HTMLSelectElement>('[aria-label="App language"]');
+    await act(async () => {
+      select.value = "zh-CN";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    expect(select.value).toBe("en");
+    expect(i18n.resolvedLanguage).toBe("en");
+    expect(element('[role="alert"]').textContent).toContain("Database is read-only");
+    expect(select.disabled).toBe(false);
+  } finally { off(); }
+});
+
+test("an active notification translates controls without replacing its content, progress cycle, or acknowledgement", async () => {
+  const commands: string[] = [];
+  mockWindows("notification");
+  mockIPC((command) => {
+    commands.push(command);
+    if (command === "get_language") return { preference: "en", language: "en", revision: 0 };
+    if (command === "notify_popup_pending") return {
+      nonce: 7, kind: "reminder", title: 'Review <script>alert(1)</script>', body: "Reminder snapshot",
+      accent: null, task_id: "task",
+    };
+  }, { shouldMockEvents: true });
+  const off = await initLanguage();
+  try {
+    await act(async () => reactRoot.render(h(NotificationPopup)));
+    const progress = element(".notification-progress");
+    await act(async () => emit("language-changed", { preference: "zh-CN", language: "zh-CN", revision: 1 }));
+    expect(element(".notification-progress")).toBe(progress);
+    expect(element(".notification-title").textContent).toBe('Review <script>alert(1)</script>');
+    expect(element(".notification-body").textContent).toBe("Reminder snapshot");
+    expect(element(".notification-dismiss").title).toBe("关闭");
+    expect(element(".notification-actions").textContent).toContain("分钟");
+    expect(root.querySelector("script")).toBeNull();
+    expect(commands.filter((command) => command === "notify_popup_ack")).toHaveLength(1);
+    expect(commands).not.toContain("notify_popup_dismiss");
+  } finally { off(); }
+});
+
+test("changing only a default column color in Chinese preserves its stored English name", async () => {
+  mockIPC((command, args) => {
+    if (command === "update_board_column") {
+      const { id, input } = args as { id: string; input: { name: string; color: string; wipLimit: number | null } };
+      return DEFAULT_COLUMNS.map((column) => column.id === id ? { ...column, ...input } : column);
+    }
+  });
+  await act(async () => i18n.changeLanguage("zh-CN"));
+  await act(() => reactRoot.render(h(KeyboardBoard)));
+  await act(() => element<HTMLButtonElement>('[aria-label="编辑“进行中”列"]').click());
+  const fields = root.querySelectorAll<HTMLInputElement>(".column-editor input");
+  expect(fields[0].value).toBe("In progress");
+  await act(() => input(fields[1], "#123456"));
+  await act(async () => element<HTMLButtonElement>('.column-editor button[type="submit"]').click());
+  const saved = useStore.getState().boardDefinitions.find((column) => column.id === "doing")!;
+  expect(saved.name).toBe("In progress");
+  expect(saved.color).toBe("#123456");
+  expect(root.querySelector('[aria-label="进行中"]')).not.toBeNull();
+});
+
+test("UI language changes date words while keeping the clock and week-start preferences", async () => {
+  const locale = await import("./locale");
+  const { formatTime } = await import("./dates");
+  const settings = new Map([["time_format", "24"], ["week_start", "1"]]);
+  mockIPC((command, args) => {
+    const setting = args as { key: string; value: string };
+    if (command === "system_locale") return "en-US";
+    if (command === "get_setting") return settings.get(setting.key) ?? null;
+    if (command === "set_setting") settings.set(setting.key, setting.value);
+  });
+  try {
+    await locale.initLocale();
+    expect(locale.appLocale()).toBe("en-US");
+    expect(formatTime("13:05")).toBe("13:05");
+    await i18n.changeLanguage("zh-CN");
+    expect(locale.appLocale()).toBe("zh-Hans-US");
+    expect(locale.usesHour12()).toBe(false);
+    expect(locale.weekStart()).toBe(1);
+    expect(locale.weekdayNames("long")[0]).toEqual({ index: 1, label: "星期一" });
+    const range = locale.formatDateRange(new Date(2026, 10, 2), new Date(2026, 10, 8));
+    expect(range).toContain("2026");
+    expect(range).not.toContain("November");
+    await locale.setTimeFormat("12");
+    await locale.setWeekStart("6");
+    expect(formatTime("13:05")).toContain("下午");
+    expect(locale.weekdayNames("long")[0].index).toBe(6);
+    await i18n.changeLanguage("en");
+    expect(formatTime("13:05")).toBe("1:05 PM");
+    expect(locale.weekStart()).toBe(6);
+  } finally {
+    settings.clear();
+    await locale.initLocale();
+  }
+});
+
+test.each([
+  ["en", 1, "1 Focus session done"],
+  ["en", 2, "2 Focus sessions done"],
+  ["zh-CN", 1, "已完成 1 个专注时段"],
+  ["zh-CN", 2, "已完成 2 个专注时段"],
+] as const)("the focus widget count uses %s grammar for %i sessions", async (language, completedFocus, expected) => {
+  useStore.setState({
+    showFocus: true,
+    activeTimer: null,
+    pomodoro: {
+      phase: "focus", running: true, startAt: null, accumulated: 0,
+      completedFocus, target: 1500, focusMin: 25, shortMin: 5,
+      longMin: 15, longEvery: 4,
+    },
+  });
+  await act(async () => i18n.changeLanguage(language));
+  await act(() => reactRoot.render(h(FocusWidget)));
+  expect(root.textContent).toContain(expected);
 });

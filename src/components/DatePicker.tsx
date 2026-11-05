@@ -1,9 +1,11 @@
+import { t } from "../lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { formatDue, formatTime, toLocalDate, today } from "../lib/dates";
 import { BellIcon, CalendarIcon, RepeatIcon } from "./Icons";
 import { Portal } from "./Portal";
 import { TimeField } from "./TimeField";
-import { weekdayNames, weekdayOffset } from "../lib/locale";
+import { appLocale, weekdayNames, weekdayOffset } from "../lib/locale";
 import { api } from "../lib/api";
 import {
   DEFAULT_QUICK_TIMES,
@@ -11,22 +13,9 @@ import {
   QUICK_TIMES_KEY,
 } from "../lib/quickTimes";
 import { REPEAT_OPTIONS } from "../lib/repeat";
+import { formatMinutes } from "../lib/duration";
 import type { RepeatRule } from "../types";
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
 const POPOVER_W = 292;
 const YEARS_PER_PAGE = 12;
 const MARGIN = 8;
@@ -68,7 +57,7 @@ interface Props {
 export function DatePicker({
   value,
   onChange,
-  placeholder = "Schedule",
+  placeholder = t("tasks.schedule"),
   allowClear = true,
   time,
   onTimeChange,
@@ -77,6 +66,7 @@ export function DatePicker({
   repeat,
   onRepeatChange,
 }: Props) {
+  const { t } = useTranslation();
   const withTime = !!onTimeChange;
   const [open, setOpen] = useState(false);
   const [quickTimes, setQuickTimes] = useState(DEFAULT_QUICK_TIMES);
@@ -157,24 +147,27 @@ export function DatePicker({
   const setTime = (t: string | null) => onTimeChange?.(t);
 
   const year = month.getFullYear();
+  const months = open && mode === "months" ? Array.from({ length: 12 }, (_, index) =>
+    new Date(year, index, 1).toLocaleDateString(appLocale(), { month: "short" }),
+  ) : [];
   const valueDate = value ? new Date(value + "T00:00:00") : null;
   const now = new Date();
 
   const QUICK = [
     {
-      label: "Today",
+      label: t("common.today"),
       date: today(),
-      hint: now.toLocaleDateString(undefined, { weekday: "short" }),
+      hint: now.toLocaleDateString(appLocale(), { weekday: "short" }),
     },
     {
-      label: "Tomorrow",
+      label: t("date.tomorrow"),
       date: shift(1),
-      hint: new Date(Date.now() + 86400000).toLocaleDateString(undefined, {
+      hint: new Date(Date.now() + 86400000).toLocaleDateString(appLocale(), {
         weekday: "short",
       }),
     },
-    { label: "This weekend", date: thisWeekend(), hint: "Sat" },
-    { label: "Next week", date: nextWeek(), hint: "Mon" },
+    { label: t("date.thisWeekend"), date: thisWeekend(), hint: weekdayNames("short").find((day) => day.index === 6)?.label },
+    { label: t("navigation.nextWeek"), date: nextWeek(), hint: weekdayNames("short").find((day) => day.index === 1)?.label },
   ];
 
   const label = (() => {
@@ -198,7 +191,7 @@ export function DatePicker({
               : "text-(--color-accent)"
             : "text-faint"
         }`}
-        title="Set date"
+        title={t("date.setDate")}
       >
         <CalendarIcon width={14} height={14} />
         {label}
@@ -254,7 +247,7 @@ export function DatePicker({
                       onClick={() => setMode("months")}
                       className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-surface-2 hover:text-(--color-accent)"
                     >
-                      {month.toLocaleDateString(undefined, { month: "long" })}
+                      {month.toLocaleDateString(appLocale(), { month: "long" })}
                     </button>
                   )}
                   {mode !== "years" && (
@@ -289,7 +282,7 @@ export function DatePicker({
 
               {mode === "months" && (
                 <div className="grid grid-cols-3 gap-1">
-                  {MONTHS.map((m, i) => {
+                  {months.map((m, i) => {
                     const sel =
                       valueDate?.getFullYear() === year &&
                       valueDate?.getMonth() === i;
@@ -343,14 +336,14 @@ export function DatePicker({
               <div className="mt-2 border-t border-border pt-2">
                 <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-xs text-muted">
                   <BellIcon width={13} height={13} />
-                  Time
+                  {t("date.time")}
                   {time && (
                     <button
                       type="button"
                       onClick={() => setTime(null)}
                       className="ml-auto text-faint hover:text-(--color-danger)"
                     >
-                      Clear
+                      {t("date.clear")}
                     </button>
                   )}
                 </div>
@@ -382,14 +375,14 @@ export function DatePicker({
                   reminderAt &&
                   new Date(reminderAt).getTime() < Date.now() && (
                     <div className="mt-2 flex flex-wrap items-center gap-1.5 px-0.5">
-                      <span className="text-xs text-(--color-warning)">Snooze</span>
+                      <span className="text-xs text-(--color-warning)">{t("date.snooze")}</span>
                       {[
-                        { label: "10m", min: 10 },
-                        { label: "1h", min: 60 },
-                        { label: "3h", min: 180 },
+                        { label: formatMinutes(10), min: 10 },
+                        { label: formatMinutes(60), min: 60 },
+                        { label: formatMinutes(180), min: 180 },
                       ].map((s) => (
                         <button
-                          key={s.label}
+                          key={s.min}
                           type="button"
                           onClick={() => {
                             onSnooze(s.min);
@@ -409,7 +402,7 @@ export function DatePicker({
               <div className="mt-2 border-t border-border pt-2">
                 <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-xs text-muted">
                   <RepeatIcon width={13} height={13} />
-                  Repeat
+                  {t("date.repeat")}
                 </div>
                 <div className="flex flex-wrap gap-1 px-0.5">
                   {REPEAT_OPTIONS.map((opt) => (
@@ -423,7 +416,7 @@ export function DatePicker({
                           : "bg-surface-2 text-muted hover:text-text"
                       }`}
                     >
-                      {opt.label}
+                      {t(opt.label)}
                     </button>
                   ))}
                 </div>
@@ -441,7 +434,7 @@ export function DatePicker({
                     }}
                     className="rounded-md px-1 text-xs text-faint hover:text-(--color-danger)"
                   >
-                    Clear date &amp; time
+                    {t("date.clearDateTime")}
                   </button>
                 )}
                 {staysOpen && (
@@ -450,7 +443,7 @@ export function DatePicker({
                     onClick={() => setOpen(false)}
                     className="ml-auto rounded-md bg-(--color-accent) px-2.5 py-1 text-xs font-medium text-white"
                   >
-                    Done
+                    {t("common.done")}
                   </button>
                 )}
               </div>

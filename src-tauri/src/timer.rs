@@ -493,7 +493,7 @@ pub fn poll(app: &AppHandle, notifications_enabled: bool) {
     // only after it's released — `notify::send` can make a blocking D-Bus
     // call, and holding the mutex across that would freeze every other
     // command (they all need `db.conn()`) if the portal is slow to reply.
-    let mut pomodoro_notice: Option<(&'static str, &'static str)> = None;
+    let mut pomodoro_notice: Option<(String, String)> = None;
     let mut stopwatch_notices: Vec<(i64, String, String)> = Vec::new();
 
     {
@@ -514,9 +514,9 @@ pub fn poll(app: &AppHandle, notifications_enabled: bool) {
                     .unwrap_or(0);
                 if elapsed >= p.target && notified == 0 {
                     pomodoro_notice = Some(if p.phase == "focus" {
-                        ("Focus session done", "Time for a break · todofy")
+                        (rust_i18n::t!("timer.focusDone").to_string(), rust_i18n::t!("timer.breakTime").to_string())
                     } else {
-                        ("Break's over", "Back to focus · todofy")
+                        (rust_i18n::t!("timer.breakOver").to_string(), rust_i18n::t!("timer.backToFocus").to_string())
                     });
                     let _ = conn.execute("UPDATE pomodoro SET notified = 1 WHERE id = 1", []);
                     pomodoro_changed = true;
@@ -553,13 +553,13 @@ pub fn poll(app: &AppHandle, notifications_enabled: bool) {
 
     if notifications_enabled {
         if let Some((title, body)) = pomodoro_notice {
-            crate::notify::send(app, title, body, None);
+            crate::notify::send(app, &title, &body, None);
         }
         for (hours, title, _id) in &stopwatch_notices {
             crate::notify::send(
                 app,
-                "Still tracking time",
-                &format!("“{title}” — {hours}h and counting · todofy"),
+                &rust_i18n::t!("timer.stillTracking"),
+                &rust_i18n::t!("timer.stillTrackingBody", title = title, hours = hours),
                 None,
             );
         }
@@ -625,16 +625,16 @@ pub fn tray_display(app: &AppHandle) -> TrayDisplay {
 
     let pomo_running = pomo.as_ref().map(|p| p.running).unwrap_or(false);
     let pomo_label = if pomo_running {
-        "Pause focus"
+        rust_i18n::t!("tray.pauseFocus")
     } else {
-        "Start focus"
+        rust_i18n::t!("tray.startFocus")
     }
     .to_string();
     let task_label = active.as_ref().map(|a| {
         if a.resumed_at.is_some() {
-            "Pause task timer".to_string()
+            rust_i18n::t!("tray.pauseTask").to_string()
         } else {
-            "Resume task timer".to_string()
+            rust_i18n::t!("tray.resumeTask").to_string()
         }
     });
 
@@ -651,13 +651,13 @@ pub fn tray_display(app: &AppHandle) -> TrayDisplay {
             None => clock_mmss(e),
         };
         let state = if a.resumed_at.is_some() {
-            "Tracking"
+            rust_i18n::t!("tray.tracking").to_string()
         } else {
-            "Paused"
+            rust_i18n::t!("tray.paused").to_string()
         };
-        parts.push(format!("{}: {} ({})", state, a.title, clock_mmss(e)));
+        parts.push(rust_i18n::t!("tray.taskTooltip", state = state, title = &a.title, time = clock_mmss(e)).to_string());
         if let Some(excess) = over {
-            parts.push(format!("{} over estimate", clock_mmss(excess)));
+            parts.push(rust_i18n::t!("tray.overEstimate", time = clock_mmss(excess)).to_string());
         }
     }
     if let Some(p) = &pomo {
@@ -668,16 +668,16 @@ pub fn tray_display(app: &AppHandle) -> TrayDisplay {
                 title = clock_signed(remaining);
             }
             let phase = match p.phase.as_str() {
-                "short" => "Short break",
-                "long" => "Long break",
-                _ => "Focus",
+                "short" => rust_i18n::t!("timer.shortBreak").to_string(),
+                "long" => rust_i18n::t!("timer.longBreak").to_string(),
+                _ => rust_i18n::t!("timer.focus").to_string(),
             };
-            parts.push(format!("{} {}", phase, clock_signed(remaining)));
+            parts.push(rust_i18n::t!("tray.phaseTooltip", phase = phase, time = clock_signed(remaining)).to_string());
         }
     }
 
     let tooltip = if parts.is_empty() {
-        "todofy — no timer running".to_string()
+        rust_i18n::t!("tray.idleTooltip").to_string()
     } else {
         parts.join(" · ")
     };

@@ -22,9 +22,11 @@
     "@tauri-apps/plugin-updater": "^2.11.0",
     "chrono-node": "^2.10.1",
     "dompurify": "^3.4.17",
+    "i18next": "26.7.1",
     "marked": "^18.0.11",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "react-i18next": "17.1.12",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

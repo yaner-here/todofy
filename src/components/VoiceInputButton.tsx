@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { listen } from "@tauri-apps/api/event";
@@ -26,6 +27,7 @@ export function VoiceInputButton({
   getPanelHost,
   compactWindow = false,
 }: Props) {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<VoiceStatus | null>(null);
   const [phase, setPhase] = useState<
     "idle" | "starting" | "recording" | "transcribing" | "cancelling"
@@ -193,10 +195,10 @@ export function VoiceInputButton({
           onClick={() => void action()}
           disabled={phase !== "idle"}
           aria-label={
-            phase === "idle" ? "Start dictation" : "Voice dictation in progress"
+            phase === "idle" ? t("voice.startDictation") : t("voice.voiceDictationInProgress")
           }
           title={
-            phase === "idle" ? "Dictate locally" : "Voice dictation in progress"
+            phase === "idle" ? t("voice.dictateLocally") : t("voice.voiceDictationInProgress")
           }
           className="voice-trigger"
         >
@@ -218,15 +220,15 @@ export function VoiceInputButton({
           <div
             className={`voice-capture voice-capture--${phase} ${compactWindow ? "voice-capture--compact" : ""}`}
             role="region"
-            aria-label="Voice dictation"
+            aria-label={t("voice.voiceDictation")}
           >
             <button
               type="button"
               className="voice-capture-action voice-capture-cancel"
               onClick={cancel}
               disabled={phase === "cancelling"}
-              aria-label="Cancel dictation"
-              title="Cancel dictation (Esc)"
+              aria-label={t("voice.cancelDictation")}
+              title={t("voice.cancelDictationEsc")}
             >
               <CloseIcon width={18} height={18} />
             </button>
@@ -248,7 +250,7 @@ export function VoiceInputButton({
                 </div>
                 <span
                   className="voice-capture-time"
-                  aria-label={`Recording time ${formatElapsed(elapsed)}`}
+                  aria-label={t("voice.recordingTime", { time: formatElapsed(elapsed) })}
                 >
                   {formatElapsed(elapsed)}
                 </span>
@@ -256,8 +258,8 @@ export function VoiceInputButton({
                   type="button"
                   className="voice-capture-action voice-capture-finish"
                   onClick={() => void finish()}
-                  aria-label="Stop and transcribe"
-                  title="Stop and insert editable text"
+                  aria-label={t("voice.stopAndTranscribe")}
+                  title={t("voice.stopAndInsertEditableText")}
                 >
                   <StopIcon width={18} height={18} />
                 </button>
@@ -266,10 +268,10 @@ export function VoiceInputButton({
               <>
                 <span className="voice-capture-message" role="status">
                   {phase === "starting"
-                    ? "Opening microphone…"
+                    ? t("voice.openingMicrophone")
                     : phase === "transcribing"
-                      ? "Transcribing"
-                      : "Cancelling…"}
+                      ? t("voice.transcribing")
+                      : t("voice.cancelling")}
                 </span>
                 <span
                   className="voice-capture-action voice-capture-wait"

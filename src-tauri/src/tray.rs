@@ -12,6 +12,8 @@ pub struct TrayMenu {
     pomodoro: MenuItem<Wry>,
     pause_task: MenuItem<Wry>,
     stop_task: MenuItem<Wry>,
+    show: MenuItem<Wry>,
+    quit: MenuItem<Wry>,
 }
 
 /// Bring the main window to the foreground.
@@ -27,12 +29,12 @@ fn show_main(app: &AppHandle) {
 /// focus controls (start/pause Pomodoro, pause/resume and stop the task
 /// stopwatch) alongside Show / Quit. Left-clicking the icon focuses the window.
 pub fn init(app: &App) -> tauri::Result<()> {
-    let status = MenuItem::with_id(app, "status", "No timer running", false, None::<&str>)?;
-    let pomodoro = MenuItem::with_id(app, "pomodoro", "Start focus", true, None::<&str>)?;
-    let pause_task = MenuItem::with_id(app, "pause_task", "Pause task timer", false, None::<&str>)?;
-    let stop_task = MenuItem::with_id(app, "stop_task", "Stop task timer", false, None::<&str>)?;
-    let show = MenuItem::with_id(app, "show", "Show todofy", true, None::<&str>)?;
-    let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+    let status = MenuItem::with_id(app, "status", rust_i18n::t!("tray.noTimer").as_ref(), false, None::<&str>)?;
+    let pomodoro = MenuItem::with_id(app, "pomodoro", rust_i18n::t!("tray.startFocus").as_ref(), true, None::<&str>)?;
+    let pause_task = MenuItem::with_id(app, "pause_task", rust_i18n::t!("tray.pauseTask").as_ref(), false, None::<&str>)?;
+    let stop_task = MenuItem::with_id(app, "stop_task", rust_i18n::t!("tray.stopTask").as_ref(), false, None::<&str>)?;
+    let show = MenuItem::with_id(app, "show", rust_i18n::t!("tray.show").as_ref(), true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", rust_i18n::t!("tray.quit").as_ref(), true, None::<&str>)?;
     let sep1 = PredefinedMenuItem::separator(app)?;
     let sep2 = PredefinedMenuItem::separator(app)?;
 
@@ -55,6 +57,8 @@ pub fn init(app: &App) -> tauri::Result<()> {
         pomodoro: pomodoro.clone(),
         pause_task: pause_task.clone(),
         stop_task: stop_task.clone(),
+        show: show.clone(),
+        quit: quit.clone(),
     });
 
     TrayIconBuilder::with_id("main-tray")
@@ -102,7 +106,7 @@ pub fn apply(app: &AppHandle, display: timer::TrayDisplay) {
         let _ = menu.pomodoro.set_text(&pomodoro_label);
         let _ = menu
             .pause_task
-            .set_text(task_label.as_deref().unwrap_or("Pause task timer"));
+            .set_text(task_label.as_deref().unwrap_or(rust_i18n::t!("tray.pauseTask").as_ref()));
         let _ = menu.pause_task.set_enabled(task_label.is_some());
         let _ = menu.stop_task.set_enabled(task_label.is_some());
     }
@@ -110,6 +114,14 @@ pub fn apply(app: &AppHandle, display: timer::TrayDisplay) {
         let _ = tray.set_tooltip(Some(&tooltip));
         // Shown next to the icon on macOS and appindicator-based Linux DEs.
         let _ = tray.set_title(Some(&title));
+    }
+}
+
+pub fn localize(app: &AppHandle) {
+    if let Some(menu) = app.try_state::<TrayMenu>() {
+        let _ = menu.stop_task.set_text(rust_i18n::t!("tray.stopTask").as_ref());
+        let _ = menu.show.set_text(rust_i18n::t!("tray.show").as_ref());
+        let _ = menu.quit.set_text(rust_i18n::t!("tray.quit").as_ref());
     }
 }
 

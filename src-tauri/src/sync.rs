@@ -764,7 +764,7 @@ fn apply_tombstone(conn: &Connection, tombstone: &SyncTombstone) -> rusqlite::Re
 fn validate_user_id(user_id: &str) -> rusqlite::Result<()> {
     uuid::Uuid::parse_str(user_id)
         .map(|_| ())
-        .map_err(|_| rusqlite::Error::InvalidParameterName("user_id must be a UUID".into()))
+        .map_err(|_| rusqlite::Error::InvalidParameterName(rust_i18n::t!("validation.userId").to_string()))
 }
 
 #[tauri::command]
@@ -800,7 +800,7 @@ pub fn sync_claim_owner(db: State<Db>, user_id: String) -> Result<(), String> {
     validate_user_id(&user_id).map_err(|e| e.to_string())?;
     if let Some(owner) = settings::read(&conn, OWNER_KEY) {
         if owner != user_id {
-            return Err("Local data belongs to another account".into());
+            return Err(rust_i18n::t!("account.anotherAccount").to_string());
         }
         return Ok(());
     }

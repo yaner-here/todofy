@@ -99,16 +99,16 @@ fn invalid(message: &str) -> rusqlite::Error {
 
 pub fn validate(input: &ColumnInput) -> rusqlite::Result<()> {
     if input.name.trim().is_empty() || input.name.trim().chars().count() > 60 {
-        return Err(invalid("Column name must contain 1–60 characters"));
+        return Err(invalid(&rust_i18n::t!("validation.columnName").to_string()));
     }
     if input.color.len() != 7
         || !input.color.starts_with('#')
         || !input.color[1..].bytes().all(|b| b.is_ascii_hexdigit())
     {
-        return Err(invalid("Choose a valid six-digit hex color"));
+        return Err(invalid(&rust_i18n::t!("validation.color").to_string()));
     }
     if input.wip_limit.is_some_and(|n| !(1..=9999).contains(&n)) {
-        return Err(invalid("WIP limit must be between 1 and 9999, or empty"));
+        return Err(invalid(&rust_i18n::t!("validation.wip").to_string()));
     }
     Ok(())
 }
@@ -153,7 +153,7 @@ pub fn update(
 ) -> rusqlite::Result<Vec<BoardColumn>> {
     validate(input)?;
     if id == DONE && input.wip_limit.is_some() {
-        return Err(invalid("Done has no WIP limit"));
+        return Err(invalid(&rust_i18n::t!("validation.doneWip").to_string()));
     }
     let changed = conn.execute(
         "UPDATE board_columns SET name = ?1, color = ?2, wip_limit = ?3, updated_at = ?4
@@ -167,7 +167,7 @@ pub fn update(
         ],
     )?;
     if changed == 0 {
-        return Err(invalid("This column no longer exists"));
+        return Err(invalid(&rust_i18n::t!("validation.missingColumn").to_string()));
     }
     list(conn)
 }
@@ -191,8 +191,7 @@ pub fn reorder(conn: &mut Connection, ids: &[String]) -> rusqlite::Result<Vec<Bo
     let requested: HashSet<String> = ids.iter().cloned().collect();
     if ids.len() != live.len() || requested != live || ids.last().map(String::as_str) != Some(DONE)
     {
-        return Err(invalid(
-            "Order must include every column once, with Done last",
+        return Err(invalid(&rust_i18n::t!("validation.columnOrder").to_string(),
         ));
     }
     let now = chrono::Utc::now().to_rfc3339();
@@ -218,7 +217,7 @@ pub fn delete(
     replacement: &str,
 ) -> rusqlite::Result<Vec<BoardColumn>> {
     if id == TODO || id == DONE {
-        return Err(invalid("To do and Done cannot be deleted"));
+        return Err(invalid(&rust_i18n::t!("validation.protectedColumns").to_string()));
     }
     let tx = conn.transaction()?;
     let columns = list(&tx)?;
@@ -227,8 +226,7 @@ pub fn delete(
             .iter()
             .any(|c| c.id == replacement && c.id != DONE && c.id != id && c.deleted_at.is_none())
     {
-        return Err(invalid(
-            "Choose an existing active column as the destination",
+        return Err(invalid(&rust_i18n::t!("validation.columnDestination").to_string(),
         ));
     }
     // Both active and completed tasks retain a valid remembered stage. Append

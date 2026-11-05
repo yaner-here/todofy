@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useUpdater } from "../lib/updater";
 import { DownloadIcon, RotateIcon } from "./Icons";
@@ -26,6 +27,7 @@ function useOnScreen(): boolean {
  * reach the user wherever they are, and so the answer survives navigation.
  */
 export function UpdateDialog() {
+  const { t } = useTranslation();
   const {
     state,
     version,
@@ -67,7 +69,7 @@ export function UpdateDialog() {
       onMouseDown={(event) => event.target === event.currentTarget && close()}
       role="dialog"
       aria-modal="true"
-      aria-label={asking ? "Update available" : "Update installed"}
+      aria-label={asking ? t("notifications.updateAvailable") : t("updates.updateInstalled")}
     >
       <div className="w-full max-w-md animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
         <div className="flex items-start gap-3">
@@ -81,20 +83,20 @@ export function UpdateDialog() {
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-semibold text-text">
               {asking
-                ? `todofy v${promptVersion} is available`
-                : `todofy v${version} is installed`}
+                ? t("updates.availableTitle", { version: promptVersion })
+                : t("updates.installedVersion", { version })}
             </h3>
             <p className="mt-1.5 text-sm leading-relaxed text-muted">
               {asking
-                ? "Download and install it now? todofy keeps running while it downloads."
-                : "Restart to start using it. Your tasks and timers are saved either way."}
+                ? t("updates.downloadAndInstallItNowTodofyKeepsRunningWhileIt")
+                : t("updates.restartToStartUsingItYourTasksAndTimersAre")}
             </p>
           </div>
         </div>
 
         {asking && notes && (
           <div className="mt-4 max-h-40 overflow-y-auto rounded-lg border border-border bg-surface p-3">
-            <p className="text-xs font-semibold text-faint uppercase">What's new</p>
+            <p className="text-xs font-semibold text-faint uppercase">{t("updates.whatSNew")}</p>
             <p className="mt-1.5 text-xs leading-relaxed whitespace-pre-line text-muted">
               {notes}
             </p>
@@ -106,14 +108,14 @@ export function UpdateDialog() {
             onClick={close}
             className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
           >
-            {asking ? "Not now" : "Later"}
+            {asking ? t("updates.notNow") : t("updates.later")}
           </button>
           <button
             onClick={() => void (asking ? acceptPrompt() : restart())}
             autoFocus
             className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
           >
-            {asking ? "Update now" : "Restart now"}
+            {asking ? t("updates.updateNow") : t("settings.restartNow")}
           </button>
         </div>
       </div>

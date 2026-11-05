@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Fragment, type PointerEvent as ReactPointerEvent } from "react";
 import { useMemo, useState } from "react";
 import { applySearchAndFilters, useStore } from "../store";
@@ -17,7 +18,7 @@ import { formatDuration, formatMinutes } from "../lib/duration";
 import { overEstimateBy, trackedElapsed, trackingState } from "../lib/tracking";
 import { useTick } from "../lib/useTick";
 import { repeatLabel } from "../lib/repeat";
-import { priorityTag, profileFor, showsPriority } from "../lib/priority";
+import { displayPriorityName, priorityTag, profileFor, showsPriority } from "../lib/priority";
 import type { Task } from "../types";
 import { BoardColumnsDialog } from "./BoardColumnsDialog";
 import { SearchBar } from "./SearchBar";
@@ -42,6 +43,7 @@ const DUE_TONE: Record<string, string> = {
 };
 
 export function BoardView() {
+  const { t, i18n } = useTranslation();
   const {
     tasks,
     boardDefinitions,
@@ -80,7 +82,7 @@ export function BoardView() {
       ).filter((task) => inScope(task, scope)),
     [tasks, searchQuery, filterLabelIds, filterPriorities, scope, day],
   );
-  const columns = useMemo(() => boardColumns(visible, boardDefinitions, tasks), [visible, boardDefinitions, tasks]);
+  const columns = useMemo(() => boardColumns(visible, boardDefinitions, tasks), [visible, boardDefinitions, tasks, i18n.resolvedLanguage]);
   const moveCard = (id: string, column: string, boardIndex: number) => {
     void moveTaskToColumn(id, column, boardIndex).catch((e) => useStore.setState({ boardNotice: String(e) }));
   };
@@ -97,11 +99,11 @@ export function BoardView() {
     <main className="redesign-main board-page">
       <header className="app-page-header">
         <div>
-          <h2>Board</h2>
-          <p>Move work across stages</p>
+          <h2>{t("board.board")}</h2>
+          <p>{t("board.moveWorkAcrossStages")}</p>
         </div>
         <div className="board-toolbar">
-          <div className="board-scope-switch" role="group" aria-label="Board scope">
+          <div className="board-scope-switch" role="group" aria-label={t("board.boardScope")}>
             {SCOPES.map(({ id, label }) => (
               <button
                 key={id}
@@ -110,17 +112,17 @@ export function BoardView() {
                 className={scope === id ? "is-active" : ""}
                 aria-pressed={scope === id}
               >
-                {label}
+                {t(label)}
               </button>
             ))}
           </div>
           <SearchBar />
-          <button type="button" className="board-manage-button" onClick={() => { select(null); setManagement({}); }}><SettingsIcon width={16} height={16} />Manage columns</button>
+          <button type="button" className="board-manage-button" onClick={() => { select(null); setManagement({}); }}><SettingsIcon width={16} height={16} />{t("board.manageColumns")}</button>
         </div>
       </header>
 
-      {loadError && <div className="load-error" role="alert"><p>{loadError}</p><button type="button" onClick={() => void load()}>Try again</button></div>}
-      {boardNotice && <div className="board-notice" role="status"><span>{boardNotice}</span><button type="button" onClick={clearBoardNotice} aria-label="Dismiss board notice"><CloseIcon width={14} height={14} /></button></div>}
+      {loadError && <div className="load-error" role="alert"><p>{loadError}</p><button type="button" onClick={() => void load()}>{t("common.retry")}</button></div>}
+      {boardNotice && <div className="board-notice" role="status"><span>{boardNotice}</span><button type="button" onClick={clearBoardNotice} aria-label={t("board.dismissBoardNotice")}><CloseIcon width={14} height={14} /></button></div>}
       <div className="board-surface">
         <div className="board-columns" ref={setScrollerRef}>
           {columns.map((column) => {
@@ -145,20 +147,20 @@ export function BoardView() {
                 <header className="board-column-head" style={{ borderTopColor: column.color }}>
                   <div>
                     <h3>{column.title}</h3>
-                    <small>{column.wipLimit !== null ? `${column.tasks.length} shown · ${column.activeCount}/${column.wipLimit} total active` : column.hint}</small>
+                    <small>{column.wipLimit !== null ? t("board.wipSummary", { shown: column.tasks.length, active: column.activeCount, limit: column.wipLimit }) : column.hint}</small>
                   </div>
-                  <span className={`board-column-count wip-${column.wipState}`} title={column.wipLimit === null ? "Tasks shown" : `All active tasks: ${column.activeCount}. WIP limit: ${column.wipLimit}. ${column.wipState === "over" ? "Over limit; moves remain allowed." : column.wipState === "full" ? "Column is full." : ""}`}>
+                  <span className={`board-column-count wip-${column.wipState}`} title={column.wipLimit === null ? t("common.tasksShown") : t("board.wipTooltip", { active: column.activeCount, limit: column.wipLimit, status: column.wipState === "over" ? t("common.overLimitMovesRemainAllowed") : column.wipState === "full" ? t("common.columnIsFull") : "" })}>
                     {column.wipLimit === null ? column.tasks.length : `${column.activeCount}/${column.wipLimit}`}
                   </span>
-                  <button type="button" className="board-column-options" aria-label={`Edit ${column.title} column`} title="Column options" onClick={() => { select(null); setManagement({ id: column.id }); }}><SettingsIcon width={14} height={14} /></button>
+                  <button type="button" className="board-column-options" aria-label={t("board.editColumnName", { name: column.title })} title={t("board.columnOptions")} onClick={() => { select(null); setManagement({ id: column.id }); }}><SettingsIcon width={14} height={14} /></button>
                 </header>
 
                 <div className="board-column-cards">
                   {column.tasks.length === 0 && !target && (
                     <p className="board-column-empty">
                       {column.id === DONE_COLUMN
-                        ? "Nothing finished yet."
-                        : "Drop a card here."}
+                        ? t("common.nothingFinishedYet")
+                        : t("common.dropACardHere")}
                     </p>
                   )}
                   {column.tasks.map((task, index) => (
@@ -188,15 +190,15 @@ export function BoardView() {
 
       <footer className="board-status">
         <span>
-          {active} active card{active === 1 ? "" : "s"}
+          {t("board.activeCount", { count: active })}
         </span>
-        <span>Drag a card between columns to move it</span>
+        <span>{t("board.dragACardBetweenColumnsToMoveIt")}</span>
       </footer>
 
       {management && <BoardColumnsDialog initialId={management.id} onClose={() => setManagement(null)} />}
       {selected && !management && (
         <TaskModal
-          title={columnOf(selected, boardDefinitions) === DONE_COLUMN ? "Completed" : "Task"}
+          title={columnOf(selected, boardDefinitions) === DONE_COLUMN ? t("tasks.completed") : t("common.task")}
           taskId={selected.id}
           onClose={() => select(null)}
         />
@@ -226,6 +228,7 @@ function TaskModal({
   title: string;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div
       className="fixed inset-0 z-[100] grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
@@ -241,8 +244,8 @@ function TaskModal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close task"
-            title="Close"
+            aria-label={t("board.closeTask")}
+            title={t("common.close")}
           >
             <CloseIcon width={15} height={15} />
           </button>
@@ -272,6 +275,7 @@ function BoardCard({
   onPointerDown,
   onSelect,
 }: CardProps) {
+  const { t } = useTranslation();
   const { labels, priorityProfiles, toggleTask, activeTimer } = useStore();
   const priority = profileFor(task.priority, priorityProfiles);
   const done = task.status === "done";
@@ -313,7 +317,7 @@ function BoardCard({
           type="button"
           className="task-complete"
           style={!done ? { borderColor: priority.color } : undefined}
-          title={done ? "Mark active" : "Complete"}
+          title={done ? t("common.markActive") : t("common.complete")}
           onPointerDown={(event) => event.stopPropagation()}
           onClick={(event) => {
             event.stopPropagation();
@@ -327,30 +331,30 @@ function BoardCard({
 
       <div className="board-card-meta">
         {showsPriority(task.priority, priorityProfiles) && (
-          <span style={{ color: priority.color }} title={priority.name}>
+          <span style={{ color: priority.color }} title={displayPriorityName(priority)}>
             <FlagIcon width={12} height={12} />
             {priorityTag(task.priority, priorityProfiles)}
           </span>
         )}
         {due && <span className={DUE_TONE[due.tone]}>{due.label}</span>}
         {task.remindAt && lateReminder && (
-          <span className="is-overdue" title="Reminder passed">
+          <span className="is-overdue" title={t("board.reminderPassed")}>
             <BellIcon width={12} height={12} />
           </span>
         )}
         {task.repeat && (
-          <span title={`Repeats ${repeatLabel(task.repeat).toLowerCase()}`}>
+          <span title={t("tasks.repeatHint", { repeat: repeatLabel(task.repeat).toLowerCase() })}>
             <RepeatIcon width={12} height={12} />
           </span>
         )}
         {subtaskTotal > 0 && (
-          <span title={`${subtaskDone} of ${subtaskTotal} steps done`}>
+          <span title={t("common.stepsDone", { done: subtaskDone, total: subtaskTotal })}>
             <CheckCircleIcon width={12} height={12} />
             {subtaskDone}/{subtaskTotal}
           </span>
         )}
         {task.estimateMinutes !== null && elapsed === 0 && (
-          <span title={`Estimated ${formatMinutes(task.estimateMinutes)}`}>
+          <span title={t("tasks.estimatedHint", { duration: formatMinutes(task.estimateMinutes) })}>
             <HourglassIcon width={12} height={12} />
             {formatMinutes(task.estimateMinutes)}
           </span>
@@ -368,8 +372,8 @@ function BoardCard({
             }
             title={
               over > 0
-                ? `${formatDuration(over)} over the ${formatMinutes(task.estimateMinutes ?? 0)} estimate`
-                : "Time tracked on this task"
+                ? t("tasks.overEstimateHint", { over: formatDuration(over), estimate: formatMinutes(task.estimateMinutes ?? 0) })
+                : t("common.timeTrackedOnThisTask")
             }
           >
             <TimerIcon width={12} height={12} />

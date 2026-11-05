@@ -1,5 +1,6 @@
 import type { SessionLog, Task } from "../types";
 import { toLocalDate } from "./dates";
+import { t } from "./i18n";
 
 export interface DaySummary {
   completed: number;
@@ -27,7 +28,7 @@ export function daySummary(
 export function summaryText({ completed, focusMinutes }: DaySummary): string {
   const parts: string[] = [];
   if (completed > 0)
-    parts.push(`${completed} task${completed === 1 ? "" : "s"} completed`);
-  if (focusMinutes > 0) parts.push(`${focusMinutes}m focused`);
+    parts.push(t("journal.completed", { count: completed }));
+  if (focusMinutes > 0) parts.push(t("journal.focused", { minutes: focusMinutes }));
   return parts.join(" · ");
 }

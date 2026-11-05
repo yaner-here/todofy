@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -120,7 +121,7 @@ async function exchangeCode(
       code_verifier: verifier,
     }),
   });
-  if (!res.ok) throw new Error(`Token exchange failed (${res.status}).`);
+  if (!res.ok) throw new Error(translate("calendar.tokenFailed", { status: res.status }));
   return res.json();
 }
 
@@ -234,7 +235,7 @@ async function ensureCalendar(token: string, ownerId: string): Promise<string> {
     // Never discard an id for auth or transient failures: only a definitive
     // missing response permits replacement, preventing duplicate calendars.
     if (!isMissingCalendarStatus(res.status)) {
-      throw await calendarApiError(res, "Couldn't verify the todofy calendar");
+      throw await calendarApiError(res, translate("calendar.verifyFailed"));
     }
   }
 
@@ -242,14 +243,14 @@ async function ensureCalendar(token: string, ownerId: string): Promise<string> {
     method: "POST",
     body: JSON.stringify({
       summary: CALENDAR_SUMMARY,
-      description: "Tasks synced from todofy.",
+      description: translate("calendar.syncedDescription"),
     }),
   });
   if (!createRes.ok) {
-    throw new Error(`Couldn't create the todofy calendar (${createRes.status}).`);
+    throw new Error(translate("calendar.createCalendarFailed", { status: createRes.status }));
   }
   const created = (await createRes.json()) as { id?: string };
-  if (!created.id) throw new Error("Google created a calendar without returning its id.");
+  if (!created.id) throw new Error(translate("calendar.idMissing"));
   await invoke("set_setting", { key: ownedKey, value: created.id });
   return created.id;
 }
@@ -287,7 +288,7 @@ function eventBody(task: TaskEvent, timeZone: string) {
 
 /** The access token has been revoked/expired and can't be refreshed. */
 export class AuthExpiredError extends Error {
-  constructor(message = "Google access expired.") {
+  constructor(message = translate("calendar.accessExpired")) {
     super(message);
     this.name = "AuthExpiredError";
   }
@@ -295,7 +296,7 @@ export class AuthExpiredError extends Error {
 /** Google is throttling us; back off and retry after `retryAfterMs`. */
 export class RateLimitError extends Error {
   constructor(public retryAfterMs: number) {
-    super("Google Calendar rate limit reached.");
+    super(translate("calendar.rateLimit"));
   }
 }
 
@@ -370,12 +371,12 @@ async function upsertEvent(
     if (res.ok) return ((await res.json()) as { id: string }).id;
     // If the event was deleted out from under us, fall through and recreate it.
     if (res.status !== 404 && res.status !== 410) {
-      throw new Error(`Calendar update failed (${res.status}).`);
+      throw new Error(translate("calendar.updateFailed", { status: res.status }));
     }
   }
 
   const res = await session.fetch(`/calendars/${cal}/events`, { method: "POST", body });
-  if (!res.ok) throw new Error(`Calendar create failed (${res.status}).`);
+  if (!res.ok) throw new Error(translate("calendar.createFailed", { status: res.status }));
   return ((await res.json()) as { id: string }).id;
 }
 
@@ -386,26 +387,26 @@ async function deleteEvent(session: GoogleSession, calendarId: string, eventId: 
   );
   // A 404/410 means it's already gone — that's the outcome we wanted.
   if (!res.ok && res.status !== 404 && res.status !== 410) {
-    throw new Error(`Calendar delete failed (${res.status}).`);
+    throw new Error(translate("calendar.deleteFailed", { status: res.status }));
   }
 }
 
 async function deleteDedicatedCalendar(ownerId: string): Promise<string> {
   const calendarId = await getCalendarIdForOwner(ownerId);
   if (!calendarId) {
-    throw new Error("The saved todofy calendar id is missing, so Google deletion was cancelled.");
+    throw new Error(translate("calendar.deleteIdMissing"));
   }
   const session = await openGoogleSession();
   if (!session) {
     throw new AuthExpiredError(
-      "Google access expired. Reconnect Google Calendar before deleting the remote calendar.",
+      translate("calendar.reconnectBeforeDelete"),
     );
   }
   const res = await session.fetch(`/calendars/${encodeURIComponent(calendarId)}`, {
     method: "DELETE",
   });
   if (!calendarDeleteSucceeded(res.status)) {
-    throw await calendarApiError(res, "Couldn't delete the todofy calendar from Google");
+    throw await calendarApiError(res, translate("calendar.deleteRemoteFailed"));
   }
   return calendarId;
 }
@@ -544,10 +545,10 @@ export const useCalendar = create<CalendarState>((set, get) => ({
   },
 
   connect: async () => {
-    if (get().busy) return { ok: false, error: "Already connecting." };
+    if (get().busy) return { ok: false, error: translate("calendar.alreadyConnecting") };
     const ownerId = useAuth.getState().session?.user.id;
     if (!ownerId) {
-      return { ok: false, error: "Sign in to todofy before connecting Google Calendar." };
+      return { ok: false, error: translate("calendar.signInFirst") };
     }
     set({ busy: true });
     let storedCredentials = false;
@@ -563,7 +564,7 @@ export const useCalendar = create<CalendarState>((set, get) => ({
 
       const tokens = await exchangeCode(code, redirectUri, verifier);
       if (useAuth.getState().session?.user.id !== ownerId) {
-        throw new Error("Your todofy account changed while Google was connecting.");
+        throw new Error(translate("calendar.accountChanged"));
       }
       await storeTokens(tokens);
       storedCredentials = true;
@@ -571,7 +572,7 @@ export const useCalendar = create<CalendarState>((set, get) => ({
       await ensureCalendar(tokens.access_token, ownerId);
 
       if (useAuth.getState().session?.user.id !== ownerId) {
-        throw new Error("Your todofy account changed while Google was connecting.");
+        throw new Error(translate("calendar.accountChanged"));
       }
 
       await invoke("set_setting", { key: S_OWNER_ID, value: ownerId });
@@ -598,7 +599,7 @@ export const useCalendar = create<CalendarState>((set, get) => ({
   },
 
   disconnect: async (deleteRemote) => {
-    if (get().busy) return { ok: false, error: "Another calendar action is in progress." };
+    if (get().busy) return { ok: false, error: translate("calendar.actionInProgress") };
     const wasConnected = get().connected;
     const ownerId = get().ownerId;
     // Stop every in-process sync path while remote deletion is pending. The
@@ -608,7 +609,7 @@ export const useCalendar = create<CalendarState>((set, get) => ({
     let deletedCalendarId: string | null = null;
     if (deleteRemote) {
       try {
-        if (!ownerId) throw new Error("The Google Calendar connection owner is missing.");
+        if (!ownerId) throw new Error(translate("calendar.ownerMissing"));
         deletedCalendarId = await deleteDedicatedCalendar(ownerId);
       } catch (e) {
         set({ connected: wasConnected, busy: false });
@@ -645,9 +646,7 @@ export const useCalendar = create<CalendarState>((set, get) => ({
     } catch (e) {
       return {
         ok: false,
-        error: `Google Calendar disconnected, but local cleanup failed: ${
-          e instanceof Error ? e.message : String(e)
-        }`,
+        error: translate("calendar.cleanupFailed", { error: e instanceof Error ? e.message : String(e) }),
       };
     } finally {
       set({ busy: false });
@@ -743,7 +742,7 @@ export async function pushPending(): Promise<void> {
       return;
     }
     const calendarId = await getCalendarId();
-    if (!calendarId) throw new Error("The todofy calendar is missing.");
+    if (!calendarId) throw new Error(translate("calendar.missing"));
 
     const pending = await invoke<Pending>("calendar_pending");
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -778,7 +777,7 @@ export async function pushPending(): Promise<void> {
       pauseUntil = Date.now() + e.retryAfterMs;
       useCalendar.setState({
         status: "error",
-        pushError: "Google rate limit reached — will retry shortly.",
+        pushError: translate("calendar.retryRateLimit"),
       });
     } else {
       useCalendar.setState({
@@ -802,7 +801,7 @@ async function handleAuthFailure() {
   useCalendar.setState({
     connected: false,
     status: "error",
-    pushError: "Google access expired — reconnect to resume calendar sync.",
+    pushError: translate("calendar.reconnectToResume"),
   });
 }
 

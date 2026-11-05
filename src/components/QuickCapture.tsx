@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from "react-i18next";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
@@ -24,6 +25,7 @@ import { insertTranscript } from "../lib/voice";
  * `todo-added` so an open main window refreshes.
  */
 export function QuickCapture() {
+  const { t } = useTranslation();
   const [title, setTitle] = useState("");
   const [labels, setLabels] = useState<Label[]>([]);
   // This window has no store of its own, so the profiles behind the parsed
@@ -140,7 +142,7 @@ export function QuickCapture() {
         <header className="quick-capture-header">
           <div>
             <Logo size={20} />
-            <span>Quick capture</span>
+            <span>{t("tasks.quickCapture")}</span>
           </div>
           <span>todofy</span>
         </header>
@@ -156,7 +158,7 @@ export function QuickCapture() {
                 dismiss();
               }
             }}
-            placeholder="What needs doing?  Try “pay rent Friday 5pm”"
+            placeholder={t("tasks.whatNeedsDoingTryPayRentFriday5pm")}
             className="quick-capture-input"
           />
           <VoiceInputButton
@@ -187,7 +189,7 @@ export function QuickCapture() {
             disabled={!parsed.title.trim() || busy}
             className="quick-capture-submit"
           >
-            Add task <kbd>↵</kbd>
+            {t("tasks.addTask")} <kbd>↵</kbd>
           </button>
         </div>
 
@@ -232,10 +234,9 @@ export function QuickCapture() {
           </div>
         ) : (
           <div className="quick-capture-footer">
-            Add a date, time, <b>#label</b>, <b>p1</b>, or <b>every week</b> in
-            plain language
+            <Trans i18nKey="tasks.captureSyntax" components={{ b: <b /> }} />
             <span>
-              <kbd>Esc</kbd> dismiss
+              <kbd>Esc</kbd>{t("tasks.dismiss")}
             </span>
           </div>
         )}

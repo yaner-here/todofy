@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import {
   isPermissionGranted,
@@ -37,6 +38,7 @@ import { initOnboarding } from "./lib/onboarding";
 import { initUpdater } from "./lib/updater";
 
 export function App() {
+  const { t } = useTranslation();
   const load = useStore((s) => s.load);
   const loadTimers = useStore((s) => s.loadTimers);
   const refreshPomodoro = useStore((s) => s.refreshPomodoro);
@@ -54,7 +56,7 @@ export function App() {
 
   const menuActions = (): MenuItem[] => [
     {
-      label: "New task",
+      label: t("common.newTask"),
       onClick: () => {
         setView({ kind: "today" });
         requestAnimationFrame(() =>
@@ -63,7 +65,7 @@ export function App() {
       },
     },
     {
-      label: "New journal",
+      label: t("common.newJournal"),
       onClick: () => {
         setView({ kind: "journal" });
         requestAnimationFrame(() =>
@@ -71,9 +73,9 @@ export function App() {
         );
       },
     },
-    { label: "Settings", onClick: () => setView({ kind: "settings" }) },
+    { label: t("settings.settings"), onClick: () => setView({ kind: "settings" }) },
     {
-      label: theme === "dark" ? "Light theme" : "Dark theme",
+      label: theme === "dark" ? t("common.lightTheme") : t("common.darkTheme"),
       onClick: toggleTheme,
     },
   ];
@@ -201,7 +203,7 @@ export function App() {
             type="button"
             className="day-rail-backdrop"
             onClick={toggleSidebar}
-            aria-label="Close calendar navigation"
+            aria-label={t("common.closeCalendarNavigation")}
           />
         )}
         <TaskList />

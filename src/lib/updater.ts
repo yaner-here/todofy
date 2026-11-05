@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -260,16 +261,16 @@ function describe(error: unknown): string {
   console.error("update failed:", message);
 
   if (/network|dns|connect|timeout|resolve|fetch/i.test(message)) {
-    return "Couldn't reach the update server. Check your connection and try again.";
+    return translate("updates.connectionFailed");
   }
   if (/signature|verify|pubkey|minisign/i.test(message)) {
-    return "That update couldn't be verified as genuine, so it was not installed.";
+    return translate("updates.verificationFailed");
   }
   if (/platforms|was not found on the response/i.test(message)) {
-    return "That release doesn't include a build for this platform yet.";
+    return translate("updates.platformUnavailable");
   }
   if (/appimage/i.test(message)) {
-    return "Only the AppImage build can update itself. Install the new version from the release page.";
+    return translate("updates.appImageOnly");
   }
-  return "The update couldn't be completed. Try again, or download the new version from the release page.";
+  return translate("updates.failed");
 }

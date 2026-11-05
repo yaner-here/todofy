@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import type { Subtask, Task } from "../types";
 import { CloseIcon, PlusIcon } from "./Icons";
@@ -18,6 +19,7 @@ export function SubtaskList({
   task: Task;
   onChange: (subtasks: Subtask[]) => void;
 }) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState("");
   const subs = task.subtasks;
   const doneCount = subs.filter((s) => s.done).length;
@@ -44,7 +46,7 @@ export function SubtaskList({
     <div className="mt-4">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-xs font-medium uppercase tracking-wider text-faint">
-          Checklist
+          {t("tasks.checklist")}
         </p>
         {subs.length > 0 && (
           <span className="text-xs text-faint">
@@ -70,7 +72,7 @@ export function SubtaskList({
               onChange={() => toggle(s.id)}
               size={16}
               color="var(--color-success)"
-              title={s.done ? "Mark step incomplete" : "Mark step done"}
+              title={s.done ? t("tasks.markStepIncomplete") : t("tasks.markStepDone")}
             />
             <input
               key={s.id + ":" + s.text}
@@ -89,7 +91,7 @@ export function SubtaskList({
             <button
               onClick={() => remove(s.id)}
               className="shrink-0 text-faint opacity-0 transition-opacity hover:text-(--color-danger) group-hover:opacity-100"
-              title="Remove step"
+              title={t("tasks.removeStep")}
             >
               <CloseIcon width={14} height={14} />
             </button>
@@ -109,7 +111,7 @@ export function SubtaskList({
             }
           }}
           onBlur={add}
-          placeholder="Add a step…"
+          placeholder={t("tasks.addAStep")}
           className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
         />
       </div>

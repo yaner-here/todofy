@@ -1,3 +1,5 @@
+import { t } from "../lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { formatMinutes, parseMinutes } from "../lib/duration";
 import { TimerIcon } from "./Icons";
@@ -22,9 +24,10 @@ interface Props {
 export function EstimatePicker({
   value,
   onChange,
-  placeholder = "Estimate",
+  placeholder = t("tasks.estimate"),
   placement = "bottom",
 }: Props) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -32,7 +35,7 @@ export function EstimatePicker({
   const btnRef = useRef<HTMLButtonElement>(null);
 
   const openPicker = () => {
-    setDraft(value ? formatMinutes(value) : "");
+    setDraft(value ? String(value) : "");
     const r = btnRef.current!.getBoundingClientRect();
     // Rough initial spot; corrected once measured in the layout effect below.
     setPos({
@@ -97,7 +100,7 @@ export function EstimatePicker({
     const parsed = parseMinutes(draft);
     if (parsed !== null) pick(parsed);
     else if (draft.trim() === "") pick(null);
-    else setDraft(value ? formatMinutes(value) : "");
+    else setDraft(value ? String(value) : "");
   };
 
   return (
@@ -109,7 +112,7 @@ export function EstimatePicker({
         className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors hover:bg-surface-2 ${
           value ? "text-(--color-accent)" : "text-faint"
         }`}
-        title="Estimated time for this task"
+        title={t("tasks.estimatedTimeForThisTask")}
       >
         <TimerIcon width={14} height={14} />
         {value ? formatMinutes(value) : placeholder}
@@ -157,8 +160,8 @@ export function EstimatePicker({
                   }
                 }}
                 onBlur={commitDraft}
-                placeholder="e.g. 1h 30m"
-                aria-label="Custom estimate"
+                placeholder={t("tasks.eG1h30m")}
+                aria-label={t("tasks.customEstimate")}
                 className="w-full rounded-md bg-bg px-2 py-1 text-xs text-text outline-none focus:ring-1 focus:ring-(--color-accent)"
               />
             </div>
@@ -169,7 +172,7 @@ export function EstimatePicker({
                 onClick={() => pick(null)}
                 className="mt-2 w-full rounded-md border-t border-border pt-2 text-xs text-faint hover:text-(--color-danger)"
               >
-                Clear estimate
+                {t("tasks.clearEstimate")}
               </button>
             )}
           </div>

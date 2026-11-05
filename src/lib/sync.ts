@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { create } from "zustand";
 import { invoke } from "@tauri-apps/api/core";
 import { supabase, syncConfigured } from "./supabase";
@@ -70,8 +71,8 @@ export const useSync = create<SyncState>((set, get) => ({
         set({
           status: "paused",
           error: billing.state === "unavailable"
-            ? billing.error ?? "Could not verify Cloud Sync access."
-            : "Todofy Pro is required for Cloud Sync.",
+            ? billing.error ?? translate("sync.unverifiedAccess")
+            : translate("sync.proRequired"),
         });
         if (interactive && billing.state !== "unavailable") {
           useBilling.getState().openGate("cloud_sync");
@@ -176,7 +177,7 @@ function assertSyncContext(
   requireVerified = false,
 ) {
   if (useAuth.getState().session?.user.id !== userId) {
-    throw new SyncAuthorizationChanged("The signed-in account changed during sync.");
+    throw new SyncAuthorizationChanged(translate("sync.accountChanged"));
   }
   if (!billingConfigured) return;
   const billing = useBilling.getState();
@@ -185,7 +186,7 @@ function assertSyncContext(
     billing.revision !== accessRevision ||
     (requireVerified && billing.state === "unavailable")
   ) {
-    throw new SyncAuthorizationChanged("Cloud Sync access changed during sync.");
+    throw new SyncAuthorizationChanged(translate("sync.accessChanged"));
   }
 }
 
@@ -271,11 +272,11 @@ async function push(local: Bundle): Promise<void> {
   // Server-side LWW protects customized defaults from a fresh device's seeds.
   if (local.board_columns.length) {
     const { error } = await supabase.rpc("sync_board_columns", { changes: local.board_columns });
-    if (error) throw new Error(`Could not sync board columns. Apply the custom_board_columns database migration. ${error.message}`);
+    if (error) throw new Error(translate("account.syncColumnsFailed", { error: error.message }));
   }
   if (local.priority_profiles.length) {
     const { error } = await supabase.rpc("sync_priority_profiles", { changes: local.priority_profiles });
-    if (error) throw new Error(`Could not sync priorities. Apply the priority_profiles database migration. ${error.message}`);
+    if (error) throw new Error(translate("account.syncPrioritiesFailed", { error: error.message }));
   }
   const upsert = async (
     table: string,
@@ -333,7 +334,7 @@ async function push(local: Bundle): Promise<void> {
   for (const key of idsFor("task_labels")) {
     const [taskId, labelId] = key.split(":", 2);
     if (!taskId || !labelId)
-      throw new Error(`Invalid task-label tombstone: ${key}`);
+      throw new Error(translate("account.invalidTombstone", { key }));
     const { error } = await supabase
       .from("task_labels")
       .delete()

@@ -1,4 +1,5 @@
 import type { BoardColumnDefinition, Task } from "../types";
+import { t, type MessageKey } from "./i18n";
 import { toLocalDate, today } from "./dates";
 
 export const TODO_COLUMN = "todo";
@@ -6,9 +7,9 @@ export const DONE_COLUMN = "done";
 export type ColumnId = string;
 
 export const STAGES = [
-  { slug: TODO_COLUMN, title: "To do", hint: "Ready to pick up" },
-  { slug: "doing", title: "In progress", hint: "Being worked on now" },
-  { slug: "blocked", title: "Blocked", hint: "Waiting on something else" },
+  { slug: TODO_COLUMN, title: "To do", hint: "board.hint.todo" },
+  { slug: "doing", title: "In progress", hint: "board.hint.doing" },
+  { slug: "blocked", title: "Blocked", hint: "board.hint.blocked" },
 ] as const;
 
 export const DEFAULT_COLUMNS: BoardColumnDefinition[] = [
@@ -21,6 +22,15 @@ export const DEFAULT_COLUMNS: BoardColumnDefinition[] = [
     wipLimit: null, updatedAt: "1970-01-01T00:00:01Z", deletedAt: null, replacementId: null },
 ];
 
+const DEFAULT_NAME_KEYS: Record<string, MessageKey> = {
+  todo: "board.todo", doing: "board.doing", blocked: "board.blocked", done: "board.done",
+};
+
+export function columnName(column: BoardColumnDefinition): string {
+  const original = DEFAULT_COLUMNS.find((item) => item.id === column.id);
+  return original && column.name === original.name ? t(DEFAULT_NAME_KEYS[column.id]) : column.name;
+}
+
 export function orderedColumns(definitions: BoardColumnDefinition[]): BoardColumnDefinition[] {
   const live = definitions.filter((column) => !column.deletedAt);
   for (const id of [TODO_COLUMN, DONE_COLUMN]) {
@@ -32,10 +42,10 @@ export function orderedColumns(definitions: BoardColumnDefinition[]): BoardColum
 
 export type BoardScope = "all" | "today" | "week";
 
-export const SCOPES: { id: BoardScope; label: string }[] = [
-  { id: "all", label: "All" },
-  { id: "today", label: "Today" },
-  { id: "week", label: "This week" },
+export const SCOPES: { id: BoardScope; label: MessageKey }[] = [
+  { id: "all", label: "common.all" },
+  { id: "today", label: "common.today" },
+  { id: "week", label: "common.thisWeek" },
 ];
 
 const SCOPE_KEY = "todofy-board-scope";
@@ -124,8 +134,8 @@ export function boardColumns(
       ? (a, b) => (b.completedAt ?? "").localeCompare(a.completedAt ?? "")
       : (a, b) => Number(b.pinned) - Number(a.pinned) || a.boardIndex - b.boardIndex || a.createdAt.localeCompare(b.createdAt));
     return {
-      id: definition.id, title: definition.name, color: definition.color, wipLimit, activeCount,
-      hint: done ? "Finished recently" : STAGES.find((s) => s.slug === definition.id)?.hint ?? "Your workflow",
+      id: definition.id, title: columnName(definition), color: definition.color, wipLimit, activeCount,
+      hint: t(done ? "board.hint.done" : STAGES.find((s) => s.slug === definition.id)?.hint ?? "board.hint.custom"),
       wipState: wipLimit === null ? "none" : activeCount > wipLimit ? "over" : activeCount === wipLimit ? "full" : "below",
       tasks: done ? items.slice(0, doneLimit) : items,
     };

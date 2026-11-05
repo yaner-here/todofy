@@ -1,4 +1,5 @@
 import { appLocale, usesHour12 } from "./locale";
+import { t } from "./i18n";
 
 /** Local YYYY-MM-DD for a Date (avoids UTC off-by-one from toISOString). */
 export function toLocalDate(d: Date): string {
@@ -26,15 +27,15 @@ export function formatDue(
   label: string;
   tone: "overdue" | "today" | "soon" | "future";
 } {
-  const t = today();
-  const days = daysBetween(t, date);
+  const todayKey = today();
+  const days = daysBetween(todayKey, date);
 
   // The reminder time itself is rendered alongside this label, so lateness
   // shows as a change of tone rather than a repeat of the time.
   if (days === 0)
-    return { label: "Today", tone: isPast(remindAt) ? "overdue" : "today" };
-  if (days === 1) return { label: "Tomorrow", tone: "soon" };
-  if (days === -1) return { label: "Yesterday", tone: "overdue" };
+    return { label: t("common.today"), tone: isPast(remindAt) ? "overdue" : "today" };
+  if (days === 1) return { label: t("date.tomorrow"), tone: "soon" };
+  if (days === -1) return { label: t("date.yesterday"), tone: "overdue" };
 
   if (days > 1) return { label: relativeFuture(date, days), tone: "future" };
   return { label: relativePast(date, -days), tone: "overdue" };
@@ -65,14 +66,14 @@ function absoluteDate(date: string): string {
 }
 
 function relativeFuture(date: string, days: number): string {
-  if (days <= 13) return `in ${days} days`;
-  if (days <= 30) return `in ${Math.round(days / 7)} weeks`;
+  if (days <= 13) return t("date.daysFuture", { count: days });
+  if (days <= 30) return t("date.weeksFuture", { count: Math.round(days / 7) });
   return absoluteDate(date);
 }
 
 function relativePast(date: string, days: number): string {
-  if (days <= 13) return `${days} days ago`;
-  if (days <= 30) return `${Math.round(days / 7)} weeks ago`;
+  if (days <= 13) return t("date.daysPast", { count: days });
+  if (days <= 30) return t("date.weeksPast", { count: Math.round(days / 7) });
   return absoluteDate(date);
 }
 
@@ -110,10 +111,10 @@ export function reminderPresets(): { label: string; iso: string }[] {
   nextMon.setDate(nextMon.getDate() + ((8 - nextMon.getDay()) % 7 || 7));
 
   return [
-    { label: "Later today", iso: new Date(Date.now() + 3 * 3600_000).toISOString() },
-    { label: "This evening", iso: atTime(evening, 18) },
-    { label: "Tomorrow 9am", iso: atTime(tomorrow, 9) },
-    { label: "Next week", iso: atTime(nextMon, 9) },
+    { label: t("date.laterToday"), iso: new Date(Date.now() + 3 * 3600_000).toISOString() },
+    { label: t("date.evening"), iso: atTime(evening, 18) },
+    { label: `${t("date.tomorrow")} ${formatTime("09:00")}`, iso: atTime(tomorrow, 9) },
+    { label: t("date.nextWeek"), iso: atTime(nextMon, 9) },
   ];
 }
 

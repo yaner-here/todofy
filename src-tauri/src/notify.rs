@@ -92,8 +92,8 @@ pub fn send_test_notification(app: AppHandle) -> Result<String, String> {
         &app,
         &style,
         PopupKind::Reminder,
-        "todofy test notification",
-        "If you can see this, desktop notifications are working.",
+        &rust_i18n::t!("notifications.testTitle"),
+        &rust_i18n::t!("notifications.testBody"),
         None,
         None,
     )

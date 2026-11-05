@@ -1,5 +1,9 @@
+import type { MessageKey } from "../lib/i18n";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { setLanguage, useLanguageState } from "../lib/language";
+import type { LanguagePreference } from "../types";
 import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { api } from "../lib/api";
@@ -65,57 +69,58 @@ const openExternal = (url: string) => {
 type StartupMode = "window" | "tray";
 type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
-const CORNERS: { value: Corner; label: string }[] = [
-  { value: "top-left", label: "Top left" },
-  { value: "top-right", label: "Top right" },
-  { value: "bottom-left", label: "Bottom left" },
-  { value: "bottom-right", label: "Bottom right" },
+const CORNERS: { value: Corner; label: MessageKey }[] = [
+  { value: "top-left", label: "settings.topLeft" },
+  { value: "top-right", label: "settings.topRight" },
+  { value: "bottom-left", label: "settings.bottomLeft" },
+  { value: "bottom-right", label: "settings.bottomRight" },
 ];
 
-const TIME_FORMATS: { value: TimeFormatPref; label: string }[] = [
-  { value: "auto", label: "Auto" },
-  { value: "12", label: "12-hour" },
-  { value: "24", label: "24-hour" },
+const TIME_FORMATS: { value: TimeFormatPref; label: MessageKey }[] = [
+  { value: "auto", label: "locale.auto" },
+  { value: "12", label: "locale.hour12" },
+  { value: "24", label: "locale.hour24" },
 ];
 
-const WEEK_STARTS: { value: WeekStartPref; label: string }[] = [
-  { value: "auto", label: "Auto" },
-  { value: "1", label: "Monday" },
-  { value: "0", label: "Sunday" },
-  { value: "6", label: "Saturday" },
+const WEEK_STARTS: { value: WeekStartPref; label: MessageKey }[] = [
+  { value: "auto", label: "locale.auto" },
+  { value: "1", label: "locale.monday" },
+  { value: "0", label: "locale.sunday" },
+  { value: "6", label: "locale.saturday" },
 ];
 
 /** How often an unanswered reminder repeats. "0" is the default: it doesn't. */
 // Phrased as intervals, not durations: under a "keep reminding" heading a bare
 // "10 min" reads as how long the nagging lasts, which is not what it sets.
-const REPEAT_INTERVALS: { value: string; label: string }[] = [
-  { value: "0", label: "Don't repeat" },
-  { value: "2", label: "Every 2 min" },
-  { value: "5", label: "Every 5 min" },
-  { value: "10", label: "Every 10 min" },
+const REPEAT_INTERVALS: { value: string; label: MessageKey }[] = [
+  { value: "0", label: "settings.noRepeat" },
+  { value: "2", label: "settings.repeat2" },
+  { value: "5", label: "settings.repeat5" },
+  { value: "10", label: "settings.repeat10" },
 ];
 
-const TIMER_MODES: { value: TaskTimerMode; label: string; hint: string }[] = [
+const TIMER_MODES: { value: TaskTimerMode; label: MessageKey; hint: MessageKey }[] = [
   {
     value: "tracker",
-    label: "Stopwatch",
-    hint: "Times how long the task actually takes.",
+    label: "settings.stopwatch",
+    hint: "settings.stopwatchHint",
   },
   {
     value: "pomodoro",
-    label: "Pomodoro",
-    hint: "Also runs a focus countdown for that task.",
+    label: "settings.pomodoro",
+    hint: "settings.pomodoroHint",
   },
 ];
 
 // How the backend routed the test notification (see notify::deliver).
-const ROUTE_LABEL: Record<string, string> = {
-  popup: "the in-app popup",
-  portal: "the desktop portal",
-  fallback: "the fallback (classic) path",
+const ROUTE_LABEL: Record<string, MessageKey> = {
+  popup: "settings.routePopup",
+  portal: "settings.routePortal",
+  fallback: "settings.routeFallback",
 };
 
 export function SettingsView() {
+  const { t } = useTranslation();
   const {
     theme,
     toggleTheme,
@@ -303,7 +308,7 @@ export function SettingsView() {
       if (!file) return;
       if (file.size > MAX_CUSTOM_BYTES) {
         setSoundError(
-          `That file is ${Math.round(file.size / 1024)} KB — the limit is ${MAX_CUSTOM_BYTES / 1024} KB.`,
+          t("common.fileTooLarge", { size: Math.round(file.size / 1024), limit: MAX_CUSTOM_BYTES / 1024 }),
         );
         return;
       }
@@ -326,7 +331,7 @@ export function SettingsView() {
           customData: data,
         });
       } catch {
-        setSoundError("That file couldn't be read.");
+        setSoundError(t("priorities.thatFileCouldnTBeRead"));
       }
     };
     input.click();
@@ -355,7 +360,7 @@ export function SettingsView() {
       setSoundError(
         error instanceof Error
           ? error.message
-          : "That sound couldn't be played.",
+          : t("priorities.thatSoundCouldnTBePlayed"),
       );
     }
   };
@@ -402,21 +407,22 @@ export function SettingsView() {
   return (
     <main className="redesign-secondary settings-main flex flex-1 flex-col overflow-hidden bg-bg">
       <header className="app-page-header shrink-0 px-8 pt-8 pb-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Settings</h2>
-        <p className="mt-0.5 text-sm text-muted">Startup, appearance, and about</p>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("settings.settings")}</h2>
+        <p className="mt-0.5 text-sm text-muted">{t("settings.startupAppearanceAndAbout")}</p>
       </header>
 
       <div className="secondary-scroll settings-content mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-8">
         <AccountSection />
         <CalendarSection />
+        <LanguageSection />
         <VoiceSettingsSection />
 
         {/* Startup */}
-        <Section title="Startup">
+        <Section title={t("settings.startup")}>
           <Row
             icon={<PowerIcon width={18} height={18} />}
-            title="Run todofy on startup"
-            desc="Launch automatically when you sign in to your computer."
+            title={t("settings.runTodofyOnStartup")}
+            desc={t("settings.launchAutomaticallyWhenYouSignInToYourComputer")}
           >
             <Switch
               checked={autostart}
@@ -428,20 +434,20 @@ export function SettingsView() {
           {autostart && (
             <div className="animate-fade-rise border-t border-border px-4 py-3.5">
               <p className="mb-2.5 text-xs font-medium text-muted">
-                When todofy starts at login
+                {t("settings.whenTodofyStartsAtLogin")}
               </p>
               <div className="flex flex-col gap-2">
                 <ModeOption
                   active={mode === "window"}
                   onSelect={() => chooseMode("window")}
-                  title="Open the window"
-                  desc="Start with the todofy window visible."
+                  title={t("settings.openTheWindow")}
+                  desc={t("settings.startWithTheTodofyWindowVisible")}
                 />
                 <ModeOption
                   active={mode === "tray"}
                   onSelect={() => chooseMode("tray")}
-                  title="Start in the tray"
-                  desc="Run quietly in the system tray — open it from the tray icon or Ctrl+Alt+A."
+                  title={t("settings.startInTheTray")}
+                  desc={t("settings.runQuietlyInTheSystemTrayOpenItFromThe")}
                 />
               </div>
             </div>
@@ -451,11 +457,11 @@ export function SettingsView() {
         <PriorityProfilesSection />
 
         {/* Quick capture */}
-        <Section title="Quick capture">
+        <Section title={t("tasks.quickCapture")}>
           <Row
             icon={<BoltIcon width={18} height={18} />}
-            title="Global quick-add hotkey"
-            desc="Press this from any app to pop up todofy's capture box — jot a task and it's saved to your inbox without switching windows."
+            title={t("settings.globalQuickAddHotkey")}
+            desc={t("settings.pressThisFromAnyAppToPopUpTodofyS")}
           >
             <kbd className="shrink-0 rounded-lg border border-border bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
               Ctrl + Alt + A
@@ -464,11 +470,11 @@ export function SettingsView() {
         </Section>
 
         {/* Notifications */}
-        <Section title="Notifications">
+        <Section title={t("settings.notifications")}>
           <Row
             icon={<BellIcon width={18} height={18} />}
-            title="Desktop notifications"
-            desc="Show a native system notification when a reminder or timer is due, in addition to the in-app toast."
+            title={t("settings.desktopNotifications")}
+            desc={t("settings.showANativeSystemNotificationWhenAReminderOrTimer")}
           >
             <Switch
               checked={desktopNotifications}
@@ -480,27 +486,27 @@ export function SettingsView() {
           {desktopNotifications && (
             <div className="animate-fade-rise border-t border-border px-4 py-3.5">
               <p className="mb-2.5 text-xs font-medium text-muted">
-                Notification style
+                {t("priorities.notificationStyle")}
               </p>
               <div className="flex flex-col gap-2">
                 <ModeOption
                   active={notifStyle === "custom"}
                   onSelect={() => chooseStyle("custom")}
-                  title="In-app popup"
-                  desc="Show todofy's own notification in a screen corner, above other apps."
+                  title={t("settings.inAppPopup")}
+                  desc={t("settings.showTodofySOwnNotificationInAScreenCornerAbove")}
                 />
                 <ModeOption
                   active={notifStyle === "native"}
                   onSelect={() => chooseStyle("native")}
-                  title="System notification"
-                  desc="Hand the notification to your desktop's notification centre."
+                  title={t("settings.systemNotification")}
+                  desc={t("settings.handTheNotificationToYourDesktopSNotificationCentre")}
                 />
               </div>
 
               {notifStyle === "custom" && (
                 <div className="mt-3.5 animate-fade-rise">
                   <p className="mb-2 text-xs font-medium text-muted">
-                    Position on screen
+                    {t("settings.positionOnScreen")}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     {CORNERS.map((c) => (
@@ -513,7 +519,7 @@ export function SettingsView() {
                             : "border-border text-muted hover:bg-surface-2 hover:text-text"
                         }`}
                       >
-                        {c.label}
+                        {t(c.label)}
                       </button>
                     ))}
                   </div>
@@ -525,7 +531,7 @@ export function SettingsView() {
           {desktopNotifications && (
             <div className="border-t border-border px-4 py-3.5">
               <p className="mb-2 text-xs font-medium text-muted">
-                Repeat an unanswered reminder
+                {t("priorities.repeatAnUnansweredReminder")}
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {REPEAT_INTERVALS.map((option) => (
@@ -533,17 +539,17 @@ export function SettingsView() {
                     key={option.value}
                     active={repeatEvery === option.value}
                     onSelect={() => chooseRepeat(option.value)}
-                    label={option.label}
+                    label={t(option.label)}
                   />
                 ))}
               </div>
               <p className="mt-3 text-xs text-faint">
                 {repeatEvery === "0"
-                  ? "A reminder shows once and then waits for you."
-                  : `Keeps going every ${repeatEvery} minutes for as long as it takes — it never gives up on its own. It stops when you open, dismiss or snooze it, complete the task, or start timing it.`}
+                  ? t("settings.aReminderShowsOnceAndThenWaitsForYou")
+                  : t("settings.repeatExplanation", { count: repeatEvery })}
               </p>
 
-              <p className="mt-4 mb-2 text-xs font-medium text-muted">Sound</p>
+              <p className="mt-4 mb-2 text-xs font-medium text-muted">{t("settings.sound")}</p>
               <div className="grid grid-cols-3 gap-2">
                 {SOUNDS.map((option) => (
                   <Choice
@@ -553,7 +559,7 @@ export function SettingsView() {
                     label={
                       option.value === "custom" && customName
                         ? customName.replace(/\.[^.]+$/, "")
-                        : option.label
+                        : t(option.label)
                     }
                   />
                 ))}
@@ -564,7 +570,7 @@ export function SettingsView() {
                   onClick={pickCustomSound}
                   className="mt-2 text-xs text-(--color-accent) hover:underline"
                 >
-                  Choose a different file…
+                  {t("priorities.chooseADifferentFile")}
                 </button>
               )}
               {soundError && (
@@ -574,12 +580,12 @@ export function SettingsView() {
               {sound !== "none" && (
                 <div className="mt-4 animate-fade-rise">
                   <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-medium text-muted">Volume</p>
+                    <p className="text-xs font-medium text-muted">{t("priorities.volume")}</p>
                     <button
                       onClick={() => previewSound(sound, volume)}
                       className="text-xs text-(--color-accent) hover:underline"
                     >
-                      Play
+                      {t("settings.play")}
                     </button>
                   </div>
                   <input
@@ -597,7 +603,7 @@ export function SettingsView() {
                       return () => input.removeEventListener("change", commit);
                     }}
                     className="w-full accent-(--color-accent)"
-                    aria-label="Reminder volume"
+                    aria-label={t("settings.reminderVolume")}
                   />
 
                   <button
@@ -611,11 +617,11 @@ export function SettingsView() {
                       <Checkbox checked={ramp} interactive={false} size={16} />
                     </span>
                     <span>
-                      Get louder each time a reminder repeats
+                      {t("settings.getLouderEachTimeAReminderRepeats")}
                       {repeatEvery === "0" && (
                         <em className="not-italic text-faint">
                           {" "}
-                          — needs repeating reminders, above
+                          {t("settings.needsRepeatingRemindersAbove")}
                         </em>
                       )}
                     </span>
@@ -627,13 +633,13 @@ export function SettingsView() {
 
           <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-text">Test notification</p>
+              <p className="text-sm font-medium text-text">{t("settings.testNotification")}</p>
               <p className="mt-0.5 text-xs text-muted">
                 {testStatus === "sent"
-                  ? `Sent via ${ROUTE_LABEL[testRoute] ?? "notification"} — check your screen.`
+                  ? t("settings.testSent", { route: t(ROUTE_LABEL[testRoute] ?? "settings.notification") })
                   : testStatus === "error"
-                    ? "Couldn't send a notification."
-                    : "Send a one-off notification to confirm your setup."}
+                    ? t("settings.couldnTSendANotification")
+                    : t("settings.sendAOneOffNotificationToConfirmYourSetup")}
               </p>
             </div>
             <button
@@ -641,28 +647,28 @@ export function SettingsView() {
               disabled={testStatus === "sending"}
               className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
-              {testStatus === "sending" ? "Sending…" : "Send test"}
+              {testStatus === "sending" ? t("settings.sending") : t("settings.sendTest")}
             </button>
           </div>
         </Section>
 
         {/* Date & time */}
-        <Section title="Date & time">
+        <Section title={t("settings.dateTime")}>
           <div className="px-4 py-3.5">
-            <p className="mb-2.5 text-xs font-medium text-muted">Clock</p>
+            <p className="mb-2.5 text-xs font-medium text-muted">{t("settings.clock")}</p>
             <div className="grid grid-cols-3 gap-2">
               {TIME_FORMATS.map((option) => (
                 <Choice
                   key={option.value}
                   active={timeFormatPref === option.value}
                   onSelect={() => chooseTimeFormat(option.value)}
-                  label={option.label}
+                  label={t(option.label)}
                 />
               ))}
             </div>
 
             <p className="mt-3.5 mb-2.5 text-xs font-medium text-muted">
-              Week starts on
+              {t("settings.weekStartsOn")}
             </p>
             <div className="grid grid-cols-4 gap-2">
               {WEEK_STARTS.map((option) => (
@@ -670,27 +676,27 @@ export function SettingsView() {
                   key={option.value}
                   active={weekStartPref === option.value}
                   onSelect={() => chooseWeekStart(option.value)}
-                  label={option.label}
+                  label={t(option.label)}
                 />
               ))}
             </div>
 
             <p className="mt-3 text-xs text-faint">
-              Auto follows your system settings — currently {autoSummary()}.
+              {t("settings.autoFollowsYourSystemSettingsCurrently")} {autoSummary()}.
             </p>
 
             <p className="mt-4 mb-2 text-xs font-medium text-muted">
-              Quick times in the date picker
+              {t("settings.quickTimesInTheDatePicker")}
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              {quickTimes.map((t) => (
+              {quickTimes.map((time) => (
                 <button
-                  key={t}
-                  onClick={() => removeQuickTime(t)}
-                  title="Remove"
+                  key={time}
+                  onClick={() => removeQuickTime(time)}
+                  title={t("settings.remove")}
                   className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-text transition-colors hover:border-(--color-danger) hover:text-(--color-danger)"
                 >
-                  {formatTime(t)}
+                  {formatTime(time)}
                   <CloseIcon width={12} height={12} />
                 </button>
               ))}
@@ -699,23 +705,23 @@ export function SettingsView() {
                   value={newQuickTime}
                   onChange={setNewQuickTime}
                   onDone={addNewQuickTime}
-                  label="Add"
+                  label={t("tasks.add")}
                 />
               )}
             </div>
             <p className="mt-2 text-xs text-faint">
               {quickTimes.length
-                ? "Shown as one-tap buttons when you set a time. Click one to remove it."
-                : "No shortcuts — the date picker shows only the time field."}
+                ? t("settings.shownAsOneTapButtonsWhenYouSetATime")
+                : t("settings.noShortcutsTheDatePickerShowsOnlyTheTimeField")}
             </p>
           </div>
         </Section>
 
         {/* Task timer */}
-        <Section title="Task timer">
+        <Section title={t("settings.taskTimer")}>
           <div className="px-4 py-3.5">
             <p className="mb-2.5 text-xs font-medium text-muted">
-              The play button on a task
+              {t("settings.thePlayButtonOnATask")}
             </p>
             <div className="grid grid-cols-2 gap-2">
               {TIMER_MODES.map((option) => (
@@ -723,23 +729,22 @@ export function SettingsView() {
                   key={option.value}
                   active={taskTimerMode === option.value}
                   onSelect={() => setTaskTimerMode(option.value)}
-                  label={option.label}
+                  label={t(option.label)}
                 />
               ))}
             </div>
             <p className="mt-3 text-xs text-faint">
               {
-                TIMER_MODES.find((option) => option.value === taskTimerMode)
-                  ?.hint
+                t(TIMER_MODES.find((option) => option.value === taskTimerMode)
+                  ?.hint ?? "settings.stopwatchHint")
               }{" "}
-              Either way the task's time is recorded, and start, pause and stop
-              work the same.
+              {t("settings.eitherWayTheTaskSTimeIsRecordedAndStart")}
             </p>
           </div>
         </Section>
 
         {/* Appearance */}
-        <Section title="Appearance">
+        <Section title={t("settings.appearance")}>
           <Row
             icon={
               theme === "dark" ? (
@@ -748,49 +753,49 @@ export function SettingsView() {
                 <SunIcon width={18} height={18} />
               )
             }
-            title="Theme"
-            desc={theme === "dark" ? "Dark mode is on." : "Light mode is on."}
+            title={t("settings.theme")}
+            desc={theme === "dark" ? t("settings.darkModeIsOn") : t("settings.lightModeIsOn")}
           >
             <button
               onClick={toggleTheme}
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
-              Switch to {theme === "dark" ? "light" : "dark"}
+              {t("settings.switchTo")} {theme === "dark" ? "light" : "dark"}
             </button>
           </Row>
 
           <Row
             icon={<CheckCircleIcon width={18} height={18} />}
-            title="Celebrate completions"
-            desc="Play a little confetti burst when you finish a task. Automatically skipped if your system prefers reduced motion."
+            title={t("settings.celebrateCompletions")}
+            desc={t("settings.playALittleConfettiBurstWhenYouFinishATask")}
           >
             <Switch checked={celebrate} onChange={toggleCelebrate} />
           </Row>
         </Section>
 
         {/* Keyboard */}
-        <Section title="Keyboard">
+        <Section title={t("settings.keyboard")}>
           <Row
-            title="Keyboard shortcuts"
-            desc="Navigate and edit without the mouse. Press ? anytime to open this list."
+            title={t("settings.keyboardShortcuts")}
+            desc={t("settings.navigateAndEditWithoutTheMousePressAnytimeToOpen")}
           >
             <button
               onClick={() => toggleShortcuts(true)}
               className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
-              View shortcuts
+              {t("settings.viewShortcuts")}
             </button>
           </Row>
         </Section>
 
         {/* Updates */}
-        <Section title="Updates">
+        <Section title={t("settings.updates")}>
           <UpdateRow version={version} />
           <div className="border-t border-border" />
           <Row
             icon={<RotateIcon width={18} height={18} />}
-            title="Check automatically"
-            desc="Look for a new version quietly once a day, and say so when one is found."
+            title={t("settings.checkAutomatically")}
+            desc={t("settings.lookForANewVersionQuietlyOnceADayAnd")}
           >
             <Switch
               checked={autoCheckUpdates}
@@ -800,11 +805,11 @@ export function SettingsView() {
           <div className="border-t border-border" />
           <Row
             icon={<DownloadIcon width={18} height={18} />}
-            title="Install automatically"
+            title={t("settings.installAutomatically")}
             desc={
               canSelfUpdate
-                ? "Offer to install a new version as soon as it's found. Todofy always asks before downloading, and never restarts on its own."
-                : "This copy is managed by your package manager, so new versions are installed from there."
+                ? t("settings.offerToInstallANewVersionAsSoonAsIt")
+                : t("settings.thisCopyIsManagedByYourPackageManagerSoNew")
             }
           >
             <Switch
@@ -816,45 +821,45 @@ export function SettingsView() {
         </Section>
 
         {/* About */}
-        <Section title="About">
+        <Section title={t("settings.about")}>
           <Row
             icon={<PlayIcon width={18} height={18} />}
-            title="Replay the welcome tour"
-            desc="Walk through capture, focus and reminders again."
+            title={t("settings.replayTheWelcomeTour")}
+            desc={t("settings.walkThroughCaptureFocusAndRemindersAgain")}
           >
             <button
               onClick={() => useOnboarding.getState().start()}
               className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
-              Show tour
+              {t("settings.showTour")}
             </button>
           </Row>
           <div className="border-t border-border" />
           <Row
             icon={<WebsiteIcon width={18} height={18} />}
-            title="Todofy website"
-            desc="News, downloads, and more from UnifyBrowse."
+            title={t("settings.todofyWebsite")}
+            desc={t("settings.newsDownloadsAndMoreFromUnifybrowse")}
           >
             <ExternalButton
-              label="Visit website"
+              label={t("settings.visitWebsite")}
               onClick={() => openExternal(WEBSITE_URL)}
             />
           </Row>
           <div className="border-t border-border" />
           <Row
             icon={<GitHubIcon width={18} height={18} />}
-            title="GitHub repository"
-            desc="Explore the source, report an issue, or contribute."
+            title={t("settings.githubRepository")}
+            desc={t("settings.exploreTheSourceReportAnIssueOrContribute")}
           >
             <ExternalButton
-              label="Open GitHub"
+              label={t("settings.openGithub")}
               onClick={() => openExternal(GITHUB_URL)}
             />
           </Row>
           <div className="border-t border-border" />
           <Row
-            title="Version"
-            desc="You're running the latest installed build."
+            title={t("settings.version")}
+            desc={t("settings.youReRunningTheLatestInstalledBuild")}
           >
             <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">
               {version ? `v${version}` : "—"}
@@ -871,6 +876,7 @@ export function SettingsView() {
  * how far a download has got, and the one action that makes sense next.
  */
 function UpdateRow({ version }: { version: string }) {
+  const { t } = useTranslation();
   const {
     state,
     version: next,
@@ -888,22 +894,22 @@ function UpdateRow({ version }: { version: string }) {
 
   const desc =
     state === "checking"
-      ? "Looking for a new version…"
+      ? t("settings.lookingForANewVersion")
       : state === "available"
         ? canSelfUpdate
-          ? `todofy v${next} is ready to download.`
-          : `todofy v${next} is out. This copy was installed by your package manager, so update it from there or grab the new bundle.`
+          ? t("updates.availableDownload", { version: next })
+          : t("updates.packageAvailable", { version: next })
         : state === "downloading"
           ? total > 0
-            ? `Downloading v${next}… ${percent}%`
-            : `Downloading v${next}…`
+            ? t("updates.downloadingProgress", { version: next, percent })
+            : t("updates.downloadingVersion", { version: next })
           : state === "ready"
-            ? `v${next} is installed. Restart to start using it.`
+            ? t("updates.installedRestart", { version: next })
             : state === "error"
-              ? (error ?? "The update failed.")
+              ? (error ?? t("settings.theUpdateFailed"))
               : version
-                ? `You're up to date on v${version}.`
-                : "Check whether a newer version is available.";
+                ? t("updates.upToDateVersion", { version })
+                : t("settings.checkWhetherANewerVersionIsAvailable");
 
   return (
     <div className="px-4 py-3.5">
@@ -918,7 +924,7 @@ function UpdateRow({ version }: { version: string }) {
           <DownloadIcon width={18} height={18} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-text">Software update</p>
+          <p className="text-sm font-medium text-text">{t("settings.softwareUpdate")}</p>
           <p
             className={`mt-0.5 text-xs ${
               state === "error" ? "text-(--color-danger)" : "text-muted"
@@ -933,14 +939,14 @@ function UpdateRow({ version }: { version: string }) {
               onClick={() => void restart()}
               className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
             >
-              Restart now
+              {t("settings.restartNow")}
             </button>
           ) : state === "available" ? (
             <button
               onClick={() => void install()}
               className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
             >
-              {canSelfUpdate ? "Download and install" : "Open releases"}
+              {canSelfUpdate ? t("settings.downloadAndInstall") : t("settings.openReleases")}
             </button>
           ) : (
             <button
@@ -949,12 +955,12 @@ function UpdateRow({ version }: { version: string }) {
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               {state === "checking"
-                ? "Checking…"
+                ? t("billing.checking")
                 : state === "downloading"
-                  ? "Downloading…"
+                  ? t("settings.downloading")
                   : state === "error"
-                    ? "Try again"
-                    : "Check now"}
+                    ? t("common.retry")
+                    : t("settings.checkNow")}
             </button>
           )}
         </div>
@@ -974,7 +980,7 @@ function UpdateRow({ version }: { version: string }) {
           onClick={() => openExternal(RELEASES_URL)}
           className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted transition-colors hover:text-text"
         >
-          See what's new in v{next}
+          {t("settings.seeWhatSNewInV")}{next}
           <ExternalLinkIcon width={11} height={11} />
         </button>
       )}
@@ -1022,6 +1028,33 @@ function ExternalButton({
       {label}
       <ExternalLinkIcon width={13} height={13} />
     </button>
+  );
+}
+
+function LanguageSection() {
+  const { t } = useTranslation();
+  const { preference, error } = useLanguageState();
+  const [busy, setBusy] = useState(false);
+  const change = async (next: LanguagePreference) => {
+    setBusy(true);
+    try { await setLanguage(next); }
+    catch (error) { useLanguageState.setState({ error: String(error) }); }
+    finally { setBusy(false); }
+  };
+  return (
+    <Section title={t("language.title")}>
+      <Row title={t("language.label")} desc={t("language.hint")}>
+        <select aria-label={t("language.label")} value={preference} disabled={busy}
+          onChange={(event) => void change(event.currentTarget.value as LanguagePreference)}
+          className="rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-sm text-text">
+          <option value="auto">{t("language.system")}</option>
+          <option value="en">English</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
+      </Row>
+      {busy && <p role="status" className="px-4 pb-3 text-xs text-muted">{t("language.saving")}</p>}
+      {error && <p role="alert" className="px-4 pb-3 text-xs text-(--color-danger)">{t("language.failed", { message: error })}</p>}
+    </Section>
   );
 }
 

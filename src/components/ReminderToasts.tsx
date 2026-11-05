@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
 import { BellIcon, CloseIcon } from "./Icons";
 
 export function ReminderToasts() {
+  const { t } = useTranslation();
   const { reminders, dismissReminder, select, snoozeTask } = useStore();
   if (reminders.length === 0) return null;
 
@@ -17,7 +19,7 @@ export function ReminderToasts() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium uppercase tracking-wider text-faint">
-              Reminder
+              {t("notifications.reminder")}
             </p>
             <p className="truncate text-sm text-text">{r.title}</p>
             <div className="mt-2 flex gap-2">
@@ -28,7 +30,7 @@ export function ReminderToasts() {
                 }}
                 className="rounded-md bg-(--color-accent) px-2.5 py-1 text-xs font-medium text-white hover:bg-accent-hover"
               >
-                Open
+                {t("notifications.open")}
               </button>
               <button
                 onClick={() => {
@@ -39,14 +41,14 @@ export function ReminderToasts() {
                 }}
                 className="rounded-md bg-surface-2 px-2.5 py-1 text-xs text-muted hover:text-text"
               >
-                Snooze 10m
+                {t("notifications.snooze10m")}
               </button>
             </div>
           </div>
           <button
             onClick={() => dismissReminder(r.id)}
             className="text-faint hover:text-text"
-            title="Dismiss"
+            title={t("notifications.dismiss")}
           >
             <CloseIcon width={16} height={16} />
           </button>

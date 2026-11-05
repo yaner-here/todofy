@@ -69,7 +69,7 @@ fn await_code(listener: TcpListener, expected_state: &str) -> Result<String, Str
     let deadline = Instant::now() + TIMEOUT;
     loop {
         if Instant::now() > deadline {
-            return Err("Timed out waiting for Google to redirect back.".into());
+            return Err(rust_i18n::t!("oauth.timeout").to_string());
         }
         match listener.accept() {
             Ok((stream, _)) => {
@@ -100,20 +100,20 @@ fn handle_conn(mut stream: TcpStream, expected_state: &str) -> Option<Result<Str
     }
 
     let result = if let Some(err) = params.get("error") {
-        Err(format!("Google sign-in failed: {err}"))
+        Err(rust_i18n::t!("oauth.failed", error = err).to_string())
     } else if params.get("state").map(String::as_str) != Some(expected_state) {
-        Err("OAuth state did not match — aborting for safety.".into())
+        Err(rust_i18n::t!("oauth.stateMismatch").to_string())
     } else {
         Ok(params.get("code").cloned().unwrap_or_default())
     };
 
     let ok = result.is_ok();
     let message = if ok {
-        "todofy is connected to Google Calendar. You can close this tab and return to the app."
+        rust_i18n::t!("oauth.calendarConnected").to_string()
     } else {
-        "Couldn't connect to Google Calendar. You can close this tab and return to the app."
+        rust_i18n::t!("oauth.calendarFailed").to_string()
     };
-    respond(&mut stream, ok, message);
+    respond(&mut stream, ok, &message);
     Some(result)
 }
 
@@ -121,7 +121,7 @@ fn handle_conn(mut stream: TcpStream, expected_state: &str) -> Option<Result<Str
 /// before returning to the app, so it's a themed todofy card rather than bare
 /// text. Tokens (`%ACCENT%`, etc.) are filled in per success/failure.
 const RESULT_PAGE: &str = r#"<!doctype html>
-<html lang="en">
+<html lang="%LANG%">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -167,7 +167,7 @@ const RESULT_PAGE: &str = r#"<!doctype html>
     <div class="badge">%ICON%</div>
     <h1>%TITLE%</h1>
     <p>%MESSAGE%</p>
-    <a class="btn" href="todofy://calendar-connected">Back to todofy</a>
+    <a class="btn" href="todofy://calendar-connected">%BACK%</a>
     <div class="brand"><b>todofy</b></div>
   </div>
 </body>
@@ -182,21 +182,23 @@ fn respond(stream: &mut TcpStream, ok: bool, message: &str) {
         (
             "#6c7cff",
             "rgba(108,124,255,0.12)",
-            "You're all set",
+            rust_i18n::t!("oauth.allSet").to_string(),
             CHECK_SVG,
         )
     } else {
         (
             "#fb7185",
             "rgba(244,63,94,0.12)",
-            "Something went wrong",
+            rust_i18n::t!("oauth.somethingWrong").to_string(),
             CROSS_SVG,
         )
     };
     let body = RESULT_PAGE
         .replace("%ACCENT%", accent)
         .replace("%BADGE%", badge)
-        .replace("%TITLE%", title)
+        .replace("%TITLE%", &title)
+        .replace("%LANG%", rust_i18n::locale().as_ref())
+        .replace("%BACK%", &rust_i18n::t!("oauth.backToApp"))
         .replace("%ICON%", icon)
         .replace("%MESSAGE%", message);
     let response = format!(

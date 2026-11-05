@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import { eventDate } from "../store";
@@ -23,6 +24,7 @@ export function EventEditor({
   defaultAllDay,
   onClose,
 }: Props) {
+  const { t } = useTranslation();
   const { addEvent, patchEvent, removeEvent } = useStore();
   const [title, setTitle] = useState(event?.title ?? "");
   const [date, setDate] = useState<string>(
@@ -100,7 +102,7 @@ export function EventEditor({
       <div className="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50">
         <button
           onClick={onClose}
-          title="Close"
+          title={t("common.close")}
           className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
           <CloseIcon width={16} height={16} />
@@ -111,7 +113,7 @@ export function EventEditor({
             <CalendarIcon width={18} height={18} />
           </span>
           <h3 className="text-base font-semibold text-text">
-            {event ? "Edit event" : "New event"}
+            {event ? t("calendar.editEvent") : t("calendar.newEvent")}
           </h3>
         </div>
 
@@ -120,7 +122,7 @@ export function EventEditor({
             type="text"
             value={title}
             onInput={(e) => setTitle(e.currentTarget.value)}
-            placeholder="Event title"
+            placeholder={t("calendar.eventTitle")}
             autoFocus
             onKeyDown={(e) => e.key === "Enter" && void save()}
             className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:ring-1 focus:ring-(--color-accent) disabled:opacity-70"
@@ -132,11 +134,11 @@ export function EventEditor({
                 value={date}
                 onChange={(d) => d && setDate(d)}
                 allowClear={false}
-                placeholder="Pick a date"
+                placeholder={t("calendar.pickADate")}
               />
             </div>
             <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
-              All day
+              {t("calendar.allDay")}
               <Switch checked={allDay} onChange={() => setAllDay((v) => !v)} />
             </label>
           </div>
@@ -144,13 +146,13 @@ export function EventEditor({
           {!allDay && (
             <div className="flex items-center gap-2">
               <TimeField
-                label="Start"
+                label={t("calendar.start")}
                 value={startTime || null}
                 onChange={(v) => setStartTime(v ?? "")}
               />
-              <span className="text-xs text-faint">to</span>
+              <span className="text-xs text-faint">{t("calendar.to")}</span>
               <TimeField
-                label="End"
+                label={t("calendar.end")}
                 value={endTime || null}
                 onChange={(v) => setEndTime(v ?? "")}
                 invalid={invalidTimeRange}
@@ -160,14 +162,14 @@ export function EventEditor({
 
           {invalidTimeRange && (
             <p role="alert" className="text-xs text-(--color-danger)">
-              End time must be later than start time.
+              {t("calendar.endTimeMustBeLaterThanStartTime")}
             </p>
           )}
 
           <textarea
             value={description}
             onInput={(e) => setDescription(e.currentTarget.value)}
-            placeholder="Notes (optional)"
+            placeholder={t("calendar.notesOptional")}
             rows={3}
             className="w-full resize-none rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:ring-1 focus:ring-(--color-accent)"
           />
@@ -178,7 +180,7 @@ export function EventEditor({
                 type="button"
                 onClick={() => void remove()}
                 disabled={busy}
-                title="Delete event"
+                title={t("calendar.deleteEvent")}
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border text-muted transition-colors hover:border-(--color-danger)/50 hover:text-(--color-danger) disabled:opacity-50"
               >
                 <TrashIcon width={16} height={16} />
@@ -190,7 +192,7 @@ export function EventEditor({
               disabled={busy}
               className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
             <button
               type="button"
@@ -198,7 +200,7 @@ export function EventEditor({
               disabled={busy || !canSave}
               className="flex-1 rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
             >
-              {busy ? "Saving…" : event ? "Save" : "Add event"}
+              {busy ? t("board.saving") : event ? t("common.save") : t("calendar.addEvent")}
             </button>
           </div>
         </div>

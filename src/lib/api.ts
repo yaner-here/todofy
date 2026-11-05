@@ -9,6 +9,8 @@ import type {
   JournalEntry,
   JournalPatch,
   Label,
+  LanguagePreference,
+  LanguageSnapshot,
   NewEvent,
   NewJournalEntry,
   NewTask,
@@ -65,6 +67,9 @@ export const api = {
   deleteEvent: (id: string) => invoke<void>("delete_event", { id }),
 
   systemLocale: () => invoke<string | null>("system_locale"),
+  getLanguage: () => invoke<LanguageSnapshot>("get_language"),
+  setLanguage: (preference: LanguagePreference) =>
+    invoke<LanguageSnapshot>("set_language", { preference }),
   getSetting: (key: string) => invoke<string | null>("get_setting", { key }),
   setSetting: (key: string, value: string) =>
     invoke<void>("set_setting", { key, value }),

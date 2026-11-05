@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useRef, useState } from "react";
 import { useStore } from "../store";
 import { today } from "../lib/dates";
@@ -8,7 +9,7 @@ import { VoiceInputButton } from "./VoiceInputButton";
 import { insertTranscript } from "../lib/voice";
 
 export const MOODS = ["😞", "😕", "😐", "🙂", "😄"];
-export const MOOD_LABELS = ["Rough", "Low", "Okay", "Good", "Great"];
+export const MOOD_LABELS = ["journal.rough", "journal.low", "journal.okay", "journal.good", "journal.great"] as const;
 
 export interface JournalDraft {
   title: string | null;
@@ -32,6 +33,7 @@ export function JournalEditor({
   onSubmit,
   onCancel,
 }: Props) {
+  const { t } = useTranslation();
   const tasks = useStore((s) => s.tasks);
   const [title, setTitle] = useState(initial?.title ?? "");
   const [body, setBody] = useState(initial?.body ?? "");
@@ -72,7 +74,7 @@ export function JournalEditor({
         className="journal-composer-title"
         value={title}
         onInput={(e) => setTitle(e.currentTarget.value)}
-        placeholder="Title (optional)"
+        placeholder={t("journal.titleOptional")}
       />
       <textarea
         ref={bodyRef}
@@ -83,7 +85,7 @@ export function JournalEditor({
         onKeyDown={(e) => {
           if ((e.metaKey || e.ctrlKey) && e.key === "Enter") void submit();
         }}
-        placeholder="Write freely… Markdown supported."
+        placeholder={t("journal.writeFreelyMarkdownSupported")}
         rows={initial ? 5 : 4}
       />
 
@@ -94,7 +96,7 @@ export function JournalEditor({
           onClick={() =>
             setBody((b) => (b.trim() ? `${b}\n\n${prompt}` : prompt))
           }
-          title="Insert this day's summary"
+          title={t("journal.insertThisDaySSummary")}
         >
           <span aria-hidden="true">✨</span> {prompt}
         </button>
@@ -120,7 +122,7 @@ export function JournalEditor({
             });
           }}
         />
-        <div className="mood-picker" role="group" aria-label="Mood">
+        <div className="mood-picker" role="group" aria-label={t("journal.mood")}>
           {MOODS.map((face, i) => {
             const value = i + 1;
             return (
@@ -129,8 +131,8 @@ export function JournalEditor({
                 type="button"
                 className={`mood-btn ${mood === value ? "is-active" : ""}`}
                 onClick={() => setMood(mood === value ? null : value)}
-                title={MOOD_LABELS[i]}
-                aria-label={MOOD_LABELS[i]}
+                title={t(MOOD_LABELS[i])}
+                aria-label={t(MOOD_LABELS[i])}
                 aria-pressed={mood === value}
               >
                 {face}
@@ -152,7 +154,7 @@ export function JournalEditor({
               onClick={onCancel}
               className="rounded-md px-2.5 py-1.5 text-sm text-muted hover:text-text"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           )}
           <button

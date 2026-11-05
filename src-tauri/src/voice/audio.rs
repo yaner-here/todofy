@@ -29,7 +29,7 @@ pub fn spawn_worker(level: Arc<AtomicU32>) -> mpsc::Sender<Message> {
             match message {
                 Message::Start { seconds, reply } => {
                     if active.is_some() {
-                        let _ = reply.send(Err("Microphone is already recording".into()));
+                        let _ = reply.send(Err(rust_i18n::t!("voice.alreadyRecording").to_string()));
                     } else {
                         match Recording::new(seconds, level.clone()) {
                             Ok(recording) => {
@@ -45,7 +45,7 @@ pub fn spawn_worker(level: Arc<AtomicU32>) -> mpsc::Sender<Message> {
                 Message::Stop { reply } => {
                     let result = active
                         .take()
-                        .ok_or("No active recording".into())
+                        .ok_or(rust_i18n::t!("voice.noRecording").to_string())
                         .and_then(Recording::finish);
                     let _ = reply.send(result);
                     level.store(0, Ordering::Relaxed);
@@ -71,15 +71,15 @@ impl Recording {
     fn new(seconds: u32, level: Arc<AtomicU32>) -> Result<Self, String> {
         let device = cpal::default_host()
             .default_input_device()
-            .ok_or("No microphone is available")?;
+            .ok_or(rust_i18n::t!("voice.noMicrophone").to_string())?;
         let supported = device
             .default_input_config()
-            .map_err(|e| format!("Could not open the microphone: {e}"))?;
+            .map_err(|e| rust_i18n::t!("voice.openMicrophoneFailed", error = e).to_string())?;
         let sample_rate = supported.sample_rate().0;
         let config: StreamConfig = supported.clone().into();
         let channels = config.channels as usize;
         if channels == 0 || sample_rate == 0 {
-            return Err("Unsupported microphone format".into());
+            return Err(rust_i18n::t!("voice.unsupportedFormat").to_string());
         }
         let limit = sample_rate as usize * seconds as usize;
         let samples = Arc::new(Mutex::new(Vec::new()));
@@ -146,12 +146,12 @@ impl Recording {
                     None,
                 )
             }
-            _ => return Err("Microphone sample format is not supported".into()),
+            _ => return Err(rust_i18n::t!("voice.unsupportedSampleFormat").to_string()),
         }
-        .map_err(|e| format!("Could not start microphone capture: {e}"))?;
+        .map_err(|e| rust_i18n::t!("voice.startMicrophoneFailed", error = e).to_string())?;
         stream
             .play()
-            .map_err(|e| format!("Microphone permission or playback failed: {e}"))?;
+            .map_err(|e| rust_i18n::t!("voice.microphonePermissionFailed", error = e).to_string())?;
         Ok(Self {
             stream,
             samples,
@@ -165,15 +165,15 @@ impl Recording {
         if let Some(error) = self
             .error
             .lock()
-            .map_err(|_| "Microphone state failed")?
+            .map_err(|_| rust_i18n::t!("voice.microphoneState").to_string())?
             .take()
         {
-            return Err(format!("Microphone stopped: {error}"));
+            return Err(rust_i18n::t!("voice.microphoneStopped", error = error).to_string());
         }
         let samples =
-            std::mem::take(&mut *self.samples.lock().map_err(|_| "Microphone state failed")?);
+            std::mem::take(&mut *self.samples.lock().map_err(|_| rust_i18n::t!("voice.microphoneState").to_string())?);
         if samples.len() < self.sample_rate as usize / 4 {
-            return Err("No speech was recorded".into());
+            return Err(rust_i18n::t!("voice.noSpeechRecorded").to_string());
         }
         Ok(Capture {
             samples,
@@ -220,7 +220,7 @@ pub fn pcm_16k(capture: &Capture) -> Vec<i16> {
 
 pub fn write_wav(path: &std::path::Path, pcm: &[i16]) -> Result<(), String> {
     use std::io::Write;
-    let data_size = u32::try_from(pcm.len() * 2).map_err(|_| "Recording is too large")?;
+    let data_size = u32::try_from(pcm.len() * 2).map_err(|_| rust_i18n::t!("voice.recordingTooLarge").to_string())?;
     let mut options = std::fs::OpenOptions::new();
     options.write(true).create_new(true);
     #[cfg(unix)]

@@ -4,6 +4,7 @@ mod calendar;
 mod commands;
 mod db;
 mod google_calendar;
+mod i18n;
 mod models;
 mod notify;
 mod popup;
@@ -18,6 +19,8 @@ mod timer;
 mod tray;
 mod update;
 mod voice;
+
+rust_i18n::i18n!("locales", fallback = "en");
 
 use db::Db;
 use rusqlite::Connection;
@@ -89,7 +92,9 @@ pub fn run() {
             std::fs::create_dir_all(&dir).ok();
             let conn = Connection::open(dir.join("todofy.db")).expect("failed to open database");
             db::init(&conn).expect("failed to initialize schema");
+            app.manage(i18n::initialize(&conn));
             app.manage(Db(Mutex::new(conn)));
+            i18n::update_window_titles(app.handle());
             voice::cleanup_temp(app.handle());
 
             // The main window starts hidden (visible:false in tauri.conf.json)
@@ -150,6 +155,8 @@ pub fn run() {
             }
         })
         .invoke_handler(tauri::generate_handler![
+            i18n::get_language,
+            i18n::set_language,
             board::list_board_columns,
             board::create_board_column,
             board::update_board_column,

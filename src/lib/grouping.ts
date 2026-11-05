@@ -1,5 +1,7 @@
 import type { Task, ViewId } from "../types";
 import { toLocalDate, today } from "./dates";
+import { t as translate } from "./i18n";
+import { appLocale } from "./locale";
 
 export interface Section {
   key: string;
@@ -12,12 +14,12 @@ export interface Section {
 function upcomingTitle(date: string): string {
   const d = new Date(date + "T00:00:00");
   const tomorrow = toLocalDate(new Date(Date.now() + 86400000));
-  if (date === tomorrow) return "Tomorrow";
+  if (date === tomorrow) return translate("date.tomorrow");
 
   const days = (d.getTime() - new Date(today() + "T00:00:00").getTime()) / 86400000;
-  if (days < 7) return d.toLocaleDateString(undefined, { weekday: "long" });
+  if (days < 7) return d.toLocaleDateString(appLocale(), { weekday: "long" });
 
-  return d.toLocaleDateString(undefined, {
+  return d.toLocaleDateString(appLocale(), {
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -49,8 +51,8 @@ export function sectionsForView(tasks: Task[], view: ViewId): Section[] {
     const due = tasks.filter((x) => x.dueDate === t);
     const out: Section[] = [];
     if (overdue.length)
-      out.push({ key: "overdue", title: "Overdue", tone: "overdue", tasks: pinnedFirst(overdue) });
-    out.push({ key: "today", title: "Today", tasks: pinnedFirst(due) });
+      out.push({ key: "overdue", title: translate("date.overdue"), tone: "overdue", tasks: pinnedFirst(overdue) });
+    out.push({ key: "today", title: translate("common.today"), tasks: pinnedFirst(due) });
     return out;
   }
 

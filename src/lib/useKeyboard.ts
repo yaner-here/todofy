@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { useEffect } from "react";
 import { useStore, visibleTaskIds } from "../store";
 import { nudgeColumn } from "./board";
@@ -171,9 +172,9 @@ export function useKeyboard() {
             const id = selectedId;
             const t = s.tasks.find((x) => x.id === id);
             s.requestConfirm({
-              title: "Delete task?",
-              message: t ? `“${t.title}” will be permanently deleted.` : undefined,
-              confirmLabel: "Delete",
+              title: translate("tasks.deleteTitle"),
+              message: t ? translate("common.deleteTaskMessage", { title: t.title }) : undefined,
+              confirmLabel: translate("common.delete"),
               danger: true,
               onConfirm: () => s.removeTask(id),
             });

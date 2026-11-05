@@ -49,9 +49,9 @@ impl VoiceState {
     }
 
     fn enter(&self, next: Phase) -> Result<(u64, Arc<AtomicBool>), String> {
-        let mut op = self.operation.lock().map_err(|_| "Voice state failed")?;
+        let mut op = self.operation.lock().map_err(|_| rust_i18n::t!("voice.stateFailed").to_string())?;
         if op.phase != Phase::Idle {
-            return Err("Voice is already busy".into());
+            return Err(rust_i18n::t!("voice.busy").to_string());
         }
         op.id = op.id.wrapping_add(1);
         op.cancelled = Arc::new(AtomicBool::new(false));
@@ -165,11 +165,11 @@ pub async fn voice_model_set(
     if state
         .operation
         .lock()
-        .map_err(|_| "Voice state failed")?
+        .map_err(|_| rust_i18n::t!("voice.stateFailed").to_string())?
         .phase
         != Phase::Idle
     {
-        return Err("Stop recording before changing the model".into());
+        return Err(rust_i18n::t!("voice.stopBeforeModel").to_string());
     }
     tauri::async_runtime::spawn_blocking(move || assets::set_model(&app, &model))
         .await
@@ -185,25 +185,25 @@ pub async fn voice_record_start(
     let seconds = match kind.as_str() {
         "task" => 45,
         "journal" => 180,
-        _ => return Err("Unknown dictation target".into()),
+        _ => return Err(rust_i18n::t!("voice.target").to_string()),
     };
     let (id, cancelled) = state.enter(Phase::Recording)?;
     let sender = state.recorder.clone();
     let result = tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         assets::checked_paths(&app)?;
         if cancelled.load(Ordering::SeqCst) {
-            return Err("Dictation cancelled".into());
+            return Err(rust_i18n::t!("voice.cancelled").to_string());
         }
         let (reply, receiver) = mpsc::channel();
         sender
             .send(Message::Start { seconds, reply })
-            .map_err(|_| "Microphone worker stopped")?;
-        let started = receiver.recv().map_err(|_| "Microphone worker stopped")?;
+            .map_err(|_| rust_i18n::t!("voice.workerStopped").to_string())?;
+        let started = receiver.recv().map_err(|_| rust_i18n::t!("voice.workerStopped").to_string())?;
         if cancelled.load(Ordering::SeqCst) {
             // Cancel may have reached the worker before Start while asset
             // verification was running. Send it again after Start completes.
             let _ = sender.send(Message::Cancel);
-            return Err("Dictation cancelled".into());
+            return Err(rust_i18n::t!("voice.cancelled").to_string());
         }
         started
     })
@@ -221,9 +221,9 @@ pub async fn voice_record_stop(
     state: State<'_, VoiceState>,
 ) -> Result<String, String> {
     let (id, cancelled) = {
-        let mut op = state.operation.lock().map_err(|_| "Voice state failed")?;
+        let mut op = state.operation.lock().map_err(|_| rust_i18n::t!("voice.stateFailed").to_string())?;
         if op.phase != Phase::Recording {
-            return Err("No active recording".into());
+            return Err(rust_i18n::t!("voice.noRecording").to_string());
         }
         op.phase = Phase::Transcribing;
         (op.id, op.cancelled.clone())
@@ -233,10 +233,10 @@ pub async fn voice_record_stop(
         let (reply, receiver) = mpsc::channel();
         sender
             .send(Message::Stop { reply })
-            .map_err(|_| "Microphone worker stopped")?;
-        let capture = receiver.recv().map_err(|_| "Microphone worker stopped")??;
+            .map_err(|_| rust_i18n::t!("voice.workerStopped").to_string())?;
+        let capture = receiver.recv().map_err(|_| rust_i18n::t!("voice.workerStopped").to_string())??;
         if cancelled.load(Ordering::SeqCst) {
-            return Err("Dictation cancelled".into());
+            return Err(rust_i18n::t!("voice.cancelled").to_string());
         }
         transcribe(&app, capture, &cancelled)
     })
@@ -327,41 +327,41 @@ fn transcribe(app: &AppHandle, capture: Capture, cancelled: &AtomicBool) -> Resu
     let mut child = Command::new(engine)
         .args([
             "-m",
-            model.to_str().ok_or("Model path is invalid")?,
+            model.to_str().ok_or(rust_i18n::t!("voice.modelPath").to_string())?,
             "-f",
-            temp.wav.to_str().ok_or("Audio path is invalid")?,
+            temp.wav.to_str().ok_or(rust_i18n::t!("voice.audioPath").to_string())?,
             "-l",
             "auto",
             "-oj",
             "-of",
-            prefix.to_str().ok_or("Output path is invalid")?,
+            prefix.to_str().ok_or(rust_i18n::t!("voice.outputPath").to_string())?,
             "-np",
         ])
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
-        .map_err(|e| format!("Could not launch the voice engine: {e}"))?;
+        .map_err(|e| rust_i18n::t!("voice.launchFailed", error = e).to_string())?;
     let started = Instant::now();
     loop {
         if cancelled.load(Ordering::SeqCst) || started.elapsed() > Duration::from_secs(5 * 60) {
             let _ = child.kill();
             let _ = child.wait();
             return Err(if cancelled.load(Ordering::SeqCst) {
-                "Dictation cancelled"
+                rust_i18n::t!("voice.cancelled").to_string()
             } else {
-                "Transcription timed out"
+                rust_i18n::t!("voice.timeout").to_string()
             }
             .into());
         }
         match child.try_wait().map_err(|e| e.to_string())? {
             Some(exit) if exit.success() => break,
-            Some(_) => return Err("Voice engine could not transcribe the recording".into()),
+            Some(_) => return Err(rust_i18n::t!("voice.cannotTranscribe").to_string()),
             None => std::thread::sleep(Duration::from_millis(100)),
         }
     }
-    let bytes = fs::read(&temp.json).map_err(|_| "Voice engine did not return a transcript")?;
+    let bytes = fs::read(&temp.json).map_err(|_| rust_i18n::t!("voice.noTranscript").to_string())?;
     let output: WhisperResult = serde_json::from_slice(&bytes)
-        .map_err(|_| "Voice engine returned an invalid transcript")?;
+        .map_err(|_| rust_i18n::t!("voice.invalidTranscript").to_string())?;
     let text = output
         .transcription
         .into_iter()
@@ -370,7 +370,7 @@ fn transcribe(app: &AppHandle, capture: Capture, cancelled: &AtomicBool) -> Resu
         .collect::<Vec<_>>()
         .join(" ");
     if text.is_empty() {
-        Err("No speech was detected".into())
+        Err(rust_i18n::t!("voice.noSpeech").to_string())
     } else {
         Ok(text)
     }

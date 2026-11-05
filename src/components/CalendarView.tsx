@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { CSSProperties } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { eventDate, useStore } from "../store";
@@ -9,7 +10,7 @@ import {
   type CalendarViewMode,
 } from "../lib/calendarLayout";
 import { formatTime, toLocalDate, today } from "../lib/dates";
-import { weekdayNames } from "../lib/locale";
+import { appLocale, formatDateRange, weekdayNames } from "../lib/locale";
 import {
   priorityColor,
   showsPriority,
@@ -162,38 +163,39 @@ function CalendarToolbar({
   onStep: (direction: -1 | 1) => void;
   onNew: () => void;
 }) {
+  const { t } = useTranslation();
   return (
     <header className="calendar-toolbar">
       <div className="calendar-toolbar-primary">
         <button type="button" onClick={onToday} className="calendar-today-button">
-          Today
+          {t("common.today")}
         </button>
         <div className="calendar-stepper">
           <button
             type="button"
             onClick={() => onStep(-1)}
-            aria-label={`Previous ${mode}`}
-            title={`Previous ${mode}`}
+            aria-label={t(`calendar.previous.${mode}`)}
+            title={t(`calendar.previous.${mode}`)}
           >
             <ChevronLeftIcon width={18} height={18} />
           </button>
           <button
             type="button"
             onClick={() => onStep(1)}
-            aria-label={`Next ${mode}`}
-            title={`Next ${mode}`}
+            aria-label={t(`calendar.next.${mode}`)}
+            title={t(`calendar.next.${mode}`)}
           >
             <ChevronRightIcon width={18} height={18} />
           </button>
         </div>
         <div className="calendar-title">
           <h2>{calendarRangeLabel(anchor, mode)}</h2>
-          <span>{mode === "month" ? "Calendar overview" : localTimeZone()}</span>
+          <span>{mode === "month" ? t("calendar.calendarOverview") : localTimeZone()}</span>
         </div>
       </div>
 
       <div className="calendar-toolbar-actions">
-        <div className="calendar-view-switch" aria-label="Calendar view">
+        <div className="calendar-view-switch" aria-label={t("calendar.calendarView")}>
           {(["month", "week", "day"] as const).map((view) => (
             <button
               key={view}
@@ -202,13 +204,13 @@ function CalendarToolbar({
               aria-pressed={view === mode}
               onClick={() => onModeChange(view)}
             >
-              {view[0].toUpperCase() + view.slice(1)}
+              {t(`calendar.mode.${view}`)}
             </button>
           ))}
         </div>
         <button type="button" onClick={onNew} className="calendar-new-button">
           <PlusIcon width={16} height={16} />
-          <span>New event</span>
+          <span>{t("calendar.newEvent")}</span>
         </button>
       </div>
     </header>
@@ -234,6 +236,7 @@ function MonthCalendar({
   onOpenEvent: (event: Event) => void;
   onOpenTaskDay: (date: string) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="calendar-month">
       <div className="calendar-month-weekdays">
@@ -269,14 +272,10 @@ function MonthCalendar({
                     event.stopPropagation();
                     onOpenDay(date);
                   }}
-                  aria-label={`Open ${date.toLocaleDateString(undefined, {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                  })}`}
+                  aria-label={t("calendar.openDate", { date: date.toLocaleDateString(appLocale(), { weekday: "long", month: "long", day: "numeric" }) })}
                 >
                   {date.getDate() === 1
-                    ? date.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+                    ? date.toLocaleDateString(appLocale(), { month: "short", day: "numeric" })
                     : date.getDate()}
                 </button>
                 <button
@@ -286,7 +285,7 @@ function MonthCalendar({
                     event.stopPropagation();
                     onAdd(key);
                   }}
-                  aria-label={`Add event on ${key}`}
+                  aria-label={t("calendar.addOnDate", { date: key })}
                 >
                   <PlusIcon width={13} height={13} />
                 </button>
@@ -309,7 +308,7 @@ function MonthCalendar({
                       onOpenDay(date);
                     }}
                   >
-                    {hidden} more
+                    {t("calendar.moreCount", { count: hidden })}
                   </button>
                 )}
               </div>
@@ -342,6 +341,7 @@ function ScheduleCalendar({
   onOpenEvent: (event: Event) => void;
   onOpenTaskDay: (date: string) => void;
 }) {
+  const { t } = useTranslation();
   const columns = scheduleColumns(days.length);
   return (
     <div className="calendar-schedule">
@@ -357,7 +357,7 @@ function ScheduleCalendar({
               className={`calendar-schedule-date ${current ? "is-today" : ""}`}
               onClick={() => onOpenDay(date)}
             >
-              <span>{date.toLocaleDateString(undefined, { weekday: "short" })}</span>
+              <span>{date.toLocaleDateString(appLocale(), { weekday: "short" })}</span>
               <b>{date.getDate()}</b>
             </button>
           );
@@ -365,7 +365,7 @@ function ScheduleCalendar({
       </div>
 
       <div className="calendar-all-day" style={{ gridTemplateColumns: columns }}>
-        <span className="calendar-all-day-label">all-day</span>
+        <span className="calendar-all-day-label">{t("calendar.allDay")}</span>
         {days.map((date) => {
           const key = toLocalDate(date);
           const entries = (entriesByDate.get(key) ?? []).filter((entry) => entry.allDay);
@@ -580,10 +580,10 @@ function readStoredMode(): CalendarViewMode {
 
 function calendarRangeLabel(anchor: Date, mode: CalendarViewMode): string {
   if (mode === "month") {
-    return anchor.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    return anchor.toLocaleDateString(appLocale(), { month: "long", year: "numeric" });
   }
   if (mode === "day") {
-    return anchor.toLocaleDateString(undefined, {
+    return anchor.toLocaleDateString(appLocale(), {
       weekday: "long",
       month: "long",
       day: "numeric",
@@ -591,19 +591,7 @@ function calendarRangeLabel(anchor: Date, mode: CalendarViewMode): string {
   }
   const [start, ...rest] = scheduleDays(anchor, "week");
   const end = rest[rest.length - 1] ?? start;
-  if (start.getMonth() === end.getMonth()) {
-    return `${start.toLocaleDateString(undefined, { month: "long" })} ${
-      start.getDate()
-    }–${end.getDate()}, ${end.getFullYear()}`;
-  }
-  return `${start.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  })} – ${end.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })}`;
+  return formatDateRange(start, end);
 }
 
 function scheduleColumns(dayCount: number): string {
@@ -640,7 +628,7 @@ function hourLabel(hour: number): string {
 }
 
 function localTimeZone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone.replace(/_/g, " ");
+  return Intl.DateTimeFormat(appLocale()).resolvedOptions().timeZone.replace(/_/g, " ");
 }
 
 function timeZoneOffset(date: Date): string {

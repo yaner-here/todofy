@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { create } from "zustand";
 import type { Session } from "@supabase/supabase-js";
 import { invoke } from "@tauri-apps/api/core";
@@ -83,7 +84,7 @@ export const useAuth = create<AuthState>((set) => ({
     if (data.user && !data.session) {
       return {
         ok: true,
-        message: "Check your email to confirm your account, then return here and sign in.",
+        message: translate("account.confirmEmail"),
       };
     }
     return { ok: true };
@@ -95,7 +96,7 @@ export const useAuth = create<AuthState>((set) => ({
       options: { redirectTo: OAUTH_REDIRECT, skipBrowserRedirect: true },
     });
     if (error) return { ok: false, error: error.message };
-    if (!data.url) return { ok: false, error: "Supabase did not return a Google sign-in URL." };
+    if (!data.url) return { ok: false, error: translate("account.googleUrlMissing") };
 
     let callback: OAuthCallback;
     try {
@@ -120,7 +121,7 @@ export const useAuth = create<AuthState>((set) => ({
     } catch (error) {
       console.error("Could not finish the Google sign-in browser response:", error);
       if (!exchangeError) {
-        return { ok: false, error: "Signed in, but could not close the browser callback cleanly." };
+        return { ok: false, error: translate("account.callbackFailure") };
       }
     }
 
@@ -142,7 +143,7 @@ export const useAuth = create<AuthState>((set) => ({
     if (error) {
       return {
         ok: false,
-        error: "Your account was not deleted because subscription cancellation or account cleanup could not be confirmed. Please try again.",
+        error: translate("account.deleteFailed"),
       };
     }
 

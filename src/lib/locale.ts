@@ -12,6 +12,7 @@
  */
 
 import { api } from "./api";
+import { i18n, t } from "./i18n";
 
 export type TimeFormatPref = "auto" | "12" | "24";
 /** "auto", or the resolved first day as a weekday index (0 = Sunday). */
@@ -21,8 +22,6 @@ const TIME_FORMAT_KEY = "time_format";
 const WEEK_START_KEY = "week_start";
 
 interface Resolved {
-  /** Passed to `Intl` as the locale; undefined means "let the runtime pick". */
-  locale: string | undefined;
   hour12: boolean;
   /** 0 = Sunday, 1 = Monday, 6 = Saturday. */
   weekStart: number;
@@ -31,7 +30,7 @@ interface Resolved {
 let systemLocale: string | undefined;
 let timeFormatPref: TimeFormatPref = "auto";
 let weekStartPref: WeekStartPref = "auto";
-let resolved: Resolved = { locale: undefined, hour12: true, weekStart: 0 };
+let resolved: Resolved = { hour12: true, weekStart: 0 };
 
 /**
  * Regions that do not start the week on Monday, used only when the runtime is
@@ -115,7 +114,6 @@ function regionOf(locale: string): string | undefined {
 function recompute(): void {
   const locale = systemLocale;
   resolved = {
-    locale,
     hour12: timeFormatPref === "auto" ? deriveHour12(locale) : timeFormatPref === "12",
     weekStart:
       weekStartPref === "auto" ? deriveWeekStart(locale) : Number(weekStartPref),
@@ -139,7 +137,23 @@ export async function initLocale(): Promise<void> {
   recompute();
 }
 
-export const appLocale = (): string | undefined => resolved.locale;
+export function appLocale(): string {
+  const language = i18n.resolvedLanguage === "zh-CN" ? "zh-Hans" : "en";
+  try {
+    const region = new Intl.Locale(systemLocale ?? runtimeLocale() ?? "en").region;
+    return region ? `${language}-${region}` : language;
+  } catch {
+    return language;
+  }
+}
+
+/** Older webviews can format each endpoint when date ranges are unavailable. */
+export function formatDateRange(start: Date, end: Date): string {
+  const formatter = new Intl.DateTimeFormat(appLocale(), {
+    month: "long", day: "numeric", year: "numeric",
+  }) as Intl.DateTimeFormat & { formatRange?: (start: Date, end: Date) => string };
+  return formatter.formatRange?.(start, end) ?? `${formatter.format(start)} – ${formatter.format(end)}`;
+}
 export const usesHour12 = (): boolean => resolved.hour12;
 export const weekStart = (): number => resolved.weekStart;
 export const timeFormat = (): TimeFormatPref => timeFormatPref;
@@ -161,11 +175,11 @@ export async function setWeekStart(pref: WeekStartPref): Promise<void> {
 export function autoSummary(): string {
   const hour12 = deriveHour12(systemLocale);
   const start = deriveWeekStart(systemLocale);
-  const day = ["Sunday", "Monday", "", "", "", "", "Saturday"][start];
+  const day = new Intl.DateTimeFormat(appLocale(), { weekday: "long" }).format(new Date(2023, 0, 1 + start));
   // Name the source, not just the tag: "Auto is wrong" is almost always the
   // system locale failing to arrive, and that is invisible from the result.
-  const source = systemLocale ?? `${runtimeLocale() ?? "unknown"} (no system locale)`;
-  return `${source} · ${hour12 ? "12-hour" : "24-hour"} · week starts ${day}`;
+  const source = systemLocale ?? t("locale.noSystem", { locale: runtimeLocale() ?? t("locale.unknown") });
+  return t("locale.summary", { source, clock: t(hour12 ? "locale.hour12" : "locale.hour24"), day });
 }
 
 /**
@@ -175,7 +189,7 @@ export function autoSummary(): string {
 export function weekdayNames(
   style: "narrow" | "short" | "long",
 ): { index: number; label: string }[] {
-  const formatter = new Intl.DateTimeFormat(resolved.locale, { weekday: style });
+  const formatter = new Intl.DateTimeFormat(appLocale(), { weekday: style });
   return Array.from({ length: 7 }, (_, column) => {
     const index = (resolved.weekStart + column) % 7;
     // 2023-01-01 was a Sunday, so `index` maps straight onto the date.

@@ -1,3 +1,4 @@
+import { t } from "../lib/i18n";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export interface MenuItem {
@@ -112,7 +113,7 @@ function buildItems(target: EventTarget | null, appItems: MenuItem[]): Entry[] {
 
   if (field && selected)
     items.push({
-      label: "Cut",
+      label: t("menu.cut"),
       hint: "Ctrl+X",
       onClick: () => {
         writeClipboard(selected);
@@ -121,19 +122,19 @@ function buildItems(target: EventTarget | null, appItems: MenuItem[]): Entry[] {
     });
   if (selected)
     items.push({
-      label: "Copy",
+      label: t("menu.copy"),
       hint: "Ctrl+C",
       onClick: () => writeClipboard(selected),
     });
   if (field)
     items.push({
-      label: "Paste",
+      label: t("menu.paste"),
       hint: "Ctrl+V",
       onClick: async () => replaceSelection(field, await readClipboard()),
     });
   if (field)
     items.push({
-      label: "Select all",
+      label: t("menu.selectAll"),
       hint: "Ctrl+A",
       onClick: () => field.select(),
     });

@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { invoke } from "@tauri-apps/api/core";
 
 export interface VoiceStatus {
@@ -41,7 +42,7 @@ export function voiceError(error: unknown): string {
     ? error
     : error instanceof Error
       ? error.message
-      : "Voice input failed. Please try again.";
+      : translate("voice.inputFailed");
 }
 
 export function insertTranscript(value: string, transcript: string, start: number, end: number) {

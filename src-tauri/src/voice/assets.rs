@@ -141,7 +141,7 @@ fn get_limited(client: &Client, url: &str, limit: usize) -> Result<Vec<u8>, Stri
         .error_for_status()
         .map_err(|e| e.to_string())?;
     if response.content_length().is_some_and(|n| n > limit as u64) {
-        return Err("Voice catalog is too large".into());
+        return Err(rust_i18n::t!("voice.catalogTooLarge").to_string());
     }
     let mut bytes = Vec::new();
     response
@@ -149,7 +149,7 @@ fn get_limited(client: &Client, url: &str, limit: usize) -> Result<Vec<u8>, Stri
         .read_to_end(&mut bytes)
         .map_err(|e| e.to_string())?;
     if bytes.len() > limit {
-        return Err("Voice catalog is too large".into());
+        return Err(rust_i18n::t!("voice.catalogTooLarge").to_string());
     }
     Ok(bytes)
 }
@@ -176,7 +176,7 @@ fn verify_catalog_signature(
     let signature = Signature::decode(std::str::from_utf8(&decoded).map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
     key.verify(bytes, &signature, true)
-        .map_err(|e| format!("Voice catalog signature failed: {e}"))?;
+        .map_err(|e| rust_i18n::t!("voice.signatureFailed", error = e).to_string())?;
     Ok(())
 }
 
@@ -192,21 +192,21 @@ fn validate_asset(asset: &Asset) -> Result<(), String> {
         || asset.sha256.len() != 64
         || !asset.sha256.bytes().all(|b| b.is_ascii_hexdigit())
     {
-        return Err("Voice catalog contains an invalid asset".into());
+        return Err(rust_i18n::t!("voice.invalidAsset").to_string());
     }
     Ok(())
 }
 
 fn validate_catalog(catalog: &Catalog) -> Result<(), String> {
     if catalog.schema != 1 || catalog.version.is_empty() || catalog.version.len() > 64 {
-        return Err("Unsupported voice catalog".into());
+        return Err(rust_i18n::t!("voice.unsupportedCatalog").to_string());
     }
     for asset in catalog.engines.values().chain(catalog.models.values()) {
         validate_asset(asset)?;
     }
     for model in ["tiny", "base"] {
         if !catalog.models.contains_key(model) {
-            return Err("Voice catalog is missing a model".into());
+            return Err(rust_i18n::t!("voice.missingModel").to_string());
         }
     }
     Ok(())
@@ -249,7 +249,7 @@ fn catalog_by_key(app: &AppHandle, key: &str) -> Result<Option<Catalog>, String>
     let Some(id) = settings::read(&db.conn(), key).filter(|id| !id.is_empty()) else {
         return Ok(None);
     };
-    uuid::Uuid::parse_str(&id).map_err(|_| "Invalid voice catalog reference")?;
+    uuid::Uuid::parse_str(&id).map_err(|_| rust_i18n::t!("voice.invalidReference").to_string())?;
     let dir = root(app)?.join("catalogs").join(id);
     let bytes = fs::read(dir.join("catalog.json")).map_err(|e| e.to_string())?;
     let sig = fs::read(dir.join("catalog.json.sig")).map_err(|e| e.to_string())?;
@@ -421,7 +421,7 @@ fn activate_pending_if_ready(app: &AppHandle, catalog: &Catalog) -> Result<(), S
     if engine_ready && model_ready {
         let db = app.state::<Db>();
         let pending_id =
-            settings::read(&db.conn(), PENDING_CATALOG_ID_KEY).ok_or("Voice update is missing")?;
+            settings::read(&db.conn(), PENDING_CATALOG_ID_KEY).ok_or(rust_i18n::t!("voice.updateMissing").to_string())?;
         settings::write(&db.conn(), CATALOG_ID_KEY, &pending_id).map_err(|e| e.to_string())?;
         settings::write(&db.conn(), PENDING_CATALOG_ID_KEY, "").map_err(|e| e.to_string())?;
     }
@@ -432,30 +432,30 @@ pub fn checked_paths(app: &AppHandle) -> Result<(PathBuf, PathBuf), String> {
     let status = status(app)?;
     if !status.ready {
         if status.development_assets {
-            return Err("Enable Voice Mode with an available local engine and model.".into());
+            return Err(rust_i18n::t!("voice.enableLocal").to_string());
         }
         return Err(
-            "Enable Voice Mode after downloading the engine and a model in Settings.".into(),
+            rust_i18n::t!("voice.enableAfterDownload").to_string(),
         );
     }
     #[cfg(debug_assertions)]
     if let Some(dev) = development_assets() {
         let model = dev
             .model(&status.selected_model)
-            .ok_or("Local voice model is unavailable")?
+            .ok_or(rust_i18n::t!("voice.localModelUnavailable").to_string())?
             .clone();
         return Ok((dev.engine, model));
     }
-    let catalog = cached_catalog(app)?.ok_or("Voice catalog is missing")?;
-    let key = platform_key().ok_or("This platform is not supported")?;
+    let catalog = cached_catalog(app)?.ok_or(rust_i18n::t!("voice.catalogMissing").to_string())?;
+    let key = platform_key().ok_or(rust_i18n::t!("voice.unsupportedPlatform").to_string())?;
     let engine = catalog
         .engines
         .get(key)
-        .ok_or("Voice engine is unavailable")?;
+        .ok_or(rust_i18n::t!("voice.engineUnavailable").to_string())?;
     let model = catalog
         .models
         .get(&status.selected_model)
-        .ok_or("Voice model is unavailable")?;
+        .ok_or(rust_i18n::t!("voice.modelUnavailable").to_string())?;
     Ok((
         asset_path(app, "engine", key, engine)?,
         asset_path(app, "model", &status.selected_model, model)?,
@@ -478,19 +478,19 @@ pub fn download(
         refresh_catalog(app)?
     };
     let name = if kind == "engine" {
-        platform_key().ok_or("This platform is not supported")?
+        platform_key().ok_or(rust_i18n::t!("voice.unsupportedPlatform").to_string())?
     } else {
-        model.ok_or("Choose a model")?
+        model.ok_or(rust_i18n::t!("voice.chooseModel").to_string())?
     };
     if kind != "engine" && (kind != "model" || !["tiny", "base"].contains(&name)) {
-        return Err("Unknown voice asset".into());
+        return Err(rust_i18n::t!("voice.unknownAsset").to_string());
     }
     let asset = if kind == "engine" {
         catalog.engines.get(name)
     } else {
         catalog.models.get(name)
     }
-    .ok_or("Voice asset is unavailable")?;
+    .ok_or(rust_i18n::t!("voice.assetUnavailable").to_string())?;
     let dest = asset_path(app, kind, name, asset)?;
     if installed(app, kind, name, asset) {
         if pending_catalog(app)?.as_ref() == Some(&catalog) {
@@ -513,7 +513,7 @@ pub fn download(
         let mut chunk = [0u8; 64 * 1024];
         loop {
             if cancelled() {
-                return Err("Download cancelled".into());
+                return Err(rust_i18n::t!("voice.downloadCancelled").to_string());
             }
             let n = response.read(&mut chunk).map_err(|e| e.to_string())?;
             if n == 0 {
@@ -521,7 +521,7 @@ pub fn download(
             }
             received += n as u64;
             if received > asset.size {
-                return Err("Voice asset exceeded its expected size".into());
+                return Err(rust_i18n::t!("voice.assetSize").to_string());
             }
             file.write_all(&chunk[..n]).map_err(|e| e.to_string())?;
             hash.update(&chunk[..n]);
@@ -536,7 +536,7 @@ pub fn download(
         }
         file.sync_all().map_err(|e| e.to_string())?;
         if received != asset.size || format!("{:x}", hash.finalize()) != asset.sha256 {
-            return Err("Voice asset checksum did not match the signed catalog".into());
+            return Err(rust_i18n::t!("voice.checksumMismatch").to_string());
         }
         #[cfg(unix)]
         {
@@ -583,7 +583,7 @@ pub fn remove(app: &AppHandle, kind: &str, model: Option<&str>) -> Result<(), St
     } else if kind == "model" && ["tiny", "base"].contains(&model.unwrap_or("")) {
         vec![format!("model-{}-", model.unwrap())]
     } else {
-        return Err("Unknown voice asset".into());
+        return Err(rust_i18n::t!("voice.unknownAsset").to_string());
     };
     for entry in fs::read_dir(dir).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
@@ -607,7 +607,7 @@ pub fn set_mode(app: &AppHandle, enabled: bool) -> Result<VoiceStatus, String> {
         if !status.engine_installed
             || status.models_installed.get(&status.selected_model) != Some(&true)
         {
-            return Err("Download the voice engine and selected model first".into());
+            return Err(rust_i18n::t!("voice.downloadFirst").to_string());
         }
     }
     let db = app.state::<Db>();
@@ -619,7 +619,7 @@ pub fn set_mode(app: &AppHandle, enabled: bool) -> Result<VoiceStatus, String> {
 
 pub fn set_model(app: &AppHandle, model: &str) -> Result<VoiceStatus, String> {
     if !["tiny", "base"].contains(&model) {
-        return Err("Unknown voice model".into());
+        return Err(rust_i18n::t!("voice.unknownModel").to_string());
     }
     let db = app.state::<Db>();
     settings::write(&db.conn(), MODEL_KEY, model).map_err(|e| e.to_string())?;

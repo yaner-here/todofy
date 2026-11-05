@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { CheckIcon } from "./Icons";
 
@@ -47,6 +48,7 @@ export function LabelForm({
   onSubmit: (name: string, color: string) => void;
   onCancel: () => void;
 }) {
+  const { t } = useTranslation();
   const [name, setName] = useState(initialName);
   const [color, setColor] = useState(initialColor);
   const [hexInput, setHexInput] = useState(initialColor.replace("#", ""));
@@ -76,13 +78,13 @@ export function LabelForm({
         value={name}
         onInput={(e) => setName(e.currentTarget.value)}
         onKeyDown={(e) => e.key === "Escape" && onCancel()}
-        placeholder="Label name"
+        placeholder={t("labels.labelName")}
         className="rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none transition-colors focus:border-(--color-accent)"
       />
 
       <div className="flex flex-col gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-faint">
-          Color
+          {t("board.color")}
         </span>
 
         <div className="grid grid-cols-8 gap-2">
@@ -136,14 +138,14 @@ export function LabelForm({
           onClick={onCancel}
           className="rounded-lg px-3 py-1.5 text-xs font-medium text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
           disabled={!name.trim()}
           className="rounded-lg bg-(--color-accent) px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md disabled:opacity-40 disabled:shadow-none"
         >
-          Save label
+          {t("labels.saveLabel")}
         </button>
       </div>
     </form>

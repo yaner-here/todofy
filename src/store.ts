@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { t as translate } from "./lib/i18n";
 import { api } from "./lib/api";
 import {
   combineDateTime,
@@ -11,6 +12,7 @@ import { completedTasksPage, sectionsForView } from "./lib/grouping";
 import {
   boardColumns,
   columnOf,
+  columnName,
   DEFAULT_COLUMNS,
   DONE_COLUMN,
   inScope,
@@ -259,15 +261,15 @@ export const useStore = create<State>((set, get) => ({
     };
     const previous = get();
     set({
-      tasks: sortTasks(keep(tasks, "tasks", previous.tasks)),
-      labels: keep(labels, "labels", previous.labels),
-      boardDefinitions: keep(columns, "board columns", previous.boardDefinitions),
-      priorityProfiles: keep(profiles, "priorities", previous.priorityProfiles),
-      journal: keep(journal, "journal", previous.journal),
-      events: sortEvents(keep(events, "events", previous.events)),
+      tasks: sortTasks(keep(tasks, translate("common.data.tasks"), previous.tasks)),
+      labels: keep(labels, translate("common.data.labels"), previous.labels),
+      boardDefinitions: keep(columns, translate("common.data.columns"), previous.boardDefinitions),
+      priorityProfiles: keep(profiles, translate("common.data.priorities"), previous.priorityProfiles),
+      journal: keep(journal, translate("common.data.journal"), previous.journal),
+      events: sortEvents(keep(events, translate("common.data.events"), previous.events)),
       loading: false,
       loadError: failed.length
-        ? `Could not load ${failed.join(", ")}. Your data is still saved on this device.`
+        ? translate("common.loadFailed", { items: failed.join(translate("common.listSeparator")) })
         : null,
     });
   },
@@ -367,7 +369,7 @@ export const useStore = create<State>((set, get) => ({
     if (!task) return;
     const definitions = get().boardDefinitions;
     const target = definitions.find((c) => c.id === column && !c.deletedAt);
-    if (!target) throw new Error("This column no longer exists.");
+    if (!target) throw new Error(translate("board.missingColumn"));
     const changingColumn = columnOf(task, definitions) !== column;
     set({ boardNotice: null });
 
@@ -387,7 +389,7 @@ export const useStore = create<State>((set, get) => ({
       const tasks = mergeTasks(get().tasks, moved);
       const count = tasks.filter((t) => t.status === "active" && columnOf(t, definitions) === column).length;
       set({ tasks, boardNotice: changingColumn && target.wipLimit !== null && count > target.wipLimit
-        ? `${target.name} is over its WIP limit (${count}/${target.wipLimit}). The task was moved.` : null });
+        ? translate("board.limitExceeded", { name: columnName(target), count, limit: target.wipLimit }) : null });
     } catch (error) {
       await get().load();
       throw error;

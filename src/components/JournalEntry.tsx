@@ -1,3 +1,5 @@
+import { appLocale, usesHour12 } from "../lib/locale";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { useStore } from "../store";
 import { renderMarkdown } from "../lib/markdown";
@@ -11,6 +13,7 @@ interface Props {
 }
 
 export function JournalEntry({ entry, sessions }: Props) {
+  const { t } = useTranslation();
   const { patchJournal, removeJournal, requestConfirm } = useStore();
   const [editing, setEditing] = useState(false);
 
@@ -19,7 +22,7 @@ export function JournalEntry({ entry, sessions }: Props) {
       <JournalEditor
         sessions={sessions}
         initial={entry}
-        submitLabel="Save"
+        submitLabel={t("common.save")}
         onSubmit={async (draft) => {
           await patchJournal({ id: entry.id, ...draft });
           setEditing(false);
@@ -29,37 +32,38 @@ export function JournalEntry({ entry, sessions }: Props) {
     );
   }
 
-  const time = new Date(entry.createdAt).toLocaleTimeString(undefined, {
+  const time = new Date(entry.createdAt).toLocaleTimeString(appLocale(), {
     hour: "numeric",
     minute: "2-digit",
+    hour12: usesHour12(),
   });
 
   return (
     <article className="journal-entry">
       <div className="journal-entry-head">
         {entry.mood && (
-          <span className="journal-mood-badge" title={MOOD_LABELS[entry.mood - 1]}>
+          <span className="journal-mood-badge" title={t(MOOD_LABELS[entry.mood - 1])}>
             {MOODS[entry.mood - 1]}
           </span>
         )}
-        <span className="journal-entry-title">{entry.title ?? "Untitled entry"}</span>
+        <span className="journal-entry-title">{entry.title ?? t("journal.untitledEntry")}</span>
         <span className="journal-entry-time">{time}</span>
         <div className="journal-entry-actions">
-          <button onClick={() => setEditing(true)} title="Edit entry">
+          <button onClick={() => setEditing(true)} title={t("journal.editEntry")}>
             <EditIcon width={14} height={14} />
           </button>
           <button
             className="is-danger"
             onClick={() =>
               requestConfirm({
-                title: "Delete entry?",
-                message: "This journal entry will be removed.",
-                confirmLabel: "Delete",
+                title: t("journal.deleteEntryTitle"),
+                message: t("journal.deleteEntryMessage"),
+                confirmLabel: t("common.delete"),
                 danger: true,
                 onConfirm: () => removeJournal(entry.id),
               })
             }
-            title="Delete entry"
+            title={t("journal.deleteEntry")}
           >
             <TrashIcon width={14} height={14} />
           </button>

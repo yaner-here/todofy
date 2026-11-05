@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { activeCount, useStore } from "../store";
 import type { ViewId } from "../types";
@@ -5,6 +6,7 @@ import { EditIcon, PlusIcon, SearchIcon, TrashIcon } from "./Icons";
 import { LabelForm } from "./LabelForm";
 
 export function LabelsView() {
+  const { t } = useTranslation();
   const {
     tasks,
     labels,
@@ -25,9 +27,9 @@ export function LabelsView() {
   return (
     <main className="redesign-secondary labels-main flex flex-1 flex-col overflow-hidden bg-bg">
       <header className="app-page-header shrink-0 px-8 pt-8 pb-4">
-        <h2 className="text-2xl font-semibold tracking-tight">Labels</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("labels.labels")}</h2>
         <p className="mt-0.5 text-sm text-muted">
-          Search, edit, and manage your labels
+          {t("labels.searchEditAndManageYourLabels")}
         </p>
       </header>
 
@@ -41,7 +43,7 @@ export function LabelsView() {
           <input
             value={query}
             onInput={(e) => setQuery(e.currentTarget.value)}
-            placeholder="Search labels…"
+            placeholder={t("labels.searchLabels")}
             className="w-full rounded-md border border-border bg-surface py-2 pl-8 pr-3 text-sm outline-none focus:border-(--color-accent)"
           />
         </div>
@@ -53,7 +55,7 @@ export function LabelsView() {
           className="flex shrink-0 items-center gap-1.5 rounded-md bg-(--color-accent) px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90"
         >
           <PlusIcon width={15} height={15} />
-          New label
+          {t("labels.newLabel")}
         </button>
       </div>
 
@@ -73,8 +75,8 @@ export function LabelsView() {
         {filtered.length === 0 ? (
           <p className="mt-10 text-center text-sm text-faint">
             {labels.length === 0
-              ? "No labels yet."
-              : "No labels match your search."}
+              ? t("labels.noLabelsYet")
+              : t("labels.noLabelsMatchYourSearch")}
           </p>
         ) : (
           <div className="flex flex-col gap-1">
@@ -111,7 +113,7 @@ export function LabelsView() {
                     />
                     <span className="flex-1 truncate">{l.name}</span>
                     <span className="text-xs tabular-nums text-faint">
-                      {count} active
+                      {count} {t("labels.active")}
                     </span>
                   </button>
                   <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
@@ -121,22 +123,22 @@ export function LabelsView() {
                         setEditingId(l.id);
                       }}
                       className="rounded p-1 text-faint hover:text-text"
-                      title="Edit label"
+                      title={t("labels.editLabel")}
                     >
                       <EditIcon width={14} height={14} />
                     </button>
                     <button
                       onClick={() =>
                         requestConfirm({
-                          title: "Delete label?",
-                          message: `“${l.name}” will be removed from all tasks.`,
-                          confirmLabel: "Delete",
+                          title: t("labels.deleteLabelTitle"),
+                          message: t("labels.deleteLabelMessage", { name: l.name }),
+                          confirmLabel: t("common.delete"),
                           danger: true,
                           onConfirm: () => removeLabel(l.id),
                         })
                       }
                       className="rounded p-1 text-faint hover:text-(--color-danger)"
-                      title="Delete label"
+                      title={t("labels.deleteLabel")}
                     >
                       <TrashIcon width={14} height={14} />
                     </button>

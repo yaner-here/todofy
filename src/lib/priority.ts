@@ -12,6 +12,7 @@
  */
 
 import type { SoundId } from "./sound";
+import { t } from "./i18n";
 
 export type PriorityValue = 1 | 2 | 3 | 4;
 
@@ -116,7 +117,12 @@ export function priorityName(
   priority: number,
   profiles?: PriorityProfile[],
 ): string {
-  return profileFor(priority, profiles).name;
+  return displayPriorityName(profileFor(priority, profiles));
+}
+
+export function displayPriorityName(profile: PriorityProfile): string {
+  return profile.name === defaultProfile(profile.priority).name
+    ? t("common.priority", { priority: profile.priority }) : profile.name;
 }
 
 /** Has the user made this priority their own? Drives the chip rules below. */

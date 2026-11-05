@@ -25,11 +25,11 @@ fn validate_event_range(
         return Ok(());
     };
     let start = DateTime::parse_from_rfc3339(start_at)
-        .map_err(|_| "Timed event start must be a valid ISO datetime".to_string())?;
+        .map_err(|_| rust_i18n::t!("validation.eventStart").to_string())?;
     let end = DateTime::parse_from_rfc3339(end_at)
-        .map_err(|_| "Timed event end must be a valid ISO datetime".to_string())?;
+        .map_err(|_| rust_i18n::t!("validation.eventEnd").to_string())?;
     if end <= start {
-        return Err("Event end time must be later than its start time".to_string());
+        return Err(rust_i18n::t!("validation.eventOrder").to_string());
     }
     Ok(())
 }
@@ -432,7 +432,7 @@ fn move_task_to_stage_inner(
 ) -> rusqlite::Result<Vec<Task>> {
     if !board_index.is_finite() {
         return Err(rusqlite::Error::InvalidParameterName(
-            "Invalid board position".into(),
+            rust_i18n::t!("validation.boardPosition").to_string(),
         ));
     }
     let columns = crate::board::list(conn)?;
@@ -442,7 +442,7 @@ fn move_task_to_stage_inner(
         .any(|c| c.id == target && c.id != crate::board::DONE && c.deleted_at.is_none())
     {
         return Err(rusqlite::Error::InvalidParameterName(
-            "This column no longer exists".into(),
+            rust_i18n::t!("validation.missingColumn").to_string(),
         ));
     }
     let now = now_iso();

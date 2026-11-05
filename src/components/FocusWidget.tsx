@@ -1,5 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef } from "react";
 import { useStore } from "../store";
+import type { MessageKey } from "../lib/i18n";
 import type { PomodoroPhase } from "../types";
 import { clock, formatDuration, secondsSince } from "../lib/duration";
 import { overEstimateBy, timerElapsed, trackedElapsed } from "../lib/tracking";
@@ -14,13 +16,14 @@ import {
   StopIcon,
 } from "./Icons";
 
-const PHASE_LABEL: Record<PomodoroPhase, string> = {
-  focus: "Focus",
-  short: "Short break",
-  long: "Long break",
+const PHASE_LABEL: Record<PomodoroPhase, MessageKey> = {
+  focus: "focus.focus",
+  short: "focus.shortBreak",
+  long: "focus.longBreak",
 };
 
 export function FocusWidget() {
+  const { t } = useTranslation();
   const {
     showFocus,
     toggleFocus,
@@ -95,20 +98,20 @@ export function FocusWidget() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
         <span className="text-xs font-semibold uppercase tracking-wider text-faint">
-          {p ? "Focus" : "Tracking"}
+          {p ? t("focus.focus") : t("focus.tracking")}
         </span>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setView({ kind: "focus" })}
             className="text-faint hover:text-text"
-            title="Open focus screen"
+            title={t("focus.openFocusScreen")}
           >
             <ExpandIcon width={15} height={15} />
           </button>
           <button
             onClick={toggleFocus}
             className="text-faint hover:text-text"
-            title="Hide"
+            title={t("focus.hide")}
           >
             <CloseIcon width={16} height={16} />
           </button>
@@ -125,7 +128,7 @@ export function FocusWidget() {
                 : "bg-surface-2 text-success"
             }`}
           >
-            {PHASE_LABEL[p.phase]}
+            {t(PHASE_LABEL[p.phase])}
           </span>
 
           <span
@@ -138,22 +141,21 @@ export function FocusWidget() {
 
           {p.completedFocus > 0 && (
             <span className="text-[11px] text-faint">
-              {p.completedFocus} focus session
-              {p.completedFocus === 1 ? "" : "s"} done
+              {t("focus.completedSessions", { count: p.completedFocus })}
             </span>
           )}
 
           <div className="flex items-center gap-2">
             <button
               onClick={pomodoroReset}
-              title="Reset phase"
+              title={t("focus.resetPhase")}
               className="grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               <RotateIcon width={16} height={16} />
             </button>
             <button
               onClick={p.running ? pomodoroPause : pomodoroStart}
-              title={p.running ? "Pause" : "Start"}
+              title={p.running ? t("focus.pause") : t("calendar.start")}
               className="grid h-11 w-11 place-items-center rounded-full bg-(--color-accent) text-white transition-colors hover:bg-accent-hover"
             >
               {p.running ? (
@@ -164,7 +166,7 @@ export function FocusWidget() {
             </button>
             <button
               onClick={pomodoroNext}
-              title="Skip to next phase"
+              title={t("focus.skipToNextPhase")}
               className="grid h-9 w-9 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               <SkipIcon width={16} height={16} />
@@ -190,7 +192,7 @@ export function FocusWidget() {
           <button
             onClick={() => select(activeTimer.taskId)}
             className="min-w-0 flex-1 text-left"
-            title="Open task"
+            title={t("focus.openTask")}
           >
             <p className="truncate text-sm text-text">{activeTimer.title}</p>
             <p
@@ -200,12 +202,12 @@ export function FocusWidget() {
             >
               {formatDuration(activeElapsed)}
               {taskPaused && " · paused"}
-              {taskOver > 0 && ` · ${formatDuration(taskOver)} over`}
+              {taskOver > 0 && t("focus.overDuration", { duration: formatDuration(taskOver) })}
             </p>
           </button>
           <button
             onClick={taskPaused ? resumeTaskTimer : pauseTaskTimer}
-            title={taskPaused ? "Resume tracking" : "Pause tracking"}
+            title={taskPaused ? t("focus.resumeTracking") : t("focus.pauseTracking")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
           >
             {taskPaused ? (
@@ -216,7 +218,7 @@ export function FocusWidget() {
           </button>
           <button
             onClick={stopTaskTimer}
-            title="Stop tracking"
+            title={t("focus.stopTracking")}
             className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-(--color-danger) transition-colors hover:bg-surface-2"
           >
             <StopIcon width={18} height={18} />

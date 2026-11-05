@@ -1,3 +1,5 @@
+import { appLocale } from "../lib/locale";
+import { useTranslation } from "react-i18next";
 import type { FormEvent, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -21,12 +23,13 @@ import {
 } from "./Icons";
 
 const FEATURES = [
-  "Tasks, labels, journal, and focus history",
-  "The same Todofy account on every device",
-  "A calm, local-first workflow that works offline",
-];
+  "billing.tasksLabelsJournalAndFocusHistory",
+  "billing.theSameTodofyAccountOnEveryDevice",
+  "billing.aCalmLocalFirstWorkflowThatWorksOffline",
+] as const;
 
 export function ProPaywall() {
+  const { t } = useTranslation();
   const {
     gateOpen,
     gateReason,
@@ -125,8 +128,8 @@ export function ProPaywall() {
           type="button"
           onClick={closeGate}
           disabled={busy}
-          title="Close"
-          aria-label="Close Todofy Pro"
+          title={t("common.close")}
+          aria-label={t("billing.closeTodofyPro")}
           className="absolute right-4 top-4 z-10 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
           <CloseIcon width={17} height={17} />
@@ -144,18 +147,16 @@ export function ProPaywall() {
               id="pro-dialog-title"
               className="mt-2 text-[27px] font-semibold leading-[1.18] tracking-[-0.035em] text-text sm:text-[30px]"
             >
-              Sync without changing how you work.
+              {t("billing.syncWithoutChangingHowYouWork")}
             </h2>
             <p className="mx-auto mt-3 max-w-sm text-[13px] leading-5 text-muted">
-              Carry your Todofy system between devices while keeping the quiet,
-              local-first experience you already know.
+              {t("billing.carryYourTodofySystemBetweenDevicesWhileKeepingTheQuiet")}
             </p>
           </header>
 
           {testMode && (
             <Notice tone="warning" className="mt-6">
-              Test checkout is enabled. Test purchases do not grant live
-              production access.
+              {t("billing.testCheckoutIsEnabledTestPurchasesDoNotGrantLive")}
             </Notice>
           )}
 
@@ -182,24 +183,24 @@ export function ProPaywall() {
 
               <div
                 role="group"
-                aria-label="Billing period"
+                aria-label={t("billing.billingPeriod")}
                 className="mx-auto grid max-w-82.5 grid-cols-2 rounded-xl border border-border bg-bg p-1"
               >
                 <PlanToggle
                   active={selectedPlan === "monthly"}
                   onClick={() => setSelectedPlan("monthly")}
                 >
-                  Monthly
+                  {t("billing.monthly")}
                 </PlanToggle>
                 <PlanToggle
                   active={selectedPlan === "yearly"}
                   onClick={() => setSelectedPlan("yearly")}
                 >
-                  Yearly
+                  {t("billing.yearly")}
                   <span
                     className={`ml-1.5 text-[9px] font-semibold ${selectedPlan === "yearly" ? "text-(--color-accent)" : "text-faint"}`}
                   >
-                    SAVE
+                    {t("billing.save")}
                   </span>
                 </PlanToggle>
               </div>
@@ -218,7 +219,7 @@ export function ProPaywall() {
                     <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent-soft text-(--color-accent)">
                       <CheckIcon width={10} height={10} strokeWidth={3} />
                     </span>
-                    {feature}
+                    {t(feature)}
                   </p>
                 ))}
               </div>
@@ -231,20 +232,20 @@ export function ProPaywall() {
               >
                 <LemonSqueezyIcon width={17} height={17} />
                 {busy
-                  ? "Opening secure checkout…"
-                  : "Continue to secure checkout"}
+                  ? t("billing.openingSecureCheckout")
+                  : t("billing.continueToSecureCheckout")}
                 {!busy && (
                   <ExternalLinkIcon width={14} height={14} className="opacity-70" />
                 )}
               </button>
               <p className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-faint">
                 <LemonSqueezyIcon width={12} height={12} />
-                Secure checkout and billing by Lemon Squeezy
+                {t("billing.secureCheckoutAndBillingByLemonSqueezy")}
               </p>
 
               {catalogState === "loading" && !session && (
                 <p className="mt-3 text-center text-[11px] text-muted">
-                  Loading secure checkout…
+                  {t("billing.loadingSecureCheckout")}
                 </p>
               )}
               {catalogError && (
@@ -258,14 +259,13 @@ export function ProPaywall() {
                     onClick={() => void loadCatalog()}
                     className="shrink-0 font-semibold underline underline-offset-2"
                   >
-                    Retry
+                    {t("billing.retry")}
                   </button>
                 </div>
               )}
               {lastCheckoutPlan && (
                 <Notice tone="accent" className="mt-4">
-                  Checkout opened. After purchase, return here and activate the
-                  license key Lemon Squeezy sends you.
+                  {t("billing.checkoutOpenedAfterPurchaseReturnHereAndActivateTheLicense")}
                 </Notice>
               )}
 
@@ -279,7 +279,7 @@ export function ProPaywall() {
                 className="mx-auto flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-muted transition-colors hover:text-text"
               >
                 <KeyIcon width={15} height={15} className="text-(--color-accent)" />
-                Have a license key?
+                {t("billing.haveALicenseKey")}
                 <span
                   className={`text-[10px] transition-transform ${licenseOpen ? "rotate-180" : ""}`}
                   aria-hidden="true"
@@ -314,7 +314,7 @@ export function ProPaywall() {
                     onClick={() => void openPortal().catch(() => {})}
                     className="font-medium text-muted hover:text-text disabled:opacity-50"
                   >
-                    Manage previous plan
+                    {t("billing.managePreviousPlan")}
                   </button>
                   <span className="h-3 w-px bg-border" />
                   <button
@@ -323,7 +323,7 @@ export function ProPaywall() {
                     onClick={() => void refresh()}
                     className="font-medium text-muted hover:text-text disabled:opacity-50"
                   >
-                    {state === "checking" ? "Checking…" : "Refresh access"}
+                    {state === "checking" ? t("billing.checking") : t("billing.refreshAccess")}
                   </button>
                 </div>
               )}
@@ -341,15 +341,15 @@ export function ProPaywall() {
 
           <footer className="mt-7 text-center text-[10px] leading-4 text-faint">
             <p>
-              Local features remain free. Cancel anytime, with a 14-day refund.
+              {t("billing.localFeaturesRemainFreeCancelAnytimeWithA14Day")}
             </p>
             <p className="mt-1.5 flex items-center justify-center gap-2">
               <LegalLink href="https://unifybrowse.com/products/todofy/terms">
-                Terms
+                {t("billing.terms")}
               </LegalLink>
               <span aria-hidden="true">·</span>
               <LegalLink href="https://unifybrowse.com/products/todofy/privacy">
-                Privacy
+                {t("billing.privacy")}
               </LegalLink>
             </p>
           </footer>
@@ -391,6 +391,7 @@ function SelectedPlanPrice({
   plan: BillingPlan;
   catalogPlan?: BillingCatalogPlan;
 }) {
+  const { t } = useTranslation();
   const amount = catalogPlan?.amount ?? (plan === "monthly" ? 399 : 3900);
   const period = plan === "monthly" ? "month" : "year";
   return (
@@ -402,7 +403,7 @@ function SelectedPlanPrice({
         <span className="pb-0.5 text-xs text-muted">/ {period}</span>
       </p>
       <p className="mt-2 min-h-4 text-[11px] font-medium text-(--color-accent)">
-        {plan === "yearly" ? "Save €8.88 every year" : "Simple monthly billing"}
+        {plan === "yearly" ? t("billing.save888EveryYear") : t("billing.simpleMonthlyBilling")}
       </p>
     </div>
   );
@@ -419,6 +420,7 @@ function AccessNotice({
   plan: BillingPlan | "transition" | null;
   validUntil: string | null;
 }) {
+  const { t } = useTranslation();
   // An entitled account only reaches the picker on transition access, and that
   // stays true while the entitlement is re-verified in the background.
   if (allowed) {
@@ -426,34 +428,32 @@ function AccessNotice({
     return (
       <Notice tone="accent" className="mb-5">
         {validUntil
-          ? `Your transition access remains active through ${formatDate(validUntil)}. Choose a plan to keep Cloud Sync afterward.`
-          : "Your transition access is active. Choose a plan to keep Cloud Sync afterward."}
+          ? t("billing.transitionThrough", { date: formatDate(validUntil) })
+          : t("billing.yourTransitionAccessIsActiveChooseAPlanToKeep")}
       </Notice>
     );
   }
   if (state === "checking") {
-    return <Notice className="mb-5">Checking your current Pro access…</Notice>;
+    return <Notice className="mb-5">{t("billing.checkingYourCurrentProAccess")}</Notice>;
   }
   if (state === "pending") {
     return (
       <Notice tone="accent" className="mb-5">
-        Your purchase is still being confirmed. You can refresh access in a
-        moment.
+        {t("billing.yourPurchaseIsStillBeingConfirmedYouCanRefreshAccess")}
       </Notice>
     );
   }
   if (state === "expired") {
     return (
       <Notice className="mb-5">
-        Your previous Pro plan has ended. Choose a plan to restore Cloud Sync.
+        {t("billing.yourPreviousProPlanHasEndedChooseAPlanTo")}
       </Notice>
     );
   }
   if (state === "revoked") {
     return (
       <Notice className="mb-5">
-        This account no longer has Pro access. Choose a plan or activate a valid
-        license.
+        {t("billing.thisAccountNoLongerHasProAccessChooseAPlan")}
       </Notice>
     );
   }
@@ -461,18 +461,18 @@ function AccessNotice({
 }
 
 function SignedOutActivation({ onSignIn }: { onSignIn: () => void }) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-xl border border-border bg-surface p-4 text-center">
       <p className="text-xs leading-5 text-muted">
-        Sign in or create an account first. Your license will be linked to that
-        account on all your devices.
+        {t("billing.signInOrCreateAnAccountFirstYourLicenseWill")}
       </p>
       <button
         type="button"
         onClick={onSignIn}
         className="mt-3 w-full rounded-lg border border-border-strong bg-bg px-3 py-2.5 text-sm font-medium text-text transition-colors hover:bg-surface-2"
       >
-        Sign in or create account
+        {t("billing.signInOrCreateAccount")}
       </button>
     </div>
   );
@@ -495,24 +495,25 @@ function LicenseForm({
   onReveal: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <form
       onSubmit={onSubmit}
       className="rounded-xl border border-border bg-surface p-4"
     >
       <p className="text-center text-[11px] leading-5 text-muted">
-        Activate for{" "}
-        <strong className="font-medium text-text">{email ?? "this account"}</strong>
-        . A license can belong to only one Todofy account.
+        {t("billing.activateFor")}
+        <strong className="font-medium text-text">{email ?? t("billing.thisAccount")}</strong>
+        {t("billing.aLicenseCanBelongToOnlyOneTodofyAccount")}
       </p>
       <label className="mt-3 block">
-        <span className="sr-only">Lemon Squeezy license key</span>
+        <span className="sr-only">{t("billing.lemonSqueezyLicenseKey")}</span>
         <div className="relative">
           <input
             type={reveal ? "text" : "password"}
             value={license}
             onInput={(event) => onLicenseChange(event.currentTarget.value)}
-            placeholder="Paste your license key"
+            placeholder={t("billing.pasteYourLicenseKey")}
             autoComplete="off"
             spellCheck={false}
             className="w-full rounded-lg border border-border bg-bg py-2.5 pl-3 pr-10 font-mono text-xs text-text outline-none transition-colors placeholder:font-sans placeholder:text-faint focus:border-(--color-accent)"
@@ -521,8 +522,8 @@ function LicenseForm({
             type="button"
             tabIndex={-1}
             onClick={onReveal}
-            title={reveal ? "Hide license" : "Show license"}
-            aria-label={reveal ? "Hide license" : "Show license"}
+            title={reveal ? t("billing.hideLicense") : t("billing.showLicense")}
+            aria-label={reveal ? t("billing.hideLicense") : t("billing.showLicense")}
             className="absolute inset-y-0 right-0 grid w-10 place-items-center text-faint hover:text-text"
           >
             {reveal ? (
@@ -538,7 +539,7 @@ function LicenseForm({
         disabled={busy || license.trim().length < 10}
         className="mt-2.5 w-full rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
-        {busy ? "Verifying license…" : "Activate Todofy Pro"}
+        {busy ? t("billing.verifyingLicense") : t("billing.activateTodofyPro")}
       </button>
     </form>
   );
@@ -565,26 +566,27 @@ function ActivePlan({
   onManage: () => void;
   onSync: () => void;
 }) {
+  const { t } = useTranslation();
   const cancelled = state === "cancelled_active";
   const grace = state === "grace";
   const heading = grace
-    ? "Your payment needs attention"
+    ? t("billing.yourPaymentNeedsAttention")
     : cancelled
-      ? "Your subscription is cancelled"
+      ? t("billing.yourSubscriptionIsCancelled")
       : plan === "transition"
-        ? "Transition access is active"
-        : "Todofy Pro is active";
+        ? t("billing.transitionAccessIsActive")
+        : t("billing.todofyProIsActive");
   const detail = grace
     ? validUntil
-      ? `Cloud Sync remains available during billing recovery through ${formatDate(validUntil)}.`
-      : "Cloud Sync remains available while Lemon Squeezy retries your payment."
+      ? t("billing.recoveryThrough", { date: formatDate(validUntil) })
+      : t("billing.cloudSyncRemainsAvailableWhileLemonSqueezyRetriesYourPayment")
     : cancelled
       ? validUntil
-        ? `Renewal is off. Cloud Sync remains available through ${formatDate(validUntil)}.`
-        : "Renewal is off. Cloud Sync remains available until the end of your paid period."
+        ? t("account.renewalOffThrough", { date: formatDate(validUntil) })
+        : t("billing.renewalIsOffCloudSyncRemainsAvailableUntilTheEnd")
       : validUntil
-        ? `Cloud Sync access is verified through ${formatDate(validUntil)}.`
-        : "Your account can use Cloud Sync.";
+        ? t("billing.verifiedThrough", { date: formatDate(validUntil) })
+        : t("billing.yourAccountCanUseCloudSync");
 
   return (
     <div className="mt-8 text-center">
@@ -601,10 +603,10 @@ function ActivePlan({
       </span>
       <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-faint">
         {plan === "monthly"
-          ? "Monthly plan"
+          ? t("billing.monthlyPlan")
           : plan === "yearly"
-            ? "Yearly plan"
-            : "Cloud Sync"}
+            ? t("billing.yearlyPlan")
+            : t("billing.cloudSync")}
       </p>
       <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-text">
         {heading}
@@ -618,7 +620,7 @@ function ActivePlan({
           disabled={syncBusy}
           className="rounded-xl bg-(--color-accent) px-3 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
-          {syncBusy ? "Syncing…" : "Sync now"}
+          {syncBusy ? t("account.syncing") : t("account.syncNow")}
         </button>
         {canManage ? (
           <button
@@ -628,10 +630,10 @@ function ActivePlan({
             className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-bg px-3 py-3 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
             {grace
-              ? "Fix payment"
+              ? t("billing.fixPayment")
               : cancelled
-                ? "View subscription"
-                : "Manage subscription"}
+                ? t("billing.viewSubscription")
+                : t("billing.manageSubscription")}
             <ExternalLinkIcon width={13} height={13} />
           </button>
         ) : (
@@ -641,7 +643,7 @@ function ActivePlan({
             disabled={busy}
             className="rounded-xl border border-border bg-bg px-3 py-3 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
-            Refresh access
+            {t("billing.refreshAccess")}
           </button>
         )}
       </div>
@@ -652,7 +654,7 @@ function ActivePlan({
           disabled={busy}
           className="mt-3 text-[11px] font-medium text-muted hover:text-text disabled:opacity-50"
         >
-          {state === "checking" ? "Checking…" : "Refresh access"}
+          {state === "checking" ? t("billing.checking") : t("billing.refreshAccess")}
         </button>
       )}
     </div>
@@ -696,7 +698,7 @@ function Notice({
 }
 
 function formatDate(value: string): string {
-  return new Date(value).toLocaleDateString(undefined, {
+  return new Date(value).toLocaleDateString(appLocale(), {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -704,7 +706,7 @@ function formatDate(value: string): string {
 }
 
 function formatMoney(amount: number, currency: string): string {
-  return new Intl.NumberFormat(undefined, {
+  return new Intl.NumberFormat(appLocale(), {
     style: "currency",
     currency,
     minimumFractionDigits: 0,

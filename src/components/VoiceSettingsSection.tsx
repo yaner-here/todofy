@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { emit, listen } from "@tauri-apps/api/event";
 import {
@@ -16,19 +17,20 @@ import {
 const MODELS = [
   {
     id: "base",
-    label: "Base · multilingual",
-    size: "About 142 MB",
-    detail: "Recommended for better accuracy across supported languages.",
+    label: "voice.baseMultilingual",
+    size: "voice.baseSize",
+    detail: "voice.baseHint",
   },
   {
     id: "tiny",
-    label: "Tiny · multilingual",
-    size: "About 75 MB",
-    detail: "Smaller and faster, with lower accuracy.",
+    label: "voice.tinyMultilingual",
+    size: "voice.tinySize",
+    detail: "voice.tinyHint",
   },
 ] as const;
 
 export function VoiceSettingsSection() {
+  const { t } = useTranslation();
   const [status, setStatus] = useState<VoiceStatus | null>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
@@ -76,10 +78,10 @@ export function VoiceSettingsSection() {
     : status?.engineInstalled;
   const downloadLabel =
     busy === "engine"
-      ? "Voice engine"
+      ? t("voice.voiceEngine")
       : busy === "base"
-        ? "Base model"
-        : "Tiny model";
+        ? t("voice.baseModel")
+        : t("voice.tinyModel");
   const downloadPercent =
     progress && progress.total > 0
       ? Math.min(100, Math.round((100 * progress.received) / progress.total))
@@ -97,13 +99,13 @@ export function VoiceSettingsSection() {
           onClick={() => void voiceApi.cancelDownload()}
           className="shrink-0 font-medium text-(--color-accent) hover:underline"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
       </div>
       <div
         className="voice-download-track"
         role="progressbar"
-        aria-label={`${downloadLabel} download`}
+        aria-label={t("voice.downloadName", { name: downloadLabel })}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={downloadPercent}
@@ -116,7 +118,7 @@ export function VoiceSettingsSection() {
   return (
     <section id="voice-settings" className="mb-6 scroll-mt-2">
       <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
-        Voice
+        {t("voice.voice")}
       </h3>
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         <div className="flex items-start gap-3 px-4 py-4">
@@ -125,10 +127,7 @@ export function VoiceSettingsSection() {
           </span>
           <div>
             <p className="mt-1 text-xs text-muted">
-              Optional and off by default. Download the engine and a
-              multilingual model only if you want to dictate tasks or journal
-              entries. Speech stays on this device, the spoken language is
-              detected automatically, and drafts stay editable before you save.
+              {t("voice.optionalAndOffByDefaultDownloadTheEngineAndA")}
             </p>
           </div>
         </div>
@@ -136,12 +135,12 @@ export function VoiceSettingsSection() {
         <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2.5 text-xs text-muted">
           <span>
             {status?.developmentAssets
-              ? "Using local test files in this debug build."
+              ? t("voice.usingLocalTestFilesInThisDebugBuild")
               : status?.updateVersion
-                ? `Voice update v${status.updateVersion} available. Your current voice setup stays active while it downloads.`
+                ? t("voice.updateAvailable", { version: status.updateVersion })
                 : status?.catalogVersion
-                  ? `Voice catalog v${status.catalogVersion}`
-                  : "Voice catalog loads when you choose a download."}
+                  ? t("voice.catalogVersion", { version: status.catalogVersion })
+                  : t("voice.voiceCatalogLoadsWhenYouChooseADownload")}
           </span>
           {!status?.developmentAssets && (
             <button
@@ -149,22 +148,20 @@ export function VoiceSettingsSection() {
               disabled={!!busy}
               onClick={() => void run("catalog", voiceApi.refreshCatalog)}
             >
-              Check for updates
+              {t("voice.checkForUpdates")}
             </button>
           )}
         </div>
 
         {status?.developmentAssets && (
           <p className="border-t border-border px-4 py-3 text-xs text-muted">
-            Choose Tiny below, then enable Voice Mode. Local files are used only
-            for testing; download and removal controls are available with a
-            published voice catalog.
+            {t("voice.chooseTinyBelowThenEnableVoiceModeLocalFilesAre")}
           </p>
         )}
 
         {!status?.platformSupported && status && (
           <p className="border-t border-border px-4 py-3 text-xs text-(--color-danger)">
-            Voice downloads are not available for this platform yet.
+            {t("voice.voiceDownloadsAreNotAvailableForThisPlatformYet")}
           </p>
         )}
 
@@ -173,16 +170,15 @@ export function VoiceSettingsSection() {
             <DownloadIcon width={18} height={18} />
           </span>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-text">Voice engine</p>
+            <p className="text-sm font-semibold text-text">{t("voice.voiceEngine")}</p>
             <p className="mt-0.5 text-xs text-muted">
-              Local speech processing by whisper.cpp · separate optional
-              download
+              {t("voice.localSpeechProcessingByWhisperCppSeparateOptionalDownload")}
             </p>
           </div>
           <div className="voice-engine-actions">
             {targetEngineInstalled ? (
               <span className="voice-engine-installed">
-                <CheckCircleIcon width={16} height={16} /> Installed
+                <CheckCircleIcon width={16} height={16} /> {t("voice.installed")}
               </span>
             ) : (
               <button
@@ -200,10 +196,10 @@ export function VoiceSettingsSection() {
                 <DownloadIcon width={17} height={17} />
                 <span>
                   {busy === "engine"
-                    ? "Downloading…"
+                    ? t("settings.downloading")
                     : status?.engineInstalled
-                      ? "Update voice engine"
-                      : "Download voice engine"}
+                      ? t("voice.updateVoiceEngine")
+                      : t("voice.downloadVoiceEngine")}
                 </span>
               </button>
             )}
@@ -216,8 +212,8 @@ export function VoiceSettingsSection() {
                   onClick={() =>
                     void run("remove-engine", () => voiceApi.remove("engine"))
                   }
-                  aria-label="Remove voice engine"
-                  title="Remove voice engine"
+                  aria-label={t("voice.removeVoiceEngine")}
+                  title={t("voice.removeVoiceEngine")}
                 >
                   <TrashIcon width={14} height={14} />
                 </button>
@@ -227,7 +223,7 @@ export function VoiceSettingsSection() {
         {busy === "engine" && downloadProgress}
 
         <div className="border-t border-border px-4 py-3.5">
-          <p className="mb-2 text-sm font-medium">Speech model</p>
+          <p className="mb-2 text-sm font-medium">{t("voice.speechModel")}</p>
           <div className="flex flex-col gap-2">
             {MODELS.map((model) => (
               <div
@@ -245,16 +241,16 @@ export function VoiceSettingsSection() {
                       voiceApi.setModel(model.id),
                     )
                   }
-                  aria-label={`Select ${model.label}`}
+                  aria-label={t("voice.selectModel", { name: t(model.label) })}
                 />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-medium">
-                    {model.label}{" "}
+                    {t(model.label)}{" "}
                     <span className="font-normal text-faint">
-                      · {status?.developmentAssets ? "Local file" : model.size}
+                      · {status?.developmentAssets ? t("voice.localFile") : t(model.size)}
                     </span>
                   </p>
-                  <p className="text-[11px] text-muted">{model.detail}</p>
+                  <p className="text-[11px] text-muted">{t(model.detail)}</p>
                 </div>
                 {(
                   updateAvailable
@@ -262,7 +258,7 @@ export function VoiceSettingsSection() {
                     : status?.modelsInstalled[model.id]
                 ) ? (
                   <span className="text-[11px] text-(--color-accent)">
-                    Installed
+                    {t("voice.installed")}
                   </span>
                 ) : (
                   <button
@@ -279,10 +275,10 @@ export function VoiceSettingsSection() {
                     }
                   >
                     {busy === model.id
-                      ? "Downloading…"
+                      ? t("settings.downloading")
                       : status?.modelsInstalled[model.id]
-                        ? "Update"
-                        : "Download"}
+                        ? t("voice.update")
+                        : t("voice.download")}
                   </button>
                 )}
                 {!status?.developmentAssets &&
@@ -296,7 +292,7 @@ export function VoiceSettingsSection() {
                           voiceApi.remove("model", model.id),
                         )
                       }
-                      aria-label={`Remove ${model.label}`}
+                      aria-label={t("voice.removeModel", { name: t(model.label) })}
                     >
                       <TrashIcon width={13} height={13} />
                     </button>
@@ -310,9 +306,9 @@ export function VoiceSettingsSection() {
 
         <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium">Voice Mode</p>
+            <p className="text-sm font-medium">{t("voice.voiceMode")}</p>
             <p className="text-xs text-muted">
-              Show microphone controls in task capture and journal editors.
+              {t("voice.showMicrophoneControlsInTaskCaptureAndJournalEditors")}
             </p>
           </div>
           <button
@@ -335,7 +331,7 @@ export function VoiceSettingsSection() {
         </div>
         {status?.engineInstalled && !installed && !status.enabled && (
           <p className="border-t border-border px-4 py-3 text-xs text-muted">
-            Select an installed speech model above to enable Voice Mode.
+            {t("voice.selectAnInstalledSpeechModelAboveToEnableVoiceMode")}
           </p>
         )}
 
@@ -354,7 +350,7 @@ export function VoiceSettingsSection() {
                   void run("remove-all", () => voiceApi.remove("all"))
                 }
               >
-                Remove all voice downloads
+                {t("voice.removeAllVoiceDownloads")}
               </button>
             </div>
           )}

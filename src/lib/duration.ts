@@ -1,11 +1,13 @@
+import { t } from "./i18n";
+
 /** Compact human duration, e.g. "1h 20m", "45m", "30s". */
 export function formatDuration(totalSeconds: number): string {
   const s = Math.max(0, Math.floor(totalSeconds));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
-  if (h > 0) return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  if (m > 0) return `${m}m`;
-  return `${s}s`;
+  if (h > 0) return m > 0 ? t("duration.hoursMinutes", { hours: h, minutes: m }) : t("duration.hours", { hours: h });
+  if (m > 0) return t("duration.minutes", { minutes: m });
+  return t("duration.seconds", { seconds: s });
 }
 
 /** m:ss clock for a countdown; negative values render as overtime "+m:ss". */
@@ -25,8 +27,8 @@ export function formatMinutes(totalMinutes: number): string {
   const m = Math.max(0, Math.round(totalMinutes));
   const hours = Math.floor(m / 60);
   const minutes = m % 60;
-  if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-  return `${minutes}m`;
+  if (hours > 0) return minutes > 0 ? t("duration.hoursMinutes", { hours, minutes }) : t("duration.hours", { hours });
+  return t("duration.minutes", { minutes });
 }
 
 /**

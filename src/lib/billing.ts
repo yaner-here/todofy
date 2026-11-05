@@ -1,3 +1,4 @@
+import { t as translate } from "./i18n";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { create } from "zustand";
 import { useAuth } from "./auth";
@@ -162,33 +163,33 @@ function remember(userId: string, value: CloudSyncEntitlement) {
 }
 
 function message(error: unknown): string {
-  if (!(error instanceof BillingAPIError)) return "Could not reach the billing service.";
+  if (!(error instanceof BillingAPIError)) return translate("billing.unreachable");
   const messages: Record<string, string> = {
-    invalid_session: "Your session expired. Sign in again and retry.",
-    invalid_license: "That license key is not valid.",
-    invalid_license_instance: "That license activation could not be verified.",
-    activation_rejected: "Lemon Squeezy rejected this license activation.",
-    license_already_claimed: "That license is already linked to another Todofy account.",
-    purchase_owned_by_another_account: "That purchase belongs to another Todofy account.",
-    subscription_ownership_mismatch: "That subscription belongs to another Todofy account.",
-    ambiguous_subscription: "The subscription could not be identified safely. Please contact support.",
-    wrong_product: "That license is not for a Todofy Cloud Sync plan.",
-    wrong_environment: "That license belongs to a different billing environment.",
-    activation_pending: "Activation is still being confirmed. Please try again shortly.",
-    subscription_pending: "The subscription is still being prepared. Please try again shortly.",
-    no_subscription: "No managed subscription is linked to this account.",
-    rate_limited: "Too many attempts. Please wait and try again.",
-    operation_in_progress: "This account is already processing a billing change. Please retry shortly.",
-    account_deletion_pending: "This account is being deleted, so a new checkout cannot be started.",
-    provider_unavailable: "Lemon Squeezy is temporarily unavailable.",
-    auth_unavailable: "Account verification is temporarily unavailable.",
-    storage_unavailable: "The billing database is temporarily unavailable.",
-    timeout: "The billing service took too long to finish. Please retry.",
-    checkout_unavailable: "Checkout is temporarily unavailable.",
-    billing_not_configured: "Todofy Pro is not configured in this build.",
-    request_timeout: "The billing service took too long to respond. Please retry.",
+    invalid_session: translate("billing.reauthenticate"),
+    invalid_license: translate("billing.invalidLicense"),
+    invalid_license_instance: translate("billing.unverifiedActivation"),
+    activation_rejected: translate("billing.providerRejected"),
+    license_already_claimed: translate("billing.licenseOwner"),
+    purchase_owned_by_another_account: translate("billing.purchaseOwner"),
+    subscription_ownership_mismatch: translate("billing.subscriptionOwner"),
+    ambiguous_subscription: translate("billing.unknownSubscription"),
+    wrong_product: translate("billing.wrongProduct"),
+    wrong_environment: translate("billing.wrongEnvironment"),
+    activation_pending: translate("billing.activationPending"),
+    subscription_pending: translate("billing.subscriptionPending"),
+    no_subscription: translate("billing.noManagedSubscription"),
+    rate_limited: translate("billing.tooManyRequests"),
+    operation_in_progress: translate("billing.changeInProgress"),
+    account_deletion_pending: translate("billing.deletionInProgress"),
+    provider_unavailable: translate("billing.providerUnavailable"),
+    auth_unavailable: translate("billing.verificationUnavailable"),
+    storage_unavailable: translate("billing.databaseUnavailable"),
+    timeout: translate("billing.processingTimeout"),
+    checkout_unavailable: translate("billing.checkoutUnavailable"),
+    billing_not_configured: translate("billing.notConfigured"),
+    request_timeout: translate("billing.requestTimeout"),
   };
-  return messages[error.code] ?? "Could not complete the billing request.";
+  return messages[error.code] ?? translate("billing.requestFailed");
 }
 
 function isCatalogPlan(value: BillingCatalogPlan): boolean {
@@ -246,7 +247,7 @@ export const useBilling = create<BillingState>((set, get) => ({
   loadCatalog: async () => {
     if (get().catalogState === "loading") return;
     if (!billingConfigured) {
-      set({ catalogState: "error", catalogError: "Todofy Pro is not configured in this build." });
+      set({ catalogState: "error", catalogError: translate("billing.notConfigured") });
       return;
     }
     set({ catalogState: "loading", catalogError: null });

@@ -141,37 +141,36 @@ fn invalid(message: &str) -> rusqlite::Error {
 pub fn validate(input: &ProfileInput) -> rusqlite::Result<()> {
     let name = input.name.trim();
     if name.is_empty() || name.chars().count() > MAX_NAME_CHARS {
-        return Err(invalid("Priority name must contain 1–40 characters"));
+        return Err(invalid(&rust_i18n::t!("validation.priorityName").to_string()));
     }
     if input.color.len() != 7
         || !input.color.starts_with('#')
         || !input.color[1..].bytes().all(|b| b.is_ascii_hexdigit())
     {
-        return Err(invalid("Choose a valid six-digit hex color"));
+        return Err(invalid(&rust_i18n::t!("validation.color").to_string()));
     }
     if input
         .sound
         .as_deref()
         .is_some_and(|sound| !SOUNDS.contains(&sound))
     {
-        return Err(invalid("Unknown reminder sound"));
+        return Err(invalid(&rust_i18n::t!("validation.sound").to_string()));
     }
     if input.volume.is_some_and(|n| !(0..=100).contains(&n)) {
-        return Err(invalid("Volume must be between 0 and 100"));
+        return Err(invalid(&rust_i18n::t!("validation.volume").to_string()));
     }
     if input
         .notification_style
         .as_deref()
         .is_some_and(|style| !STYLES.contains(&style))
     {
-        return Err(invalid("Unknown notification style"));
+        return Err(invalid(&rust_i18n::t!("validation.style").to_string()));
     }
     if input
         .repeat_minutes
         .is_some_and(|n| !(0..=MAX_REPEAT_MINUTES).contains(&n))
     {
-        return Err(invalid(
-            "Repeat interval must be between 0 and 1440 minutes",
+        return Err(invalid(&rust_i18n::t!("validation.repeat").to_string(),
         ));
     }
     Ok(())
@@ -188,7 +187,7 @@ pub fn update(
     input: &ProfileInput,
 ) -> rusqlite::Result<Vec<PriorityProfile>> {
     if !VALUES.contains(&priority) {
-        return Err(invalid("A priority is one of 1 to 4"));
+        return Err(invalid(&rust_i18n::t!("validation.priority").to_string()));
     }
     validate(input)?;
     conn.execute(
@@ -226,7 +225,7 @@ pub fn update_priority_profile(
 /// sitting in the cloud.
 pub fn reset(conn: &Connection, priority: i64) -> rusqlite::Result<Vec<PriorityProfile>> {
     let Some((_, name, color)) = DEFAULTS.iter().find(|(value, _, _)| *value == priority) else {
-        return Err(invalid("A priority is one of 1 to 4"));
+        return Err(invalid(&rust_i18n::t!("validation.priority").to_string()));
     };
     conn.execute(
         "UPDATE priority_profiles
@@ -254,7 +253,7 @@ pub fn reset_priority_profile(
 /// first launch, which is why these never needed tombstones.
 pub fn apply_remote(conn: &Connection, incoming: &PriorityProfile) -> rusqlite::Result<()> {
     if !VALUES.contains(&incoming.priority) {
-        return Err(invalid("A priority is one of 1 to 4"));
+        return Err(invalid(&rust_i18n::t!("validation.priority").to_string()));
     }
     validate(&ProfileInput {
         name: incoming.name.clone(),
@@ -266,7 +265,7 @@ pub fn apply_remote(conn: &Connection, incoming: &PriorityProfile) -> rusqlite::
         repeat_minutes: incoming.repeat_minutes,
     })?;
     let revision = chrono::DateTime::parse_from_rfc3339(&incoming.updated_at)
-        .map_err(|_| invalid("Invalid priority revision"))?;
+        .map_err(|_| invalid(&rust_i18n::t!("validation.priorityRevision").to_string()))?;
     let current: Option<String> = conn
         .query_row(
             "SELECT updated_at FROM priority_profiles WHERE priority = ?1",
@@ -276,7 +275,7 @@ pub fn apply_remote(conn: &Connection, incoming: &PriorityProfile) -> rusqlite::
         .optional()?;
     if let Some(updated) = current {
         let old = chrono::DateTime::parse_from_rfc3339(&updated)
-            .map_err(|_| invalid("Invalid local priority revision"))?;
+            .map_err(|_| invalid(&rust_i18n::t!("validation.localPriorityRevision").to_string()))?;
         if revision <= old {
             return Ok(());
         }
@@ -333,12 +332,18 @@ pub fn is_customized(profile: &PriorityProfile) -> bool {
         })
 }
 
-/// What a notification calls this priority. An untouched one says "Reminder"
+/// What a notification calls this priority. An untouched one says rust_i18n::t!("notifications.reminder").to_string()
 /// rather than "Priority 1", which tells the reader nothing they wanted.
 pub fn reminder_label(profile: Option<&PriorityProfile>) -> String {
     match profile {
-        Some(p) if is_customized(p) => p.name.clone(),
-        _ => "Reminder".to_owned(),
+        Some(p) if is_customized(p) => {
+            if DEFAULTS.iter().any(|(priority, name, _)| *priority == p.priority && *name == p.name) {
+                rust_i18n::t!("common.priority", priority = p.priority).to_string()
+            } else {
+                p.name.clone()
+            }
+        }
+        _ => rust_i18n::t!("notifications.reminder").to_string(),
     }
 }
 

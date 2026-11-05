@@ -1,33 +1,36 @@
+import type { MessageKey } from "../lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useStore } from "../store";
 import { CloseIcon } from "./Icons";
 
 /** One row's worth of keys + description. Keys render as <kbd> chips. */
-type Shortcut = { keys: string[]; desc: string };
+type Shortcut = { keys: string[]; desc: MessageKey };
 
 const NAVIGATION: Shortcut[] = [
-  { keys: ["J"], desc: "Next task" },
-  { keys: ["K"], desc: "Previous task" },
-  { keys: ["↑", "↓"], desc: "Move selection" },
-  { keys: ["Shift", "J"], desc: "Open Journal" },
-  { keys: ["Esc"], desc: "Close panel / this help" },
+  { keys: ["J"], desc: "shortcuts.nextTask" },
+  { keys: ["K"], desc: "shortcuts.previousTask" },
+  { keys: ["↑", "↓"], desc: "shortcuts.moveSelection" },
+  { keys: ["Shift", "J"], desc: "shortcuts.openJournal" },
+  { keys: ["Esc"], desc: "shortcuts.closePanel" },
 ];
 
 const ACTIONS: Shortcut[] = [
-  { keys: ["N"], desc: "New task / journal entry (focus composer)" },
-  { keys: ["E"], desc: "Edit selected task" },
-  { keys: ["C"], desc: "Complete / un-complete selected" },
-  { keys: ["P"], desc: "Pin / unpin selected" },
-  { keys: ["H"], desc: "Board: move card a column left" },
-  { keys: ["L"], desc: "Board: move card a column right" },
-  { keys: ["Del"], desc: "Delete selected" },
+  { keys: ["N"], desc: "shortcuts.newTask" },
+  { keys: ["E"], desc: "shortcuts.editTask" },
+  { keys: ["C"], desc: "shortcuts.toggleComplete" },
+  { keys: ["P"], desc: "shortcuts.togglePin" },
+  { keys: ["H"], desc: "shortcuts.moveLeft" },
+  { keys: ["L"], desc: "shortcuts.moveRight" },
+  { keys: ["Del"], desc: "shortcuts.deleteTask" },
 ];
 
 const GLOBAL: Shortcut[] = [
-  { keys: ["Ctrl", "Alt", "A"], desc: "Quick-capture from any app" },
-  { keys: ["?"], desc: "Show this cheat-sheet" },
+  { keys: ["Ctrl", "Alt", "A"], desc: "shortcuts.capture" },
+  { keys: ["?"], desc: "shortcuts.showHelp" },
 ];
 
 export function ShortcutsOverlay() {
+  const { t } = useTranslation();
   const show = useStore((s) => s.showShortcuts);
   const close = useStore((s) => s.toggleShortcuts);
   if (!show) return null;
@@ -42,20 +45,20 @@ export function ShortcutsOverlay() {
         className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-black/30"
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <h2 className="text-sm font-semibold">Keyboard shortcuts</h2>
+          <h2 className="text-sm font-semibold">{t("settings.keyboardShortcuts")}</h2>
           <button
             onClick={() => close(false)}
             className="rounded-md p-1 text-faint transition-colors hover:bg-surface-2 hover:text-text"
-            title="Close"
+            title={t("common.close")}
           >
             <CloseIcon width={18} height={18} />
           </button>
         </div>
 
         <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
-          <Group title="Navigation" rows={NAVIGATION} />
-          <Group title="Selected task" rows={ACTIONS} />
-          <Group title="Global" rows={GLOBAL} />
+          <Group title={t("shortcuts.navigation")} rows={NAVIGATION} />
+          <Group title={t("shortcuts.selectedTask")} rows={ACTIONS} />
+          <Group title={t("shortcuts.global")} rows={GLOBAL} />
         </div>
       </div>
     </div>
@@ -63,6 +66,7 @@ export function ShortcutsOverlay() {
 }
 
 function Group({ title, rows }: { title: string; rows: Shortcut[] }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-4 last:mb-0">
       <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-faint">
@@ -74,7 +78,7 @@ function Group({ title, rows }: { title: string; rows: Shortcut[] }) {
             key={r.desc}
             className="flex items-center justify-between gap-4 py-1.5"
           >
-            <span className="text-sm text-muted">{r.desc}</span>
+            <span className="text-sm text-muted">{t(r.desc)}</span>
             <span className="flex shrink-0 items-center gap-1">
               {r.keys.map((k) => (
                 <kbd

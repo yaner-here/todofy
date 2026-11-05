@@ -1,9 +1,11 @@
+import type { MessageKey } from "../lib/i18n";
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { useStore } from "../store";
 import type { ViewId } from "../types";
 import { toLocalDate, today } from "../lib/dates";
-import { weekdayOffset } from "../lib/locale";
+import { appLocale, formatDateRange, weekdayOffset } from "../lib/locale";
 import { billingConfigured, useBilling } from "../lib/billing";
 import { useUpdater } from "../lib/updater";
 import {
@@ -27,16 +29,16 @@ import {
   UpcomingIcon,
 } from "./Icons";
 
-const NAV: { id: ViewId; label: string; Icon: typeof InboxIcon }[] = [
-  { id: { kind: "today" }, label: "Today", Icon: TodayIcon },
-  { id: { kind: "upcoming" }, label: "Upcoming", Icon: UpcomingIcon },
-  { id: { kind: "inbox" }, label: "Inbox", Icon: InboxIcon },
-  { id: { kind: "pinned" }, label: "Pinboard", Icon: PinIcon },
-  { id: { kind: "completed" }, label: "Completed", Icon: CheckCircleIcon },
-  { id: { kind: "board" }, label: "Board", Icon: BoardIcon },
-  { id: { kind: "calendar" }, label: "Calendar", Icon: CalendarIcon },
-  { id: { kind: "labels" }, label: "Labels", Icon: LabelIcon },
-  { id: { kind: "journal" }, label: "Journal", Icon: JournalIcon },
+const NAV: { id: ViewId; label: MessageKey; Icon: typeof InboxIcon }[] = [
+  { id: { kind: "today" }, label: "common.today", Icon: TodayIcon },
+  { id: { kind: "upcoming" }, label: "navigation.upcoming", Icon: UpcomingIcon },
+  { id: { kind: "inbox" }, label: "navigation.inbox", Icon: InboxIcon },
+  { id: { kind: "pinned" }, label: "navigation.pinboard", Icon: PinIcon },
+  { id: { kind: "completed" }, label: "tasks.completed", Icon: CheckCircleIcon },
+  { id: { kind: "board" }, label: "board.board", Icon: BoardIcon },
+  { id: { kind: "calendar" }, label: "calendar.calendar", Icon: CalendarIcon },
+  { id: { kind: "labels" }, label: "labels.labels", Icon: LabelIcon },
+  { id: { kind: "journal" }, label: "journal.journal", Icon: JournalIcon },
 ];
 
 export function sameView(a: ViewId, b: ViewId): boolean {
@@ -48,6 +50,7 @@ export function sameView(a: ViewId, b: ViewId): boolean {
 
 /** Top-level product navigation from the selected redesign. */
 export function Sidebar() {
+  const { t } = useTranslation();
   const { view, setView, sidebarCollapsed, toggleSidebar } = useStore();
   const billingAllowed = useBilling((state) => state.allowed);
   const openPro = useBilling((state) => state.openGate);
@@ -95,14 +98,14 @@ export function Sidebar() {
           onClick={toggleSidebar}
           aria-expanded={!sidebarCollapsed}
           aria-controls="day-navigation"
-          aria-label={sidebarCollapsed ? "Open calendar navigation" : "Close calendar navigation"}
-          title={sidebarCollapsed ? "Open calendar" : "Close calendar"}
+          aria-label={sidebarCollapsed ? t("navigation.openCalendarNavigation") : t("common.closeCalendarNavigation")}
+          title={sidebarCollapsed ? t("navigation.openCalendar") : t("navigation.closeCalendar")}
         >
           <MenuIcon width={20} height={20} />
         </button>
       </div>
 
-      <nav className="top-navigation" aria-label="Primary navigation">
+      <nav className="top-navigation" aria-label={t("navigation.primaryNavigation")}>
         {NAV.map(({ id, label, Icon }) => {
           const active =
             sameView(view, id) || (id.kind === "upcoming" && view.kind === "date");
@@ -112,12 +115,12 @@ export function Sidebar() {
               type="button"
               onClick={() => navigate(id)}
               className={`top-nav-item ${active ? "is-active" : ""}`}
-              aria-label={label}
+              aria-label={t(label)}
               aria-current={active ? "page" : undefined}
-              title={label}
+              title={t(label)}
             >
               <Icon width={19} height={19} />
-              <span>{label}</span>
+              <span>{t(label)}</span>
             </button>
           );
         })}
@@ -133,17 +136,17 @@ export function Sidebar() {
             className={`top-nav-item top-update ${updateState === "downloading" ? "is-downloading" : ""}`}
             aria-label={
               updateState === "downloading"
-                ? `Downloading todofy v${updateVersion}${percent === null ? "" : ` — ${percent}%`}`
+                ? t("updates.downloadingTitle", { version: updateVersion, progress: percent === null ? "" : ` — ${percent}%` })
                 : updateState === "ready"
-                  ? `todofy v${updateVersion} is installed — restart to use it`
-                  : `todofy v${updateVersion} is available`
+                  ? t("updates.installedTitle", { version: updateVersion })
+                  : t("updates.availableTitle", { version: updateVersion })
             }
             title={
               updateState === "downloading"
-                ? `Downloading v${updateVersion}${percent === null ? "…" : ` — ${percent}%`}`
+                ? percent === null ? t("updates.downloadingVersion", { version: updateVersion }) : t("updates.downloadingProgress", { version: updateVersion, percent })
                 : updateState === "ready"
-                  ? `Restart to finish updating to v${updateVersion}`
-                  : `todofy v${updateVersion} is available`
+                  ? t("updates.restartTitle", { version: updateVersion })
+                  : t("updates.availableTitle", { version: updateVersion })
             }
           >
             {updateState === "downloading" ? (
@@ -160,34 +163,34 @@ export function Sidebar() {
             type="button"
             onClick={() => openPro(billingAllowed ? "upgrade" : "cloud_sync")}
             className={`top-nav-item top-pro ${billingAllowed ? "is-active" : ""}`}
-            aria-label={billingAllowed ? "Todofy Pro status" : "Unlock Cloud Sync"}
-            title={billingAllowed ? "Todofy Pro" : "Cloud Sync"}
+            aria-label={billingAllowed ? t("navigation.todofyProStatus") : t("navigation.unlockCloudSync")}
+            title={billingAllowed ? "Todofy Pro" : t("billing.cloudSync")}
           >
             <CrownIcon width={20} height={20} />
-            <span>{billingAllowed ? "Pro" : "Cloud Sync"}</span>
+            <span>{billingAllowed ? "Pro" : t("billing.cloudSync")}</span>
           </button>
         )}
         <button
           type="button"
           onClick={() => navigate({ kind: "focus" })}
           className={`top-nav-item top-focus ${view.kind === "focus" ? "is-active" : ""}`}
-          aria-label="Focus"
+          aria-label={t("focus.focus")}
           aria-current={view.kind === "focus" ? "page" : undefined}
-          title="Focus"
+          title={t("focus.focus")}
         >
           <TimerIcon width={20} height={20} />
-          <span>Focus</span>
+          <span>{t("focus.focus")}</span>
         </button>
         <button
           type="button"
           onClick={() => navigate({ kind: "settings" })}
           className={`top-nav-item top-settings ${view.kind === "settings" ? "is-active" : ""}`}
-          aria-label="Settings"
+          aria-label={t("settings.settings")}
           aria-current={view.kind === "settings" ? "page" : undefined}
-          title="Settings"
+          title={t("settings.settings")}
         >
           <SettingsIcon width={20} height={20} />
-          <span>Settings</span>
+          <span>{t("settings.settings")}</span>
         </button>
       </div>
     </header>
@@ -229,6 +232,7 @@ function UpdateProgress({ percent }: { percent: number | null }) {
 
 /** Date-oriented context rail that replaces the old feature sidebar. */
 export function DayRail() {
+  const { t } = useTranslation();
   const { tasks, journal, view, setView, sidebarCollapsed, toggleSidebar } =
     useStore();
   const todayKey = today();
@@ -270,29 +274,26 @@ export function DayRail() {
     }
   };
 
-  const rangeLabel =
-    weekStart.getMonth() === weekEnd.getMonth()
-      ? `${weekStart.toLocaleDateString(undefined, { month: "long" })} ${weekStart.getDate()}–${weekEnd.getDate()}, ${weekEnd.getFullYear()}`
-      : `${weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
+  const rangeLabel = formatDateRange(weekStart, weekEnd);
 
   return (
-    <aside id="day-navigation" className={`day-rail ${sidebarCollapsed ? "" : "is-open"}`} aria-label="Day navigation">
+    <aside id="day-navigation" className={`day-rail ${sidebarCollapsed ? "" : "is-open"}`} aria-label={t("navigation.dayNavigation")}>
       <div className="mini-calendar">
         <div className="mini-calendar-heading">
           <div>
-            <small>This week</small>
+            <small>{t("focus.thisWeek")}</small>
             <strong>{rangeLabel}</strong>
           </div>
           <div className="mini-calendar-actions">
             {!isCurrentWeek && (
               <button type="button" onClick={() => setAnchorDate(new Date(todayKey + "T00:00:00"))}>
-                Today
+                {t("common.today")}
               </button>
             )}
-            <button type="button" onClick={() => moveWeek(-1)} aria-label="Previous week" title="Previous week">
+            <button type="button" onClick={() => moveWeek(-1)} aria-label={t("navigation.previousWeek")} title={t("navigation.previousWeek")}>
               <ChevronLeftIcon width={15} height={15} />
             </button>
-            <button type="button" onClick={() => moveWeek(1)} aria-label="Next week" title="Next week">
+            <button type="button" onClick={() => moveWeek(1)} aria-label={t("navigation.nextWeek")} title={t("navigation.nextWeek")}>
               <ChevronRightIcon width={15} height={15} />
             </button>
           </div>
@@ -308,9 +309,9 @@ export function DayRail() {
                 onClick={() => chooseDay(key)}
                 className={`${current ? "is-current" : ""} ${selected ? "is-selected" : ""}`}
                 aria-pressed={selected}
-                aria-label={`${date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}${count ? `, ${count} tasks` : ", no tasks"}${journaled ? ", journaled" : ""}`}
+                aria-label={t("navigation.daySummary", { date: date.toLocaleDateString(appLocale(), { weekday: "long", month: "long", day: "numeric" }), tasks: count ? t("navigation.dayTasks", { count }) : t("navigation.dayNoTasks"), journal: journaled ? t("navigation.dayJournal") : "" })}
               >
-                <span>{date.toLocaleDateString(undefined, { weekday: "narrow" })}</span>
+                <span>{date.toLocaleDateString(appLocale(), { weekday: "narrow" })}</span>
                 <b>{date.getDate()}</b>
                 <i className={count > 0 ? "has-tasks" : ""}>{count || ""}</i>
                 {journaled && <em className="journal-dot" aria-hidden="true" />}
@@ -321,8 +322,8 @@ export function DayRail() {
       </div>
 
       <div className="day-links-heading">
-        <span>Daily plan</span>
-        <small>{week.reduce((total, day) => total + day.count, 0)} tasks</small>
+        <span>{t("navigation.dailyPlan")}</span>
+        <small>{t("common.taskCount", { count: week.reduce((total, day) => total + day.count, 0) })}</small>
       </div>
       <div className="day-links">
         {week.map(({ date, key, count }) => {
@@ -338,11 +339,11 @@ export function DayRail() {
             >
               <span className="day-link-date">
                 <b>{date.getDate()}</b>
-                <small>{date.toLocaleDateString(undefined, { month: "short" })}</small>
+                <small>{date.toLocaleDateString(appLocale(), { month: "short" })}</small>
               </span>
               <span className="day-link-copy">
-                <strong>{current ? "Today" : date.toLocaleDateString(undefined, { weekday: "long" })}</strong>
-                <small>{count ? `${count} task${count === 1 ? "" : "s"} planned` : "Open day"}</small>
+                <strong>{current ? t("common.today") : date.toLocaleDateString(appLocale(), { weekday: "long" })}</strong>
+                <small>{count ? t("navigation.planned", { count }) : t("navigation.openDay")}</small>
               </span>
               <span className={`day-link-count ${count ? "has-tasks" : ""}`}>{count || "—"}</span>
             </button>

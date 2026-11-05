@@ -1,3 +1,5 @@
+import { t as translate } from "./i18n";
+import type { MessageKey } from "./i18n";
 /**
  * Reminder sounds.
  *
@@ -8,12 +10,12 @@
 
 export type SoundId = "none" | "chime" | "ping" | "bell" | "custom";
 
-export const SOUNDS: { value: SoundId; label: string }[] = [
-  { value: "none", label: "Silent" },
-  { value: "chime", label: "Chime" },
-  { value: "ping", label: "Ping" },
-  { value: "bell", label: "Bell" },
-  { value: "custom", label: "Custom…" },
+export const SOUNDS: { value: SoundId; label: MessageKey }[] = [
+  { value: "none", label: "sound.silent" },
+  { value: "chime", label: "sound.chime" },
+  { value: "ping", label: "sound.ping" },
+  { value: "bell", label: "sound.bell" },
+  { value: "custom", label: "sound.custom" },
 ];
 
 /** Custom sounds live in the database, so they have to stay small. */
@@ -150,7 +152,7 @@ let context: AudioContext | null = null;
  */
 async function audio(): Promise<AudioContext> {
   if (typeof AudioContext === "undefined") {
-    throw new Error("This build's webview has no Web Audio support.");
+    throw new Error(translate("sound.webAudioUnavailable"));
   }
   if (!context) context = new AudioContext();
   if (context.state !== "running") {
@@ -159,7 +161,7 @@ async function audio(): Promise<AudioContext> {
   if (context.state !== "running") {
     // On Linux this is usually WebKitGTK without the GStreamer plugins it
     // needs; the context exists but never starts.
-    throw new Error("The system blocked audio playback.");
+    throw new Error(translate("sound.playbackBlocked"));
   }
   return context;
 }
@@ -231,7 +233,7 @@ export async function playSound(
   const ctx = await audio();
 
   if (settings.sound === "custom") {
-    if (!settings.customData) throw new Error("No custom sound is loaded.");
+    if (!settings.customData) throw new Error(translate("sound.customMissing"));
     await playCustom(ctx, settings.customData, gain);
     return;
   }

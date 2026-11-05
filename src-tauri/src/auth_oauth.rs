@@ -57,13 +57,13 @@ pub async fn supabase_oauth_flow(
     auth_url: String,
 ) -> Result<SupabaseOAuthResult, String> {
     if !auth_url.starts_with("https://") || !auth_url.contains("/auth/v1/authorize") {
-        return Err("Supabase returned an invalid Google authorization URL.".into());
+        return Err(rust_i18n::t!("oauth.invalidUrl").to_string());
     }
 
     {
         let mut inner = state.0.lock().map_err(|e| e.to_string())?;
         if inner.active {
-            return Err("A Google sign-in is already in progress.".into());
+            return Err(rust_i18n::t!("oauth.busy").to_string());
         }
         inner.active = true;
     }
@@ -72,9 +72,7 @@ pub async fn supabase_oauth_flow(
         Ok(listener) => listener,
         Err(error) => {
             reset(&state);
-            return Err(format!(
-                "Could not start the Google sign-in callback on {CALLBACK_ADDRESS}: {error}"
-            ));
+            return Err(rust_i18n::t!("oauth.callbackFailed", address = CALLBACK_ADDRESS, error = error).to_string());
         }
     };
 
@@ -126,7 +124,7 @@ pub fn supabase_oauth_finish(
             .as_ref()
             .is_some_and(|pending| pending.attempt_id == attempt_id);
         if !matches {
-            return Err("The Google sign-in attempt is no longer active.".into());
+            return Err(rust_i18n::t!("oauth.expired").to_string());
         }
         inner.active = false;
         inner.pending.take().expect("pending callback was checked")
@@ -138,7 +136,7 @@ pub fn supabase_oauth_finish(
         None => respond(
             &mut stream,
             true,
-            "Google sign-in completed. You can return to Todofy.",
+            &rust_i18n::t!("oauth.completed"),
         ),
     }
 
@@ -162,7 +160,7 @@ fn await_callback(listener: TcpListener) -> Result<BrowserCallback, String> {
     let deadline = Instant::now() + TIMEOUT;
     loop {
         if Instant::now() > deadline {
-            return Err("Timed out waiting for Google to redirect back to Todofy.".into());
+            return Err(rust_i18n::t!("oauth.timeoutApp").to_string());
         }
 
         match listener.accept() {
@@ -208,11 +206,11 @@ fn parse_callback_target(target: &str) -> CallbackTarget {
         .get("error_description")
         .or_else(|| params.get("error"))
     {
-        return CallbackTarget::Error(format!("Google sign-in failed: {error}"));
+        return CallbackTarget::Error(rust_i18n::t!("oauth.failed", error = error).to_string());
     }
     match params.get("code") {
         Some(code) if !code.is_empty() => CallbackTarget::Code(code.clone()),
-        _ => CallbackTarget::Error("Google sign-in returned without an authorization code.".into()),
+        _ => CallbackTarget::Error(rust_i18n::t!("oauth.noCode").to_string()),
     }
 }
 
@@ -258,22 +256,25 @@ fn percent_decode(value: &str) -> String {
 }
 
 const RESULT_PAGE: &str = r#"<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Todofy sign-in</title><style>
+<html lang="%LANG%"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>%PAGE_TITLE%</title><style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(900px 500px at 50% -10%,#1b1b2b,#0b0b0f 65%);color:#e5e7eb}.card{width:min(92vw,410px);padding:42px 32px;text-align:center;background:rgba(23,23,32,.76);border:1px solid rgba(255,255,255,.08);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,.5)}.badge{width:64px;height:64px;margin:0 auto 20px;display:grid;place-items:center;border-radius:20px;background:%BADGE%;color:%ACCENT%;font-size:30px;font-weight:700}h1{margin:0 0 10px;font-size:21px;color:#f3f4f6}p{margin:0 auto;max-width:31ch;font-size:14px;line-height:1.55;color:#9ca3af}.btn{display:inline-block;margin-top:24px;padding:11px 24px;border-radius:12px;background:%ACCENT%;color:white;font-size:14px;font-weight:600;text-decoration:none}.brand{margin-top:25px;color:#6b7280;font-size:12px;font-weight:700;letter-spacing:.04em}
-</style></head><body><main class="card"><div class="badge">%ICON%</div><h1>%TITLE%</h1><p>%MESSAGE%</p><a class="btn" href="todofy://auth-return">Back to Todofy</a><div class="brand">TODOFY</div></main></body></html>"#;
+</style></head><body><main class="card"><div class="badge">%ICON%</div><h1>%TITLE%</h1><p>%MESSAGE%</p><a class="btn" href="todofy://auth-return">%BACK%</a><div class="brand">TODOFY</div></main></body></html>"#;
 
 fn respond(stream: &mut TcpStream, ok: bool, message: &str) {
     let (accent, badge, icon, title) = if ok {
-        ("#6c7cff", "rgba(108,124,255,.12)", "✓", "You're signed in")
+        ("#6c7cff", "rgba(108,124,255,.12)", "✓", rust_i18n::t!("oauth.signedIn").to_string())
     } else {
-        ("#fb7185", "rgba(244,63,94,.12)", "×", "Sign-in failed")
+        ("#fb7185", "rgba(244,63,94,.12)", "×", rust_i18n::t!("oauth.signInFailed").to_string())
     };
     let body = RESULT_PAGE
         .replace("%ACCENT%", accent)
         .replace("%BADGE%", badge)
         .replace("%ICON%", icon)
-        .replace("%TITLE%", title)
+        .replace("%TITLE%", &escape_html(&title))
+        .replace("%LANG%", rust_i18n::locale().as_ref())
+        .replace("%PAGE_TITLE%", &escape_html(&rust_i18n::t!("oauth.pageTitle")))
+        .replace("%BACK%", &escape_html(&rust_i18n::t!("oauth.backToApp")))
         .replace("%MESSAGE%", &escape_html(message));
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\

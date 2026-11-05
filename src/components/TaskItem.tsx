@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { useStore } from "../store";
 import { formatDue, formatReminder, isPast } from "../lib/dates";
@@ -19,7 +20,7 @@ import {
 } from "./Icons";
 import { repeatLabel } from "../lib/repeat";
 import { formatDuration, formatMinutes } from "../lib/duration";
-import { priorityTag, profileFor, showsPriority } from "../lib/priority";
+import { displayPriorityName, priorityTag, profileFor, showsPriority } from "../lib/priority";
 import { overEstimateBy, trackedElapsed, trackingState } from "../lib/tracking";
 import { useTick } from "../lib/useTick";
 
@@ -39,6 +40,7 @@ interface DragProps {
 }
 
 export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
+  const { t } = useTranslation();
   const {
     labels,
     priorityProfiles,
@@ -91,7 +93,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
           onPointerDown={drag.onHandlePointerDown}
           onClick={(event) => event.stopPropagation()}
           className="task-drag-handle"
-          title="Drag to reorder"
+          title={t("tasks.dragToReorder")}
         >
           <GripIcon width={16} height={16} />
         </span>
@@ -101,7 +103,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
         type="button"
         className="task-complete"
         style={!done ? { borderColor: priority.color } : undefined}
-        title={done ? "Mark active" : "Complete"}
+        title={done ? t("common.markActive") : t("common.complete")}
         onClick={(event) => {
           event.stopPropagation();
           toggleTask(task.id, !done);
@@ -113,7 +115,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
       <div className="task-row-title">
         <p>{task.title}</p>
         {subtaskTotal > 0 && (
-          <span title={`${subtaskDone} of ${subtaskTotal} steps done`}>
+          <span title={t("common.stepsDone", { done: subtaskDone, total: subtaskTotal })}>
             <CheckCircleIcon width={13} height={13} />
             {subtaskDone}/{subtaskTotal}
           </span>
@@ -122,7 +124,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
 
       <div className="task-row-meta">
         {showsPriority(task.priority, priorityProfiles) && (
-          <span style={{ color: priority.color }} title={priority.name}>
+          <span style={{ color: priority.color }} title={displayPriorityName(priority)}>
             <FlagIcon width={13} height={13} />
             {priorityTag(task.priority, priorityProfiles)}
           </span>
@@ -133,7 +135,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
             className={lateReminder ? "is-overdue" : ""}
             title={
               lateReminder
-                ? `Reminder passed — ${formatReminder(task.remindAt)}`
+                ? t("tasks.reminderPassed", { time: formatReminder(task.remindAt) })
                 : formatReminder(task.remindAt)
             }
           >
@@ -141,12 +143,12 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
           </span>
         )}
         {task.repeat && (
-          <span title={`Repeats ${repeatLabel(task.repeat).toLowerCase()}`}>
+          <span title={t("tasks.repeatHint", { repeat: repeatLabel(task.repeat).toLowerCase() })}>
             <RepeatIcon width={13} height={13} />{repeatLabel(task.repeat)}
           </span>
         )}
         {task.estimateMinutes !== null && (
-          <span title={`Estimated ${formatMinutes(task.estimateMinutes)}`}>
+          <span title={t("tasks.estimatedHint", { duration: formatMinutes(task.estimateMinutes) })}>
             <HourglassIcon width={13} height={13} />{formatMinutes(task.estimateMinutes)}
           </span>
         )}
@@ -163,12 +165,12 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
             }
             title={
               over > 0
-                ? `${formatDuration(over)} over the ${formatMinutes(task.estimateMinutes ?? 0)} estimate`
+                ? t("tasks.overEstimateHint", { over: formatDuration(over), estimate: formatMinutes(task.estimateMinutes ?? 0) })
                 : tracking === "running"
-                  ? "Tracking now"
+                  ? t("tasks.trackingNow")
                   : tracking === "paused"
-                    ? "Paused — the clock is held"
-                    : "Time tracked on this task"
+                    ? t("tasks.pausedTheClockIsHeld")
+                    : t("common.timeTrackedOnThisTask")
             }
           >
             <TimerIcon width={13} height={13} />{formatDuration(elapsed)}
@@ -195,10 +197,10 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
             className={tracking === "running" ? "is-running" : tracking === "paused" ? "is-held" : ""}
             title={
               tracking === "running"
-                ? "Pause tracking"
+                ? t("focus.pauseTracking")
                 : tracking === "paused"
-                  ? "Resume tracking"
-                  : "Start tracking time"
+                  ? t("focus.resumeTracking")
+                  : t("tasks.startTrackingTime")
             }
           >
             {tracking === "running" ? (
@@ -216,7 +218,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
               stopTaskTimer();
             }}
             className="is-running"
-            title="Stop tracking and bank the time"
+            title={t("tasks.stopTrackingAndBankTheTime")}
           >
             <StopIcon width={15} height={15} />
           </button>
@@ -228,7 +230,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
             patchTask({ id: task.id, pinned: !task.pinned });
           }}
           className={task.pinned ? "is-pinned" : ""}
-          title={task.pinned ? "Unpin" : "Pin to top"}
+          title={task.pinned ? t("tasks.unpin") : t("tasks.pinToTop")}
         >
           <PinIcon width={15} height={15} />
         </button>
@@ -237,14 +239,14 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
           onClick={(event) => {
             event.stopPropagation();
             requestConfirm({
-              title: "Delete task?",
-              message: `“${task.title}” will be permanently deleted.`,
-              confirmLabel: "Delete",
+              title: t("tasks.deleteTitle"),
+              message: t("common.deleteTaskMessage", { title: task.title }),
+              confirmLabel: t("common.delete"),
               danger: true,
               onConfirm: () => removeTask(task.id),
             });
           }}
-          title="Delete"
+          title={t("common.delete")}
         >
           <TrashIcon width={15} height={15} />
         </button>

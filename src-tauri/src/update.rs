@@ -46,12 +46,12 @@ pub fn notify_update(app: AppHandle, version: String, can_install: bool) {
         return;
     }
 
-    let title = format!("todofy {version} is available");
+    let title = rust_i18n::t!("updates.available", version = version);
     let body = if can_install {
-        "Click to download and install it."
+        rust_i18n::t!("updates.install").to_string()
     } else {
-        "Click to see how to update."
+        rust_i18n::t!("updates.open").to_string()
     };
     let style = crate::notify::global_style(&app);
-    let _ = crate::notify::deliver(&app, &style, PopupKind::Update, &title, body, None, None);
+    let _ = crate::notify::deliver(&app, &style, PopupKind::Update, &title, &body, None, None);
 }

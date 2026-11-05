@@ -1,8 +1,11 @@
+import { t, type MessageKey } from "../lib/i18n";
+import { Trans, useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import { api } from "../lib/api";
 import {
   hasOverrides,
+  displayPriorityName,
   inputOf,
   isCustomized,
   PRIORITY_VALUES,
@@ -31,6 +34,7 @@ import { FlagIcon } from "./Icons";
  * exactly as it did before profiles existed.
  */
 export function PriorityProfilesSection() {
+  const { t } = useTranslation();
   const { priorityProfiles, updatePriorityProfile, resetPriorityProfile } =
     useStore();
   const [editing, setEditing] = useState<number | null>(null);
@@ -53,14 +57,11 @@ export function PriorityProfilesSection() {
   return (
     <section className="mb-6">
       <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
-        Priorities
+        {t("priorities.priorities")}
       </h3>
       <div className="overflow-hidden rounded-xl border border-border bg-surface">
         <p className="border-b border-border px-4 py-3 text-xs text-muted">
-          Name and color each priority so it reads the way you think about it,
-          and give the ones that matter their own reminder. Anything left on{" "}
-          <em className="not-italic text-faint">Default</em> follows Notifications
-          below. Quick-add still writes them as <code>p1</code>–<code>p4</code>.
+          <Trans i18nKey="priorities.description" components={{ em: <em className="not-italic text-faint" />, code: <code /> }} />
         </p>
         {error && (
           <p
@@ -85,7 +86,7 @@ export function PriorityProfilesSection() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-text">
-                    {profile.name}
+                    {displayPriorityName(profile)}
                   </p>
                   <p className="mt-0.5 truncate text-xs text-muted">
                     {summarize(profile)}
@@ -103,7 +104,7 @@ export function PriorityProfilesSection() {
                     }
                     className="shrink-0 text-xs text-muted hover:text-text disabled:opacity-50"
                   >
-                    Reset
+                    {t("common.reset")}
                   </button>
                 )}
                 <button
@@ -116,7 +117,7 @@ export function PriorityProfilesSection() {
                   aria-expanded={open}
                   className="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
                 >
-                  {open ? "Close" : "Edit"}
+                  {open ? t("common.close") : t("common.edit")}
                 </button>
               </div>
               {open && (
@@ -145,68 +146,68 @@ export function PriorityProfilesSection() {
 function summarize(profile: PriorityProfile): string {
   const parts: string[] = [`P${profile.priority}`];
   if (profile.priority === 4 && !isCustomized(profile)) {
-    parts.push("no priority, hidden on task rows");
+    parts.push(t("priorities.hidden"));
   }
   if (profile.sound) {
     parts.push(
       profile.sound === "none"
-        ? "silent"
-        : SOUND_LABELS[profile.sound].toLowerCase(),
+        ? t("priorities.silent")
+        : t(SOUND_LABELS[profile.sound]).toLowerCase(),
     );
   }
   if (profile.repeatMinutes !== null) {
     parts.push(
       profile.repeatMinutes === 0
-        ? "fires once"
-        : `repeats every ${profile.repeatMinutes} min`,
+        ? t("priorities.once")
+        : t("priorities.repeats", { count: profile.repeatMinutes }),
     );
   }
   if (profile.notificationStyle) {
     parts.push(
       profile.notificationStyle === "native"
-        ? "system notification"
-        : "in-app popup",
+        ? t("priorities.systemNotification")
+        : t("priorities.popup"),
     );
   }
   return parts.join(" · ");
 }
 
-const SOUND_LABELS: Record<SoundId, string> = {
-  none: "Silent",
-  chime: "Chime",
-  ping: "Ping",
-  bell: "Bell",
-  custom: "Custom",
+const SOUND_LABELS: Record<SoundId, MessageKey> = {
+  none: "sound.silent",
+  chime: "sound.chime",
+  ping: "sound.ping",
+  bell: "sound.bell",
+  custom: "common.custom",
 };
 
 /** `null` is always first, and always means "follow the global setting". */
-const SOUND_CHOICES: { value: SoundId | null; label: string }[] = [
-  { value: null, label: "Default" },
-  { value: "none", label: "Silent" },
-  { value: "chime", label: "Chime" },
-  { value: "ping", label: "Ping" },
-  { value: "bell", label: "Bell" },
-  { value: "custom", label: "Custom…" },
+const SOUND_CHOICES: { value: SoundId | null; label: MessageKey }[] = [
+  { value: null, label: "priorities.default" },
+  { value: "none", label: "sound.silent" },
+  { value: "chime", label: "sound.chime" },
+  { value: "ping", label: "sound.ping" },
+  { value: "bell", label: "sound.bell" },
+  { value: "custom", label: "sound.custom" },
 ];
 
-const STYLE_CHOICES: { value: "custom" | "native" | null; label: string }[] = [
-  { value: null, label: "Default" },
-  { value: "custom", label: "In-app popup" },
-  { value: "native", label: "System" },
+const STYLE_CHOICES: { value: "custom" | "native" | null; label: MessageKey }[] = [
+  { value: null, label: "priorities.default" },
+  { value: "custom", label: "settings.inAppPopup" },
+  { value: "native", label: "settings.system" },
 ];
 
-const REPEAT_CHOICES: { value: number | null; label: string }[] = [
-  { value: null, label: "Default" },
-  { value: 0, label: "Don't repeat" },
-  { value: 2, label: "Every 2 min" },
-  { value: 5, label: "Every 5 min" },
-  { value: 10, label: "Every 10 min" },
+const REPEAT_CHOICES: { value: number | null; label: MessageKey }[] = [
+  { value: null, label: "priorities.default" },
+  { value: 0, label: "settings.noRepeat" },
+  { value: 2, label: "settings.repeat2" },
+  { value: 5, label: "settings.repeat5" },
+  { value: 10, label: "settings.repeat10" },
 ];
 
-const RAMP_CHOICES: { value: boolean | null; label: string }[] = [
-  { value: null, label: "Default" },
-  { value: true, label: "Get louder" },
-  { value: false, label: "Stay level" },
+const RAMP_CHOICES: { value: boolean | null; label: MessageKey }[] = [
+  { value: null, label: "priorities.default" },
+  { value: true, label: "settings.ramp" },
+  { value: false, label: "settings.level" },
 ];
 
 function PriorityEditor({
@@ -220,6 +221,7 @@ function PriorityEditor({
   onCancel: () => void;
   onSave: (input: PriorityProfileInput) => void;
 }) {
+  const { t } = useTranslation();
   const [draft, setDraft] = useState<PriorityProfileInput>(() =>
     inputOf(profile),
   );
@@ -256,7 +258,7 @@ function PriorityEditor({
       if (!file) return;
       if (file.size > MAX_CUSTOM_BYTES) {
         setSoundError(
-          `That file is ${Math.round(file.size / 1024)} KB — the limit is ${MAX_CUSTOM_BYTES / 1024} KB.`,
+          t("common.fileTooLarge", { size: Math.round(file.size / 1024), limit: MAX_CUSTOM_BYTES / 1024 }),
         );
         return;
       }
@@ -274,7 +276,7 @@ function PriorityEditor({
         patch({ sound: "custom" });
         void preview("custom", data);
       } catch {
-        setSoundError("That file couldn't be read.");
+        setSoundError(t("priorities.thatFileCouldnTBeRead"));
       }
     };
     input.click();
@@ -299,7 +301,7 @@ function PriorityEditor({
       await playSound({ sound, volume, ramp: false, customData });
     } catch (error) {
       setSoundError(
-        error instanceof Error ? error.message : "That sound couldn't be played.",
+        error instanceof Error ? error.message : t("priorities.thatSoundCouldnTBePlayed"),
       );
     }
   };
@@ -323,7 +325,7 @@ function PriorityEditor({
       }}
     >
       <label className="block text-xs font-medium text-muted">
-        Name
+        {t("priorities.name")}
         <input
           autoFocus
           value={draft.name}
@@ -334,10 +336,10 @@ function PriorityEditor({
         />
       </label>
 
-      <p className="mt-3 mb-2 text-xs font-medium text-muted">Color</p>
+      <p className="mt-3 mb-2 text-xs font-medium text-muted">{t("board.color")}</p>
       <div
         role="group"
-        aria-label="Priority color presets"
+        aria-label={t("priorities.priorityColorPresets")}
         className="flex flex-wrap gap-1.5"
       >
         {PALETTE.map((preset) => (
@@ -345,7 +347,7 @@ function PriorityEditor({
             key={preset}
             type="button"
             disabled={busy}
-            aria-label={`Use ${preset}`}
+            aria-label={t("common.useColor", { color: preset })}
             aria-pressed={draft.color.toLowerCase() === preset}
             onClick={() => patch({ color: preset })}
             style={{ background: preset }}
@@ -362,18 +364,18 @@ function PriorityEditor({
         disabled={busy}
         onInput={(event) => patch({ color: event.currentTarget.value })}
         aria-invalid={!colorValid}
-        aria-label="Priority color"
+        aria-label={t("priorities.priorityColor")}
         placeholder="#6c7cff"
         className="mt-2 w-28 rounded-lg border border-border bg-bg px-2.5 py-1.5 font-mono text-xs text-text outline-none focus:border-(--color-accent)"
       />
       {!colorValid && (
         <p className="mt-1.5 text-xs text-(--color-danger)">
-          Use a six-digit hex color, such as #6c7cff.
+          {t("board.useASixDigitHexColorSuchAs6c7cff")}
         </p>
       )}
 
       <Chips
-        label="Reminder sound"
+        label={t("priorities.reminderSound")}
         choices={SOUND_CHOICES.map((choice) =>
           choice.value === "custom" && customName
             ? { ...choice, label: customName.replace(/\.[^.]+$/, "") }
@@ -389,7 +391,7 @@ function PriorityEditor({
           onClick={pickCustomSound}
           className="mt-1.5 text-xs text-(--color-accent) hover:underline"
         >
-          Choose a different file…
+          {t("priorities.chooseADifferentFile")}
         </button>
       )}
       {soundError && (
@@ -397,22 +399,21 @@ function PriorityEditor({
       )}
       {draft.sound === "custom" && (
         <p className="mt-1.5 text-xs text-faint">
-          The audio stays on this device. Other devices sharing your account
-          fall back to the sound in Notifications.
+          {t("priorities.theAudioStaysOnThisDeviceOtherDevicesSharingYour")}
         </p>
       )}
 
       {draft.sound !== "none" && (
         <>
           <div className="mt-3 flex items-center justify-between">
-            <p className="text-xs font-medium text-muted">Volume</p>
+            <p className="text-xs font-medium text-muted">{t("priorities.volume")}</p>
             {draft.volume !== null && (
               <button
                 type="button"
                 onClick={() => patch({ volume: null })}
                 className="text-xs text-muted hover:text-text"
               >
-                Use default
+                {t("priorities.useDefault")}
               </button>
             )}
           </div>
@@ -423,7 +424,7 @@ function PriorityEditor({
               onClick={() => patch({ volume: 70 })}
               className="mt-1.5 rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
-              Set a volume for this priority
+              {t("priorities.setAVolumeForThisPriority")}
             </button>
           ) : (
             <input
@@ -437,12 +438,12 @@ function PriorityEditor({
                 patch({ volume: Number(event.currentTarget.value) })
               }
               className="mt-1.5 w-full accent-(--color-accent)"
-              aria-label="Reminder volume for this priority"
+              aria-label={t("priorities.reminderVolumeForThisPriority")}
             />
           )}
 
           <Chips
-            label="When a reminder repeats"
+            label={t("priorities.whenAReminderRepeats")}
             choices={RAMP_CHOICES}
             value={draft.ramp}
             onSelect={(ramp) => patch({ ramp })}
@@ -452,7 +453,7 @@ function PriorityEditor({
       )}
 
       <Chips
-        label="Notification style"
+        label={t("priorities.notificationStyle")}
         choices={STYLE_CHOICES}
         value={draft.notificationStyle}
         onSelect={(notificationStyle) => patch({ notificationStyle })}
@@ -460,7 +461,7 @@ function PriorityEditor({
       />
 
       <Chips
-        label="Repeat an unanswered reminder"
+        label={t("priorities.repeatAnUnansweredReminder")}
         choices={REPEAT_CHOICES}
         value={draft.repeatMinutes}
         onSelect={(repeatMinutes) => patch({ repeatMinutes })}
@@ -474,14 +475,14 @@ function PriorityEditor({
           onClick={onCancel}
           className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
-          Cancel
+          {t("common.cancel")}
         </button>
         <button
           type="submit"
           disabled={busy || !valid}
           className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
         >
-          {busy ? "Saving…" : "Save"}
+          {busy ? t("board.saving") : t("common.save")}
         </button>
       </div>
     </form>

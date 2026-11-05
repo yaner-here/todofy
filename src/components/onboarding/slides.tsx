@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+import type { MessageKey } from "../../lib/i18n";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -33,6 +35,7 @@ import {
  * ---------------------------------------------------------------- */
 
 export function WelcomeSlide() {
+  const { t } = useTranslation();
   return (
     <div className="px-2 pt-2 text-center">
       <div className="relative mx-auto grid h-31 w-31 place-items-center">
@@ -43,25 +46,24 @@ export function WelcomeSlide() {
       </div>
 
       <div className="onb-stagger mt-6">
-        <Eyebrow>Welcome to todofy</Eyebrow>
+        <Eyebrow>{t("onboarding.welcomeToTodofy")}</Eyebrow>
         <h2 className="mt-2 text-[27px] font-semibold leading-[1.16] tracking-[-0.035em] text-text">
-          Everything you need to do.
+          {t("onboarding.everythingYouNeedToDo")}
           <br />
-          Nothing you don't.
+          {t("onboarding.nothingYouDonT")}
         </h2>
         <p className="mx-auto mt-3 max-w-108 text-[13px] leading-5 text-muted">
-          Your tasks live on this machine, in a plain database file you own. Two
-          minutes here and it will feel like yours.
+          {t("onboarding.yourTasksLiveOnThisMachineInAPlainDatabase")}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <TrustChip icon={<BoltIcon width={12} height={12} />}>
-            Opens instantly
+            {t("onboarding.opensInstantly")}
           </TrustChip>
           <TrustChip icon={<ShieldCheckIcon width={12} height={12} />}>
-            Private by default
+            {t("onboarding.privateByDefault")}
           </TrustChip>
           <TrustChip icon={<CloudIcon width={12} height={12} />}>
-            Works offline
+            {t("onboarding.worksOffline")}
           </TrustChip>
         </div>
       </div>
@@ -119,15 +121,16 @@ function Mark() {
  * ---------------------------------------------------------------- */
 
 export function ThemeSlide() {
+  const { t } = useTranslation();
   const theme = useStore((s) => s.theme);
   const toggleTheme = useStore((s) => s.toggleTheme);
 
   return (
     <div className="onb-stagger text-center">
-      <Eyebrow>Appearance</Eyebrow>
-      <SlideTitle>Pick a side</SlideTitle>
+      <Eyebrow>{t("settings.appearance")}</Eyebrow>
+      <SlideTitle>{t("onboarding.pickASide")}</SlideTitle>
       <SlideText>
-        Todofy follows you either way — switch whenever you like from Settings.
+        {t("onboarding.todofyFollowsYouEitherWaySwitchWheneverYouLikeFrom")}
       </SlideText>
 
       <div className="mt-7 grid grid-cols-2 gap-4">
@@ -146,7 +149,7 @@ export function ThemeSlide() {
             <ThemePreview mode={mode} />
             <span className="mt-2.5 flex items-center justify-between px-1 pb-0.5">
               <span className="text-[13px] font-medium text-text">
-                {mode === "dark" ? "Dark" : "Light"}
+                {mode === "dark" ? t("onboarding.dark") : t("onboarding.light")}
               </span>
               <span
                 className={`grid h-4.5 w-4.5 place-items-center rounded-full transition-colors ${
@@ -239,6 +242,7 @@ function ThemePreview({ mode }: { mode: "dark" | "light" }) {
 const DEMO = "Call the bank tomorrow at 10am p1 every month";
 
 export function CaptureSlide() {
+  const { t } = useTranslation();
   const labels = useStore((s) => s.labels);
   const priorityProfiles = useStore((s) => s.priorityProfiles);
   const setDraftText = useOnboarding((s) => s.setDraftText);
@@ -284,11 +288,10 @@ export function CaptureSlide() {
 
   return (
     <div className="onb-stagger text-center">
-      <Eyebrow>Quick add</Eyebrow>
-      <SlideTitle>Type it like you'd say it</SlideTitle>
+      <Eyebrow>{t("onboarding.quickAdd")}</Eyebrow>
+      <SlideTitle>{t("onboarding.typeItLikeYouDSayIt")}</SlideTitle>
       <SlideText>
-        Dates, times, priorities and repeats are read straight out of the
-        sentence. Write yours — it'll be waiting when the tour ends.
+        {t("onboarding.datesTimesPrioritiesAndRepeatsAreReadStraightOutOf")}
       </SlideText>
 
       <div className="mt-7">
@@ -312,7 +315,7 @@ export function CaptureSlide() {
                 setTouched(true);
                 setValue(event.currentTarget.value);
               }}
-              aria-label="Your first task"
+              aria-label={t("onboarding.yourFirstTask")}
               spellCheck={false}
               className="w-full bg-transparent text-[13px] text-text outline-none"
             />
@@ -389,6 +392,7 @@ function ParsedChip({
 const LENGTHS = [25, 45, 50];
 
 export function FocusSlide() {
+  const { t } = useTranslation();
   const pomodoro = useStore((s) => s.pomodoro);
   const refreshPomodoro = useStore((s) => s.refreshPomodoro);
   const [focusMin, setFocusMin] = useState(pomodoro?.focusMin ?? 25);
@@ -413,11 +417,10 @@ export function FocusSlide() {
 
   return (
     <div className="onb-stagger text-center">
-      <Eyebrow>Focus</Eyebrow>
-      <SlideTitle>One task at a time</SlideTitle>
+      <Eyebrow>{t("focus.focus")}</Eyebrow>
+      <SlideTitle>{t("onboarding.oneTaskAtATime")}</SlideTitle>
       <SlideText>
-        Start a Pomodoro or a stopwatch on any task. Both are timed by the
-        backend, so they keep counting with the window closed.
+        {t("onboarding.startAPomodoroOrAStopwatchOnAnyTaskBoth")}
       </SlideText>
 
       <div className="relative mx-auto mt-6 grid h-33.5 w-33.5 place-items-center">
@@ -452,13 +455,13 @@ export function FocusSlide() {
             {focusMin}:00
           </span>
           <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-faint">
-            Focus
+            {t("focus.focus")}
           </span>
         </span>
       </div>
 
       <div className="mt-6">
-        <p className="text-[11px] font-medium text-muted">Session length</p>
+        <p className="text-[11px] font-medium text-muted">{t("onboarding.sessionLength")}</p>
         <div className="mt-2 inline-grid grid-cols-3 gap-1 rounded-xl border border-border bg-bg p-1">
           {LENGTHS.map((minutes) => (
             <button
@@ -472,7 +475,7 @@ export function FocusSlide() {
                   : "text-muted hover:text-text"
               }`}
             >
-              {minutes} min
+              {minutes} {t("onboarding.min")}
             </button>
           ))}
         </div>
@@ -488,6 +491,7 @@ export function FocusSlide() {
 type PermissionState = "idle" | "working" | "granted" | "denied";
 
 export function RemindersSlide() {
+  const { t } = useTranslation();
   const [permission, setPermission] = useState<PermissionState>("idle");
   const [autostart, setAutostart] = useState(false);
   const [ready, setReady] = useState(false);
@@ -532,11 +536,10 @@ export function RemindersSlide() {
 
   return (
     <div className="onb-stagger text-center">
-      <Eyebrow>Capture &amp; reminders</Eyebrow>
-      <SlideTitle>Never lose a thought</SlideTitle>
+      <Eyebrow>{t("onboarding.captureReminders")}</Eyebrow>
+      <SlideTitle>{t("onboarding.neverLoseAThought")}</SlideTitle>
       <SlideText>
-        Press the hotkey in any app to jot something down, and let todofy tap
-        you on the shoulder when it's due.
+        {t("onboarding.pressTheHotkeyInAnyAppToJotSomethingDown")}
       </SlideText>
 
       <HotkeyArt />
@@ -544,13 +547,13 @@ export function RemindersSlide() {
       <div className="mt-6 space-y-2">
         <ActionRow
           icon={<BellIcon width={17} height={17} />}
-          title="Desktop notifications"
-          desc="Get a notification the moment a reminder or timer is due."
+          title={t("settings.desktopNotifications")}
+          desc={t("onboarding.getANotificationTheMomentAReminderOrTimerIs")}
         >
           {permission === "granted" ? (
             <span className="inline-flex items-center gap-1.5 rounded-lg bg-success/12 px-3 py-1.5 text-xs font-medium text-success">
               <CheckIcon width={12} height={12} strokeWidth={3} />
-              Enabled
+              {t("onboarding.enabled")}
             </span>
           ) : (
             <button
@@ -560,18 +563,18 @@ export function RemindersSlide() {
               className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
             >
               {permission === "working"
-                ? "Asking…"
+                ? t("onboarding.asking")
                 : permission === "denied"
-                  ? "Try again"
-                  : "Enable"}
+                  ? t("common.retry")
+                  : t("onboarding.enable")}
             </button>
           )}
         </ActionRow>
 
         <ActionRow
           icon={<PowerIcon width={17} height={17} />}
-          title="Start todofy at login"
-          desc="Reminders only fire while todofy is running."
+          title={t("onboarding.startTodofyAtLogin")}
+          desc={t("onboarding.remindersOnlyFireWhileTodofyIsRunning")}
         >
           <MiniSwitch
             checked={autostart}
@@ -583,8 +586,7 @@ export function RemindersSlide() {
 
       {permission === "denied" && (
         <p className="mt-3 text-[11px] text-(--color-warning)">
-          Your system refused the request. You can still allow todofy in your
-          desktop's notification settings.
+          {t("onboarding.yourSystemRefusedTheRequestYouCanStillAllowTodofy")}
         </p>
       )}
     </div>
@@ -593,6 +595,7 @@ export function RemindersSlide() {
 
 /** Keys press, the capture window drops in, a reminder slides up. One loop. */
 function HotkeyArt() {
+  const { t } = useTranslation();
   return (
     <div
       className="relative mx-auto mt-6 h-37.5 w-full max-w-100"
@@ -613,11 +616,11 @@ function HotkeyArt() {
       <div className="onb-drop absolute left-1/2 top-0 w-63 -translate-x-1/2 overflow-hidden rounded-xl border border-border-strong bg-elevated shadow-2xl shadow-black/40">
         <div className="flex items-center gap-2 px-3 py-2.5">
           <PlusIcon width={14} height={14} className="text-(--color-accent)" />
-          <span className="text-[11px] text-muted">Book the dentist…</span>
+          <span className="text-[11px] text-muted">{t("onboarding.bookTheDentist")}</span>
           <span className="onb-caret -ml-1 inline-block h-2.75 w-[1.5px] bg-(--color-accent)" />
         </div>
         <div className="border-t border-border px-3 py-1.5 text-[9px] text-faint">
-          Enter to save · Esc to dismiss
+          {t("onboarding.enterToSaveEscToDismiss")}
         </div>
       </div>
 
@@ -627,9 +630,9 @@ function HotkeyArt() {
         </span>
         <span className="min-w-0 text-left">
           <span className="block truncate text-[10px] font-medium text-text">
-            Call the bank
+            {t("onboarding.callTheBank")}
           </span>
-          <span className="block text-[9px] text-faint">Due now · 10:00</span>
+          <span className="block text-[9px] text-faint">{t("onboarding.dueNow1000")}</span>
         </span>
       </div>
     </div>
@@ -643,35 +646,35 @@ function HotkeyArt() {
 const FEATURES = [
   {
     icon: <JournalIcon width={18} height={18} />,
-    title: "Journal",
-    desc: "A dated page for how the day actually went.",
+    title: "journal.journal",
+    desc: "onboarding.journalHint",
   },
   {
     icon: <CalendarIcon width={18} height={18} />,
-    title: "Calendar",
-    desc: "See the month, drop tasks and events onto days.",
+    title: "calendar.calendar",
+    desc: "onboarding.calendarHint",
   },
   {
     icon: <LabelIcon width={18} height={18} />,
-    title: "Labels & priorities",
-    desc: "Colour-code work and flag what can't slip.",
+    title: "onboarding.labelsPriorities",
+    desc: "onboarding.labelsHint",
   },
   {
     icon: <RepeatIcon width={18} height={18} />,
-    title: "Repeating tasks",
-    desc: "Finish one and the next occurrence rolls forward.",
+    title: "onboarding.repeatingTasks",
+    desc: "onboarding.repeatHint",
   },
-];
+] as const;
 
 export function FeaturesSlide() {
+  const { t } = useTranslation();
   return (
     <div className="text-center">
       <div className="onb-stagger">
-        <Eyebrow>And there's more</Eyebrow>
-        <SlideTitle>More than a task list</SlideTitle>
+        <Eyebrow>{t("onboarding.andThereSMore")}</Eyebrow>
+        <SlideTitle>{t("onboarding.moreThanATaskList")}</SlideTitle>
         <SlideText>
-          Everything here is local and keyboard-first. Explore it at your own
-          pace — nothing is hidden behind a setup wizard.
+          {t("onboarding.everythingHereIsLocalAndKeyboardFirstExploreItAt")}
         </SlideText>
       </div>
 
@@ -689,9 +692,9 @@ export function FeaturesSlide() {
               {feature.icon}
             </span>
             <p className="mt-3 text-[13px] font-medium text-text">
-              {feature.title}
+              {t(feature.title)}
             </p>
-            <p className="mt-1 text-[11px] leading-4 text-muted">{feature.desc}</p>
+            <p className="mt-1 text-[11px] leading-4 text-muted">{t(feature.desc)}</p>
           </div>
         ))}
       </div>
@@ -703,13 +706,14 @@ export function FeaturesSlide() {
  * 7 — Finish
  * ---------------------------------------------------------------- */
 
-const SHORTCUTS: [string, string][] = [
-  ["Ctrl + Alt + A", "Capture from any app"],
-  ["N", "New task, right here"],
-  ["?", "Every other shortcut"],
+const SHORTCUTS: [string, MessageKey][] = [
+  ["Ctrl + Alt + A", "onboarding.captureFromAnyApp"],
+  ["N", "onboarding.newTaskRightHere"],
+  ["?", "onboarding.everyOtherShortcut"],
 ];
 
 export function FinishSlide() {
+  const { t } = useTranslation();
   const draft = useOnboarding((s) => s.draftText.trim());
   const finish = useOnboarding((s) => s.finish);
   const openGate = useBilling((s) => s.openGate);
@@ -721,11 +725,11 @@ export function FinishSlide() {
       </span>
 
       <div>
-        <SlideTitle class="mt-5">You're set up</SlideTitle>
+        <SlideTitle class="mt-5">{t("onboarding.youReSetUp")}</SlideTitle>
         <SlideText>
           {draft
-            ? "Your first task is waiting in Today. Three keys worth remembering:"
-            : "That's the whole tour. Three keys worth remembering:"}
+            ? t("onboarding.yourFirstTaskIsWaitingInTodayThreeKeysWorth")
+            : t("onboarding.thatSTheWholeTourThreeKeysWorthRemembering")}
         </SlideText>
       </div>
 
@@ -738,7 +742,7 @@ export function FinishSlide() {
             <kbd className="rounded-md border border-border-strong bg-surface-2 px-2 py-1 text-[11px] font-semibold text-text">
               {keys}
             </kbd>
-            <span className="text-[12px] text-muted">{what}</span>
+            <span className="text-[12px] text-muted">{t(what)}</span>
           </div>
         ))}
       </div>
@@ -746,7 +750,7 @@ export function FinishSlide() {
       {billingConfigured && (
         <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-faint">
           <DevicesIcon width={13} height={13} />
-          On more than one machine? Todofy Pro syncs them.
+          {t("onboarding.onMoreThanOneMachineTodofyProSyncsThem")}
           <button
             type="button"
             onClick={() => {
@@ -755,13 +759,13 @@ export function FinishSlide() {
             }}
             className="font-medium text-muted underline underline-offset-2 transition-colors hover:text-text"
           >
-            Take a look
+            {t("onboarding.takeALook")}
           </button>
         </p>
       )}
 
       <p className="mt-2 text-[10px] text-faint">
-        You can replay this tour anytime from Settings → About.
+        {t("onboarding.youCanReplayThisTourAnytimeFromSettingsAbout")}
       </p>
     </div>
   );

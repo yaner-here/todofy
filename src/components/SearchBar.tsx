@@ -1,9 +1,11 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
-import { PRIORITY_VALUES, profileFor } from "../lib/priority";
+import { displayPriorityName, PRIORITY_VALUES, profileFor } from "../lib/priority";
 import { CloseIcon, FlagIcon, SearchIcon } from "./Icons";
 
 export function SearchBar() {
+  const { t } = useTranslation();
   const {
     priorityProfiles,
     labels,
@@ -50,8 +52,8 @@ export function SearchBar() {
           id="search-input"
           value={searchQuery}
           onInput={(event) => setSearchQuery(event.currentTarget.value)}
-          placeholder="Search tasks"
-          aria-label="Search tasks"
+          placeholder={t("tasks.searchTasks")}
+          aria-label={t("tasks.searchTasks")}
         />
         {searchQuery && (
           <button
@@ -60,8 +62,8 @@ export function SearchBar() {
               setSearchQuery("");
               inputRef.current?.focus();
             }}
-            title="Clear search"
-            aria-label="Clear search"
+            title={t("tasks.clearSearch")}
+            aria-label={t("tasks.clearSearch")}
           >
             <CloseIcon width={13} height={13} />
           </button>
@@ -74,14 +76,14 @@ export function SearchBar() {
         aria-expanded={open}
       >
         <FlagIcon width={15} height={15} />
-        Filters
+        {t("tasks.filters")}
         {hasFilters && <span>{filterLabelIds.length + filterPriorities.length}</span>}
       </button>
 
       {open && (
         <div className="filter-popover">
           <div>
-            <p>Priority</p>
+            <p>{t("tasks.priority")}</p>
             <div className="filter-options">
               {PRIORITY_VALUES.map((priority) => {
                 const profile = profileFor(priority, priorityProfiles);
@@ -93,7 +95,7 @@ export function SearchBar() {
                     className={filterPriorities.includes(priority) ? "is-active" : ""}
                   >
                     <FlagIcon width={12} height={12} style={{ color: profile.color }} />
-                    {profile.name}
+                    {displayPriorityName(profile)}
                   </button>
                 );
               })}
@@ -101,7 +103,7 @@ export function SearchBar() {
           </div>
           {labels.length > 0 && (
             <div>
-              <p>Labels</p>
+              <p>{t("labels.labels")}</p>
               <div className="filter-options">
                 {labels.map((label) => (
                   <button
@@ -119,7 +121,7 @@ export function SearchBar() {
           )}
           {hasFilters && (
             <button type="button" className="clear-filter-button" onClick={clearFilters}>
-              Clear all filters
+              {t("tasks.clearAllFilters")}
             </button>
           )}
         </div>

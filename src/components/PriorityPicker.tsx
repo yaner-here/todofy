@@ -1,6 +1,7 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
-import { priorityTag, PRIORITY_VALUES, profileFor } from "../lib/priority";
+import { displayPriorityName, priorityTag, PRIORITY_VALUES, profileFor } from "../lib/priority";
 import { FlagIcon } from "./Icons";
 
 interface Props {
@@ -15,6 +16,7 @@ export function PriorityPicker({
   onChange,
   placement = "bottom",
 }: Props) {
+  const { t } = useTranslation();
   const profiles = useStore((s) => s.priorityProfiles);
   const setView = useStore((s) => s.setView);
   const [open, setOpen] = useState(false);
@@ -36,7 +38,7 @@ export function PriorityPicker({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted transition-colors hover:bg-surface-2"
-        title="Priority"
+        title={t("tasks.priority")}
       >
         <FlagIcon width={14} height={14} style={{ color: current.color }} />
         {priorityTag(current.priority, profiles)}
@@ -65,7 +67,7 @@ export function PriorityPicker({
                   height={14}
                   style={{ color: profile.color }}
                 />
-                <span className="truncate">{profile.name}</span>
+                <span className="truncate">{displayPriorityName(profile)}</span>
                 {priority === current.priority && (
                   <span className="ml-auto text-(--color-accent)">✓</span>
                 )}
@@ -80,7 +82,7 @@ export function PriorityPicker({
             }}
             className="mt-1 flex w-full items-center rounded-md border-t border-border px-2 py-1.5 text-xs text-faint transition-colors hover:bg-surface-2 hover:text-muted"
           >
-            Rename or recolor…
+            {t("tasks.renameOrRecolor")}
           </button>
         </div>
       )}

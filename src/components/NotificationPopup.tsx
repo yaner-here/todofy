@@ -1,7 +1,9 @@
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { BellIcon, CloseIcon, DownloadIcon } from "./Icons";
+import { formatMinutes } from "../lib/duration";
 
 interface NotifyPayload {
   nonce: number;
@@ -28,6 +30,7 @@ const SNOOZE_OPTIONS = [15, 30, 60];
  * card and dismisses after a timeout (paused while hovered).
  */
 export function NotificationPopup() {
+  const { t } = useTranslation();
   const [note, setNote] = useState<NotifyPayload | null>(() => null);
   const [paused, setPaused] = useState(false);
   const [cycle, setCycle] = useState(0);
@@ -148,13 +151,13 @@ export function NotificationPopup() {
           </span>
           <div className="notification-copy">
             <div className="notification-eyebrow">
-              {note.kind === "update" ? "Update available" : "Reminder · now"}
+              {note.kind === "update" ? t("notifications.updateAvailable") : t("notifications.reminderNow")}
             </div>
             <p className="notification-title">{note.title}</p>
             <p className="notification-body">{note.body}</p>
             {note.task_id && (
               <div className="notification-actions">
-                <span>Snooze</span>
+                <span>{t("date.snooze")}</span>
                 {SNOOZE_OPTIONS.map((minutes) => (
                   <button
                     key={minutes}
@@ -163,7 +166,7 @@ export function NotificationPopup() {
                       snooze(minutes);
                     }}
                   >
-                    {minutes < 60 ? `${minutes}m` : `${minutes / 60}h`}
+                    {formatMinutes(minutes)}
                   </button>
                 ))}
               </div>
@@ -176,7 +179,7 @@ export function NotificationPopup() {
             e.stopPropagation();
             close();
           }}
-          title="Dismiss"
+          title={t("notifications.dismiss")}
           className="notification-dismiss"
         >
           <CloseIcon width={14} height={14} />
