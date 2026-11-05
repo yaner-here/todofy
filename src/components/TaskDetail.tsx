@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useState } from "preact/hooks";
+import type { ReactNode } from "react";
+import { useState } from "react";
 import { useStore } from "../store";
 import { combineDateTime, formatDue, isPast, timeOf, today } from "../lib/dates";
 import type { RepeatRule, Subtask, Task } from "../types";
@@ -135,21 +135,21 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
 
   return (
     <section
-      class={`next-up-card ${done ? "is-done" : ""} ${compact ? "is-compact" : ""}`}
+      className={`next-up-card ${done ? "is-done" : ""} ${compact ? "is-compact" : ""}`}
     >
-      <div class="next-up-accent" style={{ background: priority.color }} />
-      <div class="next-up-body">
-        <div class="next-up-header">
+      <div className="next-up-accent" style={{ background: priority.color }} />
+      <div className="next-up-body">
+        <div className="next-up-header">
           <button
             type="button"
-            class="next-up-complete"
+            className="next-up-complete"
             onClick={() => toggleTask(task.id, !done)}
             style={!done ? { borderColor: priority.color } : undefined}
             title={done ? "Mark active" : "Complete"}
           >
-            {done && <CheckIcon width={14} height={14} stroke-width={3} />}
+            {done && <CheckIcon width={14} height={14} strokeWidth={3} />}
           </button>
-          <div class="next-up-copy">
+          <div className="next-up-copy">
             <input
               id="detail-title"
               value={title.value}
@@ -158,7 +158,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
               onKeyDown={(event) => event.key === "Enter" && event.currentTarget.blur()}
               aria-label="Task title"
             />
-            <div class="inline-note">
+            <div className="inline-note">
               <NoteIcon width={15} height={15} />
               <input
                 value={notes.value}
@@ -168,12 +168,12 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                 aria-label="Task notes"
               />
             </div>
-            {saveError && <p role="alert" class="text-xs text-(--color-danger)">{saveError}</p>}
+            {saveError && <p role="alert" className="text-xs text-(--color-danger)">{saveError}</p>}
           </div>
-          <div class="session-controls">
+          <div className="session-controls">
             <button
               type="button"
-              class={`begin-session ${tracking === "running" ? "is-running" : ""}`}
+              className={`begin-session ${tracking === "running" ? "is-running" : ""}`}
               onClick={() => {
                 if (tracking === "off") startTaskTimer(task.id);
                 else if (tracking === "running") pauseTaskTimer();
@@ -196,7 +196,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
             {tracking !== "off" && (
               <button
                 type="button"
-                class="session-stop"
+                className="session-stop"
                 onClick={stopTaskTimer}
                 title="Stop tracking and bank the time"
               >
@@ -206,14 +206,14 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
           </div>
         </div>
 
-        <div class="next-up-meta">
+        <div className="next-up-meta">
           <span style={{ color: priority.color }} title={priority.name}>
             <FlagIcon width={14} height={14} />
             {priorityTag(task.priority, priorityProfiles)}
           </span>
-          {due && <span class={due.tone}><CalendarIcon width={14} height={14} />{due.label}</span>}
+          {due && <span className={due.tone}><CalendarIcon width={14} height={14} />{due.label}</span>}
           {task.remindAt && (
-            <span class={lateReminder ? "overdue" : ""}>
+            <span className={lateReminder ? "overdue" : ""}>
               <TimerIcon width={14} height={14} />{timeOf(task.remindAt)}
             </span>
           )}
@@ -229,7 +229,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
           )}
           {elapsed > 0 && (
             <span
-              class={
+              className={
                 over > 0
                   ? "over"
                   : tracking === "running"
@@ -259,14 +259,14 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
             ))}
           <button
             type="button"
-            class={task.pinned ? "is-pinned" : ""}
+            className={task.pinned ? "is-pinned" : ""}
             onClick={() => patchTask({ id: task.id, pinned: !task.pinned })}
           >
             <PinIcon width={14} height={14} />{task.pinned ? "Pinned" : "Pin"}
           </button>
         </div>
 
-        <div class="next-step-row">
+        <div className="next-step-row">
           <div>
             <p>Next step</p>
             {nextStep ? (
@@ -283,19 +283,19 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
           )}
           <button
             type="button"
-            class="more-details"
+            className="more-details"
             onClick={() => setExpanded((value) => !value)}
             aria-expanded={expanded}
           >
             {expanded ? "Less" : "More details"}
-            <ChevronRightIcon width={14} height={14} class={expanded ? "rotate-90" : ""} />
+            <ChevronRightIcon width={14} height={14} className={expanded ? "rotate-90" : ""} />
           </button>
         </div>
 
         {expanded && (
-          <div class="expanded-task-details">
+          <div className="expanded-task-details">
             <SubtaskList task={task} onChange={onSubtasks} />
-            <div class="detail-fields">
+            <div className="detail-fields">
               <DetailField icon={<CalendarIcon width={16} height={16} />} label="Schedule">
                 <DatePicker
                   value={task.dueDate}
@@ -317,7 +317,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                 />
               </DetailField>
               <DetailField icon={<FlagIcon width={16} height={16} />} label="Priority">
-                <div class="priority-inline">
+                <div className="priority-inline">
                   {PRIORITY_VALUES.map((value) => {
                     const option = profileFor(value, priorityProfiles);
                     const active = task.priority === value;
@@ -326,7 +326,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                         type="button"
                         key={value}
                         onClick={() => patchTask({ id: task.id, priority: value })}
-                        class={active ? "is-active" : ""}
+                        className={active ? "is-active" : ""}
                         style={active ? { background: option.color } : undefined}
                         title={option.name}
                       >
@@ -337,7 +337,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                 </div>
               </DetailField>
             </div>
-            <div class="detail-labels">
+            <div className="detail-labels">
               <p>Labels</p>
               {labels.map((label) => {
                 const active = task.labelIds.includes(label.id);
@@ -353,7 +353,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                           : [...task.labelIds, label.id],
                       })
                     }
-                    class={active ? "is-active" : ""}
+                    className={active ? "is-active" : ""}
                     style={{ color: label.color }}
                   >
                     <i style={{ background: label.color }} />{label.name}
@@ -361,7 +361,7 @@ function TaskDetailContent({ task, compact }: { task: Task; compact?: boolean })
                 );
               })}
             </div>
-            <div class="detail-footer">
+            <div className="detail-footer">
               <small>Created {new Date(task.createdAt).toLocaleDateString()}</small>
               <button
                 type="button"
@@ -390,12 +390,12 @@ function DetailField({
   label,
   children,
 }: {
-  icon: ComponentChildren;
+  icon: ReactNode;
   label: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
-    <div class="detail-field">
+    <div className="detail-field">
       <span>{icon}{label}</span>
       {children}
     </div>

@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useSync, type AccountDataChoice } from "../lib/sync";
 
@@ -25,33 +25,33 @@ export function SyncAccountDialog() {
 
   return (
     <div
-      class="fixed inset-0 z-110 grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-110 grid place-items-center bg-black/60 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sync-account-title"
     >
-      <div class="w-full max-w-md animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
-        <h3 id="sync-account-title" class="text-base font-semibold text-text">
+      <div className="w-full max-w-md animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
+        <h3 id="sync-account-title" className="text-base font-semibold text-text">
           Choose data for this account
         </h3>
-        <p class="mt-1.5 text-sm leading-relaxed text-muted">
+        <p className="mt-1.5 text-sm leading-relaxed text-muted">
           This device already has tasks linked to another account. Before
           syncing
           {email ? ` ${email}` : " this account"}, choose what Todofy should do.
         </p>
 
-        <div class="mt-4 grid gap-2.5">
+        <div className="mt-4 grid gap-2.5">
           <button
             type="button"
             onClick={() => choose("copy-local")}
             disabled={busy !== null}
             autoFocus
-            class="rounded-xl border border-(--color-accent) bg-accent-soft px-4 py-3 text-left transition-colors hover:brightness-110 disabled:opacity-60"
+            className="rounded-xl border border-(--color-accent) bg-accent-soft px-4 py-3 text-left transition-colors hover:brightness-110 disabled:opacity-60"
           >
-            <span class="block text-sm font-semibold text-text">
+            <span className="block text-sm font-semibold text-text">
               Copy this device's data
             </span>
-            <span class="mt-0.5 block text-xs leading-relaxed text-muted">
+            <span className="mt-0.5 block text-xs leading-relaxed text-muted">
               Keep local tasks, labels, focus history, and journal entries and
               add independent copies to this account.
             </span>
@@ -60,12 +60,12 @@ export function SyncAccountDialog() {
             type="button"
             onClick={() => choose("account")}
             disabled={busy !== null}
-            class="rounded-xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-2 disabled:opacity-60"
+            className="rounded-xl border border-border bg-surface px-4 py-3 text-left transition-colors hover:bg-surface-2 disabled:opacity-60"
           >
-            <span class="block text-sm font-semibold text-text">
+            <span className="block text-sm font-semibold text-text">
               Use this account's data
             </span>
-            <span class="mt-0.5 block text-xs leading-relaxed text-muted">
+            <span className="mt-0.5 block text-xs leading-relaxed text-muted">
               Remove the device's synced tasks and load this account's cloud
               data. Standalone calendar events stay on this device.
             </span>
@@ -73,20 +73,20 @@ export function SyncAccountDialog() {
         </div>
 
         {error && (
-          <p class="mt-3 rounded-lg bg-[color-mix(in_srgb,var(--color-danger)_12%,transparent)] px-3 py-2 text-xs text-(--color-danger)">
+          <p className="mt-3 rounded-lg bg-[color-mix(in_srgb,var(--color-danger)_12%,transparent)] px-3 py-2 text-xs text-(--color-danger)">
             {error}
           </p>
         )}
 
-        <div class="mt-4 flex items-center justify-between">
-          <span class="text-[11px] text-faint">
+        <div className="mt-4 flex items-center justify-between">
+          <span className="text-[11px] text-faint">
             Nothing is uploaded until you choose.
           </span>
           <button
             type="button"
             onClick={cancel}
             disabled={busy !== null}
-            class="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-60"
+            className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-60"
           >
             Sign out
           </button>

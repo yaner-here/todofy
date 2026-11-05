@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "preact/hooks";
-import { createPortal } from "preact/compat";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { listen } from "@tauri-apps/api/event";
 import { CloseIcon, MicrophoneIcon, StopIcon } from "./Icons";
 import { voiceApi, voiceError, type VoiceStatus } from "../lib/voice";
@@ -187,7 +187,7 @@ export function VoiceInputButton({
 
   return (
     <>
-      <span class="inline-flex items-center gap-1.5">
+      <span className="inline-flex items-center gap-1.5">
         <button
           type="button"
           onClick={() => void action()}
@@ -198,14 +198,14 @@ export function VoiceInputButton({
           title={
             phase === "idle" ? "Dictate locally" : "Voice dictation in progress"
           }
-          class="voice-trigger"
+          className="voice-trigger"
         >
           <MicrophoneIcon width={18} height={18} />
         </button>
         {error && (
           <span
             role="alert"
-            class="max-w-48 text-xs text-(--color-danger)"
+            className="max-w-48 text-xs text-(--color-danger)"
             title={error}
           >
             {error}
@@ -216,13 +216,13 @@ export function VoiceInputButton({
         panelHost &&
         createPortal(
           <div
-            class={`voice-capture voice-capture--${phase} ${compactWindow ? "voice-capture--compact" : ""}`}
+            className={`voice-capture voice-capture--${phase} ${compactWindow ? "voice-capture--compact" : ""}`}
             role="region"
             aria-label="Voice dictation"
           >
             <button
               type="button"
-              class="voice-capture-action voice-capture-cancel"
+              className="voice-capture-action voice-capture-cancel"
               onClick={cancel}
               disabled={phase === "cancelling"}
               aria-label="Cancel dictation"
@@ -232,12 +232,12 @@ export function VoiceInputButton({
             </button>
             {phase === "recording" ? (
               <>
-                <div class="voice-capture-track">
-                  <div class="voice-capture-bars" aria-hidden="true">
+                <div className="voice-capture-track">
+                  <div className="voice-capture-bars" aria-hidden="true">
                     {waveform.map((amplitude, index) => (
                       <span
                         key={index}
-                        class="voice-capture-bar"
+                        className="voice-capture-bar"
                         style={{
                           height: `${3 + amplitude * 34}px`,
                           opacity: amplitude ? 1 : 0,
@@ -247,14 +247,14 @@ export function VoiceInputButton({
                   </div>
                 </div>
                 <span
-                  class="voice-capture-time"
+                  className="voice-capture-time"
                   aria-label={`Recording time ${formatElapsed(elapsed)}`}
                 >
                   {formatElapsed(elapsed)}
                 </span>
                 <button
                   type="button"
-                  class="voice-capture-action voice-capture-finish"
+                  className="voice-capture-action voice-capture-finish"
                   onClick={() => void finish()}
                   aria-label="Stop and transcribe"
                   title="Stop and insert editable text"
@@ -264,7 +264,7 @@ export function VoiceInputButton({
               </>
             ) : (
               <>
-                <span class="voice-capture-message" role="status">
+                <span className="voice-capture-message" role="status">
                   {phase === "starting"
                     ? "Opening microphone…"
                     : phase === "transcribing"
@@ -272,10 +272,10 @@ export function VoiceInputButton({
                       : "Cancelling…"}
                 </span>
                 <span
-                  class="voice-capture-action voice-capture-wait"
+                  className="voice-capture-action voice-capture-wait"
                   aria-hidden="true"
                 >
-                  <span class="voice-capture-spinner" />
+                  <span className="voice-capture-spinner" />
                 </span>
               </>
             )}

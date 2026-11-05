@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { formatMinutes, parseMinutes } from "../lib/duration";
 import { TimerIcon } from "./Icons";
 import { Portal } from "./Portal";
@@ -106,7 +106,7 @@ export function EstimatePicker({
         ref={btnRef}
         type="button"
         onClick={() => (open ? setOpen(false) : openPicker())}
-        class={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors hover:bg-surface-2 ${
+        className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors hover:bg-surface-2 ${
           value ? "text-(--color-accent)" : "text-faint"
         }`}
         title="Estimated time for this task"
@@ -125,15 +125,15 @@ export function EstimatePicker({
               left: `${pos.left}px`,
               width: `${POPOVER_W}px`,
             }}
-            class="z-150 animate-fade-rise rounded-xl border border-border-strong bg-elevated p-2.5 shadow-2xl shadow-black/50"
+            className="z-150 animate-fade-rise rounded-xl border border-border-strong bg-elevated p-2.5 shadow-2xl shadow-black/50"
           >
-            <div class="grid grid-cols-3 gap-1">
+            <div className="grid grid-cols-3 gap-1">
               {PRESETS.map((minutes) => (
                 <button
                   key={minutes}
                   type="button"
                   onClick={() => pick(minutes)}
-                  class={`rounded-lg px-2 py-1.5 text-xs transition-colors ${
+                  className={`rounded-lg px-2 py-1.5 text-xs transition-colors ${
                     value === minutes
                       ? "bg-(--color-accent) text-white"
                       : "bg-surface-2 text-muted hover:text-text"
@@ -144,7 +144,7 @@ export function EstimatePicker({
               ))}
             </div>
 
-            <div class="mt-2 border-t border-border pt-2">
+            <div className="mt-2 border-t border-border pt-2">
               <input
                 value={draft}
                 onInput={(e) => setDraft(e.currentTarget.value)}
@@ -159,7 +159,7 @@ export function EstimatePicker({
                 onBlur={commitDraft}
                 placeholder="e.g. 1h 30m"
                 aria-label="Custom estimate"
-                class="w-full rounded-md bg-bg px-2 py-1 text-xs text-text outline-none focus:ring-1 focus:ring-(--color-accent)"
+                className="w-full rounded-md bg-bg px-2 py-1 text-xs text-text outline-none focus:ring-1 focus:ring-(--color-accent)"
               />
             </div>
 
@@ -167,7 +167,7 @@ export function EstimatePicker({
               <button
                 type="button"
                 onClick={() => pick(null)}
-                class="mt-2 w-full rounded-md border-t border-border pt-2 text-xs text-faint hover:text-(--color-danger)"
+                className="mt-2 w-full rounded-md border-t border-border pt-2 text-xs text-faint hover:text-(--color-danger)"
               >
                 Clear estimate
               </button>

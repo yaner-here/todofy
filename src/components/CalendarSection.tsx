@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { calendarConfigured, useCalendar } from "../lib/googleCalendar";
 import { CalendarIcon, CloseIcon, GoogleIcon } from "./Icons";
@@ -32,34 +32,34 @@ export function CalendarSection() {
   };
 
   return (
-    <section class="mb-6">
-      <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+    <section className="mb-6">
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
         Calendar
       </h3>
-      <div class="overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {!session ? (
-          <div class="flex items-center gap-3 px-4 py-3.5">
-            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+          <div className="flex items-center gap-3 px-4 py-3.5">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
               <CalendarIcon width={18} height={18} />
             </span>
-            <p class="text-sm text-muted">
+            <p className="text-sm text-muted">
               Sign in to your account above to push your tasks to Google
               Calendar.
             </p>
           </div>
         ) : !ready ? (
-          <div class="px-4 py-3.5 text-sm text-muted">Loading…</div>
+          <div className="px-4 py-3.5 text-sm text-muted">Loading…</div>
         ) : connected ? (
           <>
-            <div class="flex items-center gap-3 px-4 py-3.5">
-              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+            <div className="flex items-center gap-3 px-4 py-3.5">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
                 <CalendarIcon width={18} height={18} />
               </span>
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-sm font-medium text-text">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-text">
                   {email ?? "Google Calendar connected"}
                 </p>
-                <p class="mt-0.5 text-xs text-muted">
+                <p className="mt-0.5 text-xs text-muted">
                   Your tasks push to a dedicated todofy calendar.
                 </p>
               </div>
@@ -69,18 +69,18 @@ export function CalendarSection() {
                   setDisconnectOpen(true);
                 }}
                 disabled={busy}
-                class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+                className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
               >
                 {busy ? "Disconnecting…" : "Disconnect"}
               </button>
             </div>
             <PushStatusRow />
-            <div class="flex items-center gap-3 border-t border-border px-4 py-3.5">
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-text">
+            <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text">
                   Keep completed tasks
                 </p>
-                <p class="mt-0.5 text-xs text-muted">
+                <p className="mt-0.5 text-xs text-muted">
                   Leave finished tasks on the calendar with a ✓ instead of
                   removing them when done.
                 </p>
@@ -90,12 +90,12 @@ export function CalendarSection() {
                 onChange={() => void setKeepCompleted(!keepCompleted)}
               />
             </div>
-            <div class="flex items-center gap-3 border-t border-border px-4 py-3.5">
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-text">
+            <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text">
                   Only tasks with a set time
                 </p>
-                <p class="mt-0.5 text-xs text-muted">
+                <p className="mt-0.5 text-xs text-muted">
                   Skip date-only tasks and push only those with a specific
                   reminder time.
                 </p>
@@ -107,30 +107,30 @@ export function CalendarSection() {
             </div>
           </>
         ) : (
-          <div class="flex flex-col gap-2.5 px-4 py-3.5">
-            <div class="flex items-center gap-3">
-              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+          <div className="flex flex-col gap-2.5 px-4 py-3.5">
+            <div className="flex items-center gap-3">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
                 <CalendarIcon width={18} height={18} />
               </span>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-text">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-text">
                   Connect Google Calendar
                 </p>
-                <p class="mt-0.5 text-xs text-muted">
+                <p className="mt-0.5 text-xs text-muted">
                   Push tasks with a due date to a dedicated todofy calendar.
                 </p>
               </div>
               <button
                 onClick={() => void onConnect()}
                 disabled={busy}
-                class="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-bg px-3 py-1.5 text-xs font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
+                className="flex shrink-0 items-center gap-2 rounded-lg border border-border bg-bg px-3 py-1.5 text-xs font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
               >
                 <GoogleIcon width={14} height={14} />
                 {busy ? "Waiting for browser…" : "Connect"}
               </button>
             </div>
             {(error ?? pushError) && (
-              <p class="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)">
+              <p className="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)">
                 {error ?? pushError}
               </p>
             )}
@@ -178,52 +178,52 @@ function DisconnectModal({
 
   return (
     <div
-      class="fixed inset-0 z-[100] grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
       onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}
     >
-      <div class="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50">
+      <div className="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50">
         <button
           onClick={onClose}
           title="Close"
-          class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text"
+          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
           <CloseIcon width={16} height={16} />
         </button>
 
-        <div class="flex flex-col items-center gap-2 px-6 pt-8 pb-2 text-center">
-          <span class="grid h-12 w-12 place-items-center rounded-2xl bg-surface-2 text-muted">
+        <div className="flex flex-col items-center gap-2 px-6 pt-8 pb-2 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-surface-2 text-muted">
             <CalendarIcon width={24} height={24} />
           </span>
-          <h3 class="text-lg font-semibold text-text">
+          <h3 className="text-lg font-semibold text-text">
             Disconnect Google Calendar
           </h3>
-          <p class="text-xs text-muted">
+          <p className="text-xs text-muted">
             todofy will stop pushing tasks to your calendar.
           </p>
         </div>
 
-        <div class="flex flex-col gap-3 px-6 pt-3 pb-6">
+        <div className="flex flex-col gap-3 px-6 pt-3 pb-6">
           <button
             type="button"
             role="checkbox"
             aria-checked={deleteRemote}
             onClick={() => setDeleteRemote((v) => !v)}
-            class={`flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+            className={`flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
               deleteRemote
                 ? "border-(--color-danger)/50 bg-(--color-danger)/5"
                 : "border-border bg-bg hover:bg-surface-2"
             }`}
           >
-            <span class="mt-0.5">
+            <span className="mt-0.5">
               <Checkbox
                 checked={deleteRemote}
                 interactive={false}
                 color="var(--color-danger)"
               />
             </span>
-            <span class="text-xs text-text">
+            <span className="text-xs text-text">
               Also delete the todofy calendar and its events from Google.
-              <span class="mt-0.5 block text-muted">
+              <span className="mt-0.5 block text-muted">
                 Leave unchecked to keep the calendar; reconnecting later resumes
                 where you left off.
               </span>
@@ -233,18 +233,18 @@ function DisconnectModal({
           {error && (
             <p
               role="alert"
-              class="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)"
+              className="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)"
             >
               {error}
             </p>
           )}
 
-          <div class="mt-1 flex gap-2">
+          <div className="mt-1 flex gap-2">
             <button
               type="button"
               onClick={onClose}
               disabled={busy}
-              class="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+              className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               Cancel
             </button>
@@ -252,7 +252,7 @@ function DisconnectModal({
               type="button"
               onClick={() => void onConfirm(deleteRemote)}
               disabled={busy}
-              class={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
+              className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium text-white transition-colors disabled:opacity-50 ${
                 deleteRemote
                   ? "bg-(--color-danger) hover:opacity-90"
                   : "bg-(--color-accent) hover:bg-accent-hover"
@@ -284,16 +284,16 @@ function PushStatusRow() {
         : "Nothing pushed yet";
 
   return (
-    <div class="flex items-center gap-3 border-t border-border px-4 py-3">
-      <span class={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
-      <div class="min-w-0 flex-1">
-        <p class="text-xs font-medium text-text">{meta.label}</p>
-        <p class="mt-0.5 truncate text-[11px] text-muted">{detail}</p>
+    <div className="flex items-center gap-3 border-t border-border px-4 py-3">
+      <span className={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-text">{meta.label}</p>
+        <p className="mt-0.5 truncate text-[11px] text-muted">{detail}</p>
       </div>
       <button
         onClick={() => void push()}
         disabled={status === "pushing"}
-        class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+        className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
       >
         {status === "pushing" ? "Pushing…" : "Push now"}
       </button>
@@ -313,12 +313,12 @@ function Switch({
       role="switch"
       aria-checked={checked}
       onClick={onChange}
-      class={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors ${
         checked ? "bg-(--color-accent)" : "bg-surface-2"
       }`}
     >
       <span
-        class={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
           checked ? "translate-x-6" : "translate-x-1"
         }`}
       />

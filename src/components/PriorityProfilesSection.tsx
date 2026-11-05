@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import { api } from "../lib/api";
 import {
@@ -51,21 +51,21 @@ export function PriorityProfilesSection() {
   };
 
   return (
-    <section class="mb-6">
-      <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+    <section className="mb-6">
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
         Priorities
       </h3>
-      <div class="overflow-hidden rounded-xl border border-border bg-surface">
-        <p class="border-b border-border px-4 py-3 text-xs text-muted">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <p className="border-b border-border px-4 py-3 text-xs text-muted">
           Name and color each priority so it reads the way you think about it,
           and give the ones that matter their own reminder. Anything left on{" "}
-          <em class="not-italic text-faint">Default</em> follows Notifications
+          <em className="not-italic text-faint">Default</em> follows Notifications
           below. Quick-add still writes them as <code>p1</code>–<code>p4</code>.
         </p>
         {error && (
           <p
             role="alert"
-            class="border-b border-border px-4 py-2 text-xs text-(--color-danger)"
+            className="border-b border-border px-4 py-2 text-xs text-(--color-danger)"
           >
             {error}
           </p>
@@ -75,19 +75,19 @@ export function PriorityProfilesSection() {
           const open = editing === priority;
           const changed = isCustomized(profile) || hasOverrides(profile);
           return (
-            <div key={priority} class="border-b border-border last:border-b-0">
-              <div class="flex items-center gap-3 px-4 py-3">
+            <div key={priority} className="border-b border-border last:border-b-0">
+              <div className="flex items-center gap-3 px-4 py-3">
                 <span
-                  class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2"
                   style={{ color: profile.color }}
                 >
                   <FlagIcon width={18} height={18} />
                 </span>
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-medium text-text">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-text">
                     {profile.name}
                   </p>
-                  <p class="mt-0.5 truncate text-xs text-muted">
+                  <p className="mt-0.5 truncate text-xs text-muted">
                     {summarize(profile)}
                   </p>
                 </div>
@@ -101,7 +101,7 @@ export function PriorityProfilesSection() {
                         setEditing(null);
                       })
                     }
-                    class="shrink-0 text-xs text-muted hover:text-text disabled:opacity-50"
+                    className="shrink-0 text-xs text-muted hover:text-text disabled:opacity-50"
                   >
                     Reset
                   </button>
@@ -114,7 +114,7 @@ export function PriorityProfilesSection() {
                     setError(null);
                   }}
                   aria-expanded={open}
-                  class="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+                  className="shrink-0 rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
                 >
                   {open ? "Close" : "Edit"}
                 </button>
@@ -315,14 +315,14 @@ function PriorityEditor({
 
   return (
     <form
-      class="animate-fade-rise border-t border-border px-4 py-3.5"
+      className="animate-fade-rise border-t border-border px-4 py-3.5"
       onSubmit={(event) => {
         event.preventDefault();
         if (!valid || busy) return;
         onSave({ ...draft, name: trimmed });
       }}
     >
-      <label class="block text-xs font-medium text-muted">
+      <label className="block text-xs font-medium text-muted">
         Name
         <input
           autoFocus
@@ -330,15 +330,15 @@ function PriorityEditor({
           maxLength={40}
           disabled={busy}
           onInput={(event) => patch({ name: event.currentTarget.value })}
-          class="mt-1.5 w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-text outline-none focus:border-(--color-accent)"
+          className="mt-1.5 w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-text outline-none focus:border-(--color-accent)"
         />
       </label>
 
-      <p class="mt-3 mb-2 text-xs font-medium text-muted">Color</p>
+      <p className="mt-3 mb-2 text-xs font-medium text-muted">Color</p>
       <div
         role="group"
         aria-label="Priority color presets"
-        class="flex flex-wrap gap-1.5"
+        className="flex flex-wrap gap-1.5"
       >
         {PALETTE.map((preset) => (
           <button
@@ -349,7 +349,7 @@ function PriorityEditor({
             aria-pressed={draft.color.toLowerCase() === preset}
             onClick={() => patch({ color: preset })}
             style={{ background: preset }}
-            class={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
+            className={`h-6 w-6 rounded-full transition-transform hover:scale-110 ${
               draft.color.toLowerCase() === preset
                 ? "ring-2 ring-(--color-accent) ring-offset-2 ring-offset-(--color-surface)"
                 : ""
@@ -364,10 +364,10 @@ function PriorityEditor({
         aria-invalid={!colorValid}
         aria-label="Priority color"
         placeholder="#6c7cff"
-        class="mt-2 w-28 rounded-lg border border-border bg-bg px-2.5 py-1.5 font-mono text-xs text-text outline-none focus:border-(--color-accent)"
+        className="mt-2 w-28 rounded-lg border border-border bg-bg px-2.5 py-1.5 font-mono text-xs text-text outline-none focus:border-(--color-accent)"
       />
       {!colorValid && (
-        <p class="mt-1.5 text-xs text-(--color-danger)">
+        <p className="mt-1.5 text-xs text-(--color-danger)">
           Use a six-digit hex color, such as #6c7cff.
         </p>
       )}
@@ -387,16 +387,16 @@ function PriorityEditor({
         <button
           type="button"
           onClick={pickCustomSound}
-          class="mt-1.5 text-xs text-(--color-accent) hover:underline"
+          className="mt-1.5 text-xs text-(--color-accent) hover:underline"
         >
           Choose a different file…
         </button>
       )}
       {soundError && (
-        <p class="mt-1.5 text-xs text-(--color-danger)">{soundError}</p>
+        <p className="mt-1.5 text-xs text-(--color-danger)">{soundError}</p>
       )}
       {draft.sound === "custom" && (
-        <p class="mt-1.5 text-xs text-faint">
+        <p className="mt-1.5 text-xs text-faint">
           The audio stays on this device. Other devices sharing your account
           fall back to the sound in Notifications.
         </p>
@@ -404,13 +404,13 @@ function PriorityEditor({
 
       {draft.sound !== "none" && (
         <>
-          <div class="mt-3 flex items-center justify-between">
-            <p class="text-xs font-medium text-muted">Volume</p>
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-xs font-medium text-muted">Volume</p>
             {draft.volume !== null && (
               <button
                 type="button"
                 onClick={() => patch({ volume: null })}
-                class="text-xs text-muted hover:text-text"
+                className="text-xs text-muted hover:text-text"
               >
                 Use default
               </button>
@@ -421,7 +421,7 @@ function PriorityEditor({
               type="button"
               disabled={busy}
               onClick={() => patch({ volume: 70 })}
-              class="mt-1.5 rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+              className="mt-1.5 rounded-lg border border-border px-2.5 py-1 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               Set a volume for this priority
             </button>
@@ -436,7 +436,7 @@ function PriorityEditor({
               onInput={(event) =>
                 patch({ volume: Number(event.currentTarget.value) })
               }
-              class="mt-1.5 w-full accent-(--color-accent)"
+              className="mt-1.5 w-full accent-(--color-accent)"
               aria-label="Reminder volume for this priority"
             />
           )}
@@ -467,19 +467,19 @@ function PriorityEditor({
         disabled={busy}
       />
 
-      <div class="mt-4 flex justify-end gap-2">
+      <div className="mt-4 flex justify-end gap-2">
         <button
           type="button"
           disabled={busy}
           onClick={onCancel}
-          class="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+          className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={busy || !valid}
-          class="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+          className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
         >
           {busy ? "Saving…" : "Save"}
         </button>
@@ -504,8 +504,8 @@ function Chips<T>({
 }) {
   return (
     <>
-      <p class="mt-3 mb-2 text-xs font-medium text-muted">{label}</p>
-      <div class="flex flex-wrap gap-1.5">
+      <p className="mt-3 mb-2 text-xs font-medium text-muted">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
         {choices.map((choice) => {
           const active = choice.value === value;
           return (
@@ -515,7 +515,7 @@ function Chips<T>({
               disabled={disabled}
               aria-pressed={active}
               onClick={() => onSelect(choice.value)}
-              class={`max-w-40 truncate rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
+              className={`max-w-40 truncate rounded-lg border px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50 ${
                 active
                   ? "border-(--color-accent) bg-accent-soft text-text"
                   : "border-border text-muted hover:bg-surface-2 hover:text-text"

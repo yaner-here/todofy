@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import { useStore } from "../store";
 import { renderMarkdown } from "../lib/markdown";
 import type { JournalEntry as Entry, SessionLog } from "../types";
@@ -35,21 +35,21 @@ export function JournalEntry({ entry, sessions }: Props) {
   });
 
   return (
-    <article class="journal-entry">
-      <div class="journal-entry-head">
+    <article className="journal-entry">
+      <div className="journal-entry-head">
         {entry.mood && (
-          <span class="journal-mood-badge" title={MOOD_LABELS[entry.mood - 1]}>
+          <span className="journal-mood-badge" title={MOOD_LABELS[entry.mood - 1]}>
             {MOODS[entry.mood - 1]}
           </span>
         )}
-        <span class="journal-entry-title">{entry.title ?? "Untitled entry"}</span>
-        <span class="journal-entry-time">{time}</span>
-        <div class="journal-entry-actions">
+        <span className="journal-entry-title">{entry.title ?? "Untitled entry"}</span>
+        <span className="journal-entry-time">{time}</span>
+        <div className="journal-entry-actions">
           <button onClick={() => setEditing(true)} title="Edit entry">
             <EditIcon width={14} height={14} />
           </button>
           <button
-            class="is-danger"
+            className="is-danger"
             onClick={() =>
               requestConfirm({
                 title: "Delete entry?",
@@ -67,7 +67,7 @@ export function JournalEntry({ entry, sessions }: Props) {
       </div>
       {entry.body && (
         <div
-          class="journal-prose"
+          className="journal-prose"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(entry.body) }}
         />
       )}

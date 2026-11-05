@@ -1,5 +1,5 @@
-import { useEffect } from "preact/hooks";
-import { lazy, Suspense } from "preact/compat";
+import { useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { applySearchAndFilters, tasksForView, useStore } from "../store";
 import {
   completedTasksPage,
@@ -140,8 +140,8 @@ export function TaskList() {
     return (
       <Suspense
         fallback={
-          <main class="redesign-main" aria-busy="true">
-            <div class="task-page-scroll" role="status">Opening view…</div>
+          <main className="redesign-main" aria-busy="true">
+            <div className="task-page-scroll" role="status">Opening view…</div>
           </main>
         }
       >
@@ -195,24 +195,24 @@ export function TaskList() {
   };
 
   return (
-    <main class="redesign-main">
-      <header class="app-page-header">
+    <main className="redesign-main">
+      <header className="app-page-header">
         <div>
           <h2>{viewTitle(view, labelName)}</h2>
           <p>{viewSubtitle(view)}</p>
         </div>
         {showStats && (
-          <div class="daily-stats">
+          <div className="daily-stats">
             {stats.doneToday > 0 && <span>✓ {stats.doneToday} today</span>}
             {stats.streak > 1 && <span>{stats.streak}-day streak</span>}
           </div>
         )}
       </header>
 
-      <div class="task-page-scroll">
+      <div className="task-page-scroll">
         {showTaskDetail && (
-          <section class="next-up-section">
-            <p class="section-kicker">
+          <section className="next-up-section">
+            <p className="section-kicker">
               {view.kind === "pinned"
                 ? "Pinned task"
                 : isCompletedView
@@ -223,8 +223,8 @@ export function TaskList() {
           </section>
         )}
 
-        <section class="agenda-section">
-          <div class="agenda-heading">
+        <section className="agenda-section">
+          <div className="agenda-heading">
             <div>
               <h3>{isCompletedView ? "Completed tasks" : "Your day"}</h3>
               <span>{inView.length} task{inView.length === 1 ? "" : "s"}</span>
@@ -233,7 +233,7 @@ export function TaskList() {
           </div>
 
           {loadError && (
-            <div class="load-error" role="alert">
+            <div className="load-error" role="alert">
               <p>{loadError}</p>
               <button type="button" onClick={() => load()}>
                 Try again
@@ -252,10 +252,10 @@ export function TaskList() {
           ) : (
             <>
               {sections.map((section) => (
-                <div key={section.key} class="task-group">
+                <div key={section.key} className="task-group">
                   {section.title && (
-                    <div class="task-group-heading">
-                      <p class={section.tone === "overdue" ? "is-overdue" : ""}>
+                    <div className="task-group-heading">
+                      <p className={section.tone === "overdue" ? "is-overdue" : ""}>
                         {section.title}
                         <span>{section.tasks.length}</span>
                       </p>
@@ -275,7 +275,7 @@ export function TaskList() {
               ))}
 
               {isCompletedView && completedPageCount > 1 && (
-                <nav class="completed-pagination" aria-label="Completed tasks pages">
+                <nav className="completed-pagination" aria-label="Completed tasks pages">
                   <p>
                     {completedPageStart + 1}–{Math.min(completedPageStart + COMPLETED_PAGE_SIZE, inView.length)}
                     <span> of {inView.length}</span>
@@ -305,11 +305,11 @@ export function TaskList() {
               )}
 
               {done.length > 0 && !isCompletedView && (
-                <div class="task-group completed-group">
-                  <div class="task-group-heading">
+                <div className="task-group completed-group">
+                  <div className="task-group-heading">
                     <p>Completed <span>{done.length}</span></p>
                   </div>
-                  <div class="task-row-list is-completed">
+                  <div className="task-row-list is-completed">
                     {done.map((task: Task) => (
                       <TaskItem key={task.id} task={task} />
                     ))}
@@ -322,9 +322,9 @@ export function TaskList() {
       </div>
 
       {showQuickAdd && (
-        <footer class="capture-dock">
+        <footer className="capture-dock">
           <QuickAdd />
-          <p class="capture-hint">Press <kbd>N</kbd> to quick capture</p>
+          <p className="capture-hint">Press <kbd>N</kbd> to quick capture</p>
         </footer>
       )}
     </main>
@@ -333,7 +333,7 @@ export function TaskList() {
 
 function FilteredEmpty({ clearFilters }: { clearFilters: () => void }) {
   return (
-    <div class="empty-state">
+    <div className="empty-state">
       <InboxIcon width={28} height={28} />
       <p>No tasks match your search or filters.</p>
       <button type="button" onClick={clearFilters}>Clear filters</button>
@@ -357,7 +357,7 @@ function Empty({ view }: { view: ViewId }) {
               ? "Nothing completed yet."
               : "No tasks with this label yet.";
   return (
-    <div class="empty-state">
+    <div className="empty-state">
       <InboxIcon width={30} height={30} />
       <p>{message}</p>
       <small>Use quick capture below, or press Ctrl + Alt + A from anywhere.</small>
@@ -367,9 +367,9 @@ function Empty({ view }: { view: ViewId }) {
 
 function Skeleton() {
   return (
-    <div class="task-row-list">
+    <div className="task-row-list">
       {[0, 1, 2].map((index) => (
-        <div key={index} class="task-row-skeleton" />
+        <div key={index} className="task-row-skeleton" />
       ))}
     </div>
   );

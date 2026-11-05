@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import type { FormEvent, ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getCurrentWindow, LogicalSize } from "@tauri-apps/api/window";
 import { emit } from "@tauri-apps/api/event";
 import { api } from "../lib/api";
@@ -52,7 +52,7 @@ export function QuickCapture() {
     await getCurrentWindow().hide();
   };
 
-  const submit = async (e: Event) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const finalTitle = parsed.title.trim();
     if (!finalTitle || voiceBusy.current) return;
@@ -135,17 +135,17 @@ export function QuickCapture() {
   }, [busy]);
 
   return (
-    <div class="quick-capture-stage">
-      <form onSubmit={submit} class="quick-capture-card animate-fade-rise">
-        <header class="quick-capture-header">
+    <div className="quick-capture-stage">
+      <form onSubmit={submit} className="quick-capture-card animate-fade-rise">
+        <header className="quick-capture-header">
           <div>
             <Logo size={20} />
             <span>Quick capture</span>
           </div>
           <span>todofy</span>
         </header>
-        <div ref={voicePanelRef} class="voice-capture-host" />
-        <div class="quick-capture-input-row">
+        <div ref={voicePanelRef} className="voice-capture-host" />
+        <div className="quick-capture-input-row">
           <input
             ref={inputRef}
             value={title}
@@ -157,7 +157,7 @@ export function QuickCapture() {
               }
             }}
             placeholder="What needs doing?  Try “pay rent Friday 5pm”"
-            class="quick-capture-input"
+            className="quick-capture-input"
           />
           <VoiceInputButton
             kind="task"
@@ -185,14 +185,14 @@ export function QuickCapture() {
           <button
             type="submit"
             disabled={!parsed.title.trim() || busy}
-            class="quick-capture-submit"
+            className="quick-capture-submit"
           >
             Add task <kbd>↵</kbd>
           </button>
         </div>
 
         {hasChips ? (
-          <div class="quick-capture-footer">
+          <div className="quick-capture-footer">
             {parsed.priority !== null && (
               <Chip color={priorityColor(parsed.priority, priorityProfiles)}>
                 <FlagIcon width={11} height={11} />
@@ -222,7 +222,7 @@ export function QuickCapture() {
               return (
                 <Chip key={name} color={color}>
                   <span
-                    class="h-1.5 w-1.5 rounded-full"
+                    className="h-1.5 w-1.5 rounded-full"
                     style={{ background: color }}
                   />
                   {name}
@@ -231,7 +231,7 @@ export function QuickCapture() {
             })}
           </div>
         ) : (
-          <div class="quick-capture-footer">
+          <div className="quick-capture-footer">
             Add a date, time, <b>#label</b>, <b>p1</b>, or <b>every week</b> in
             plain language
             <span>
@@ -249,11 +249,11 @@ function Chip({
   children,
 }: {
   color?: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
     <span
-      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
       style={
         color
           ? { background: color + "22", color }

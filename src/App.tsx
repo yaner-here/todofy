@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import {
   isPermissionGranted,
   requestPermission,
@@ -192,14 +192,14 @@ export function App() {
   }, [tasks]);
 
   return (
-    <div class="app-shell">
+    <div className="app-shell">
       <Sidebar />
-      <div class="app-workspace">
+      <div className="app-workspace">
         <DayRail />
         {!sidebarCollapsed && (
           <button
             type="button"
-            class="day-rail-backdrop"
+            className="day-rail-backdrop"
             onClick={toggleSidebar}
             aria-label="Close calendar navigation"
           />

@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import { CheckIcon } from "./Icons";
 
 export const PALETTE = [
@@ -69,7 +69,7 @@ export function LabelForm({
         e.preventDefault();
         if (name.trim()) onSubmit(name.trim(), color);
       }}
-      class="flex animate-fade-rise flex-col gap-3.5 rounded-xl border border-border-strong bg-elevated p-3.5 shadow-lg shadow-black/30"
+      className="flex animate-fade-rise flex-col gap-3.5 rounded-xl border border-border-strong bg-elevated p-3.5 shadow-lg shadow-black/30"
     >
       <input
         autoFocus
@@ -77,22 +77,22 @@ export function LabelForm({
         onInput={(e) => setName(e.currentTarget.value)}
         onKeyDown={(e) => e.key === "Escape" && onCancel()}
         placeholder="Label name"
-        class="rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none transition-colors focus:border-(--color-accent)"
+        className="rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none transition-colors focus:border-(--color-accent)"
       />
 
-      <div class="flex flex-col gap-2">
-        <span class="text-[10px] font-semibold uppercase tracking-wider text-faint">
+      <div className="flex flex-col gap-2">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-faint">
           Color
         </span>
 
-        <div class="grid grid-cols-8 gap-2">
+        <div className="grid grid-cols-8 gap-2">
           {PALETTE.map((c) => (
             <button
               key={c}
               type="button"
               onClick={() => pickPreset(c)}
               title={c}
-              class="grid h-6 w-6 place-items-center rounded-full transition-transform duration-150 hover:scale-110"
+              className="grid h-6 w-6 place-items-center rounded-full transition-transform duration-150 hover:scale-110"
               style={{
                 background: c,
                 boxShadow:
@@ -105,43 +105,43 @@ export function LabelForm({
                 <CheckIcon
                   width={11}
                   height={11}
-                  stroke-width={3}
-                  class="text-white"
+                  strokeWidth={3}
+                  className="text-white"
                 />
               )}
             </button>
           ))}
         </div>
 
-        <div class="flex items-center gap-2 rounded-lg border border-border bg-bg px-2.5 py-1.5 transition-colors focus-within:border-(--color-accent)">
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-bg px-2.5 py-1.5 transition-colors focus-within:border-(--color-accent)">
           <span
-            class="h-6 w-6 shrink-0 rounded-md shadow-[inset_0_0_0_1px_rgba(0,0,0,0.2)]"
+            className="h-6 w-6 shrink-0 rounded-md shadow-[inset_0_0_0_1px_rgba(0,0,0,0.2)]"
             style={{ background: color }}
           />
-          <span class="text-sm text-faint">#</span>
+          <span className="text-sm text-faint">#</span>
           <input
             value={hexInput}
             onInput={(e) => editHex(e.currentTarget.value)}
             onBlur={() => setHexInput(color.replace("#", ""))}
             placeholder="6c7cff"
             maxLength={6}
-            class="w-full bg-transparent text-sm font-mono uppercase tracking-wide text-text outline-none placeholder:normal-case placeholder:text-faint"
+            className="w-full bg-transparent text-sm font-mono uppercase tracking-wide text-text outline-none placeholder:normal-case placeholder:text-faint"
           />
         </div>
       </div>
 
-      <div class="flex justify-end gap-2 pt-0.5">
+      <div className="flex justify-end gap-2 pt-0.5">
         <button
           type="button"
           onClick={onCancel}
-          class="rounded-lg px-3 py-1.5 text-xs font-medium text-faint transition-colors hover:bg-surface-2 hover:text-text"
+          className="rounded-lg px-3 py-1.5 text-xs font-medium text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={!name.trim()}
-          class="rounded-lg bg-(--color-accent) px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md disabled:opacity-40 disabled:shadow-none"
+          className="rounded-lg bg-(--color-accent) px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md disabled:opacity-40 disabled:shadow-none"
         >
           Save label
         </button>

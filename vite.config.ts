@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import { fileURLToPath } from "node:url";
-import preact from "@preact/preset-vite";
+import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 // @ts-expect-error process is a nodejs global
@@ -10,7 +10,7 @@ const entry = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [preact(), tailwindcss()],
+  plugins: [react(), tailwindcss()],
 
   // Two HTML entry points: the main app and the quick-add spotlight window.
   build: {

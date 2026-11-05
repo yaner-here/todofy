@@ -1,4 +1,5 @@
-import { useEffect, useState } from "preact/hooks";
+import type { FormEvent, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useAuth } from "../lib/auth";
 import {
@@ -89,7 +90,7 @@ export function ProPaywall() {
     }
   };
 
-  const submitLicense = async (event: Event) => {
+  const submitLicense = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!session || license.trim().length < 10 || busy) return;
     try {
@@ -107,7 +108,7 @@ export function ProPaywall() {
 
   return (
     <div
-      class="fixed inset-0 z-110 grid place-items-center overflow-y-auto bg-black/65 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-110 grid place-items-center overflow-y-auto bg-black/65 p-4 backdrop-blur-sm"
       onMouseDown={(event) =>
         event.target === event.currentTarget && !busy && closeGate()
       }
@@ -116,9 +117,9 @@ export function ProPaywall() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="pro-dialog-title"
-        class="relative my-auto w-full max-w-147.5 animate-fade-rise overflow-hidden rounded-[22px] border border-border-strong bg-elevated shadow-2xl shadow-black/55"
+        className="relative my-auto w-full max-w-147.5 animate-fade-rise overflow-hidden rounded-[22px] border border-border-strong bg-elevated shadow-2xl shadow-black/55"
       >
-        <div class="pointer-events-none absolute inset-x-16 -top-28 h-52 rounded-full bg-(--color-accent) opacity-[0.09] blur-3xl" />
+        <div className="pointer-events-none absolute inset-x-16 -top-28 h-52 rounded-full bg-(--color-accent) opacity-[0.09] blur-3xl" />
 
         <button
           type="button"
@@ -126,26 +127,26 @@ export function ProPaywall() {
           disabled={busy}
           title="Close"
           aria-label="Close Todofy Pro"
-          class="absolute right-4 top-4 z-10 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+          className="absolute right-4 top-4 z-10 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
           <CloseIcon width={17} height={17} />
         </button>
 
-        <div class="relative max-h-[calc(100vh-2rem)] overflow-y-auto px-6 py-7 sm:px-10 sm:py-9">
-          <header class="mx-auto max-w-md text-center">
-            <span class="mx-auto grid h-11 w-11 place-items-center rounded-[14px] border border-(--color-accent)/20 bg-accent-soft text-(--color-accent) shadow-lg shadow-black/10">
+        <div className="relative max-h-[calc(100vh-2rem)] overflow-y-auto px-6 py-7 sm:px-10 sm:py-9">
+          <header className="mx-auto max-w-md text-center">
+            <span className="mx-auto grid h-11 w-11 place-items-center rounded-[14px] border border-(--color-accent)/20 bg-accent-soft text-(--color-accent) shadow-lg shadow-black/10">
               <CrownIcon width={22} height={22} />
             </span>
-            <p class="mt-4 text-[10px] font-semibold uppercase tracking-[0.26em] text-(--color-accent)">
+            <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.26em] text-(--color-accent)">
               Todofy Pro
             </p>
             <h2
               id="pro-dialog-title"
-              class="mt-2 text-[27px] font-semibold leading-[1.18] tracking-[-0.035em] text-text sm:text-[30px]"
+              className="mt-2 text-[27px] font-semibold leading-[1.18] tracking-[-0.035em] text-text sm:text-[30px]"
             >
               Sync without changing how you work.
             </h2>
-            <p class="mx-auto mt-3 max-w-sm text-[13px] leading-5 text-muted">
+            <p className="mx-auto mt-3 max-w-sm text-[13px] leading-5 text-muted">
               Carry your Todofy system between devices while keeping the quiet,
               local-first experience you already know.
             </p>
@@ -171,7 +172,7 @@ export function ProPaywall() {
               onSync={() => void syncNow(true)}
             />
           ) : (
-            <div class="mt-7">
+            <div className="mt-7">
               <AccessNotice
                 state={state}
                 allowed={allowed}
@@ -182,7 +183,7 @@ export function ProPaywall() {
               <div
                 role="group"
                 aria-label="Billing period"
-                class="mx-auto grid max-w-82.5 grid-cols-2 rounded-xl border border-border bg-bg p-1"
+                className="mx-auto grid max-w-82.5 grid-cols-2 rounded-xl border border-border bg-bg p-1"
               >
                 <PlanToggle
                   active={selectedPlan === "monthly"}
@@ -196,7 +197,7 @@ export function ProPaywall() {
                 >
                   Yearly
                   <span
-                    class={`ml-1.5 text-[9px] font-semibold ${selectedPlan === "yearly" ? "text-(--color-accent)" : "text-faint"}`}
+                    className={`ml-1.5 text-[9px] font-semibold ${selectedPlan === "yearly" ? "text-(--color-accent)" : "text-faint"}`}
                   >
                     SAVE
                   </span>
@@ -208,14 +209,14 @@ export function ProPaywall() {
                 catalogPlan={selectedCatalogPlan}
               />
 
-              <div class="mx-auto mt-5 max-w-97.5 space-y-2.5">
+              <div className="mx-auto mt-5 max-w-97.5 space-y-2.5">
                 {FEATURES.map((feature) => (
                   <p
                     key={feature}
-                    class="flex items-start gap-2.5 text-[12px] leading-5 text-muted"
+                    className="flex items-start gap-2.5 text-[12px] leading-5 text-muted"
                   >
-                    <span class="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent-soft text-(--color-accent)">
-                      <CheckIcon width={10} height={10} stroke-width={3} />
+                    <span className="mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full bg-accent-soft text-(--color-accent)">
+                      <CheckIcon width={10} height={10} strokeWidth={3} />
                     </span>
                     {feature}
                   </p>
@@ -226,36 +227,36 @@ export function ProPaywall() {
                 type="button"
                 disabled={busy || checkoutUnavailable}
                 onClick={() => void buy()}
-                class="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-(--color-accent) px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-black/15 transition-[background-color,transform] hover:bg-accent-hover active:translate-y-px disabled:opacity-55"
+                className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-(--color-accent) px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-black/15 transition-[background-color,transform] hover:bg-accent-hover active:translate-y-px disabled:opacity-55"
               >
                 <LemonSqueezyIcon width={17} height={17} />
                 {busy
                   ? "Opening secure checkout…"
                   : "Continue to secure checkout"}
                 {!busy && (
-                  <ExternalLinkIcon width={14} height={14} class="opacity-70" />
+                  <ExternalLinkIcon width={14} height={14} className="opacity-70" />
                 )}
               </button>
-              <p class="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-faint">
+              <p className="mt-2 flex items-center justify-center gap-1.5 text-[10px] text-faint">
                 <LemonSqueezyIcon width={12} height={12} />
                 Secure checkout and billing by Lemon Squeezy
               </p>
 
               {catalogState === "loading" && !session && (
-                <p class="mt-3 text-center text-[11px] text-muted">
+                <p className="mt-3 text-center text-[11px] text-muted">
                   Loading secure checkout…
                 </p>
               )}
               {catalogError && (
                 <div
                   role="alert"
-                  class="mt-4 flex items-center justify-between gap-3 rounded-lg bg-(--color-danger)/10 px-3 py-2.5 text-xs text-(--color-danger)"
+                  className="mt-4 flex items-center justify-between gap-3 rounded-lg bg-(--color-danger)/10 px-3 py-2.5 text-xs text-(--color-danger)"
                 >
                   <span>{catalogError}</span>
                   <button
                     type="button"
                     onClick={() => void loadCatalog()}
-                    class="shrink-0 font-semibold underline underline-offset-2"
+                    className="shrink-0 font-semibold underline underline-offset-2"
                   >
                     Retry
                   </button>
@@ -268,19 +269,19 @@ export function ProPaywall() {
                 </Notice>
               )}
 
-              <div class="my-6 h-px bg-border" />
+              <div className="my-6 h-px bg-border" />
 
               <button
                 type="button"
                 aria-expanded={licenseOpen}
                 aria-controls="pro-license-panel"
                 onClick={() => setLicenseOpen((value) => !value)}
-                class="mx-auto flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-muted transition-colors hover:text-text"
+                className="mx-auto flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium text-muted transition-colors hover:text-text"
               >
-                <KeyIcon width={15} height={15} class="text-(--color-accent)" />
+                <KeyIcon width={15} height={15} className="text-(--color-accent)" />
                 Have a license key?
                 <span
-                  class={`text-[10px] transition-transform ${licenseOpen ? "rotate-180" : ""}`}
+                  className={`text-[10px] transition-transform ${licenseOpen ? "rotate-180" : ""}`}
                   aria-hidden="true"
                 >
                   ⌄
@@ -288,7 +289,7 @@ export function ProPaywall() {
               </button>
 
               {licenseOpen && (
-                <div id="pro-license-panel" class="mt-3 animate-fade-rise">
+                <div id="pro-license-panel" className="mt-3 animate-fade-rise">
                   {!session ? (
                     <SignedOutActivation onSignIn={() => openDialog("pro")} />
                   ) : (
@@ -306,21 +307,21 @@ export function ProPaywall() {
               )}
 
               {session && (plan === "monthly" || plan === "yearly") && (
-                <div class="mt-5 flex items-center justify-center gap-4 text-[11px]">
+                <div className="mt-5 flex items-center justify-center gap-4 text-[11px]">
                   <button
                     type="button"
                     disabled={busy}
                     onClick={() => void openPortal().catch(() => {})}
-                    class="font-medium text-muted hover:text-text disabled:opacity-50"
+                    className="font-medium text-muted hover:text-text disabled:opacity-50"
                   >
                     Manage previous plan
                   </button>
-                  <span class="h-3 w-px bg-border" />
+                  <span className="h-3 w-px bg-border" />
                   <button
                     type="button"
                     disabled={state === "checking" || busy}
                     onClick={() => void refresh()}
-                    class="font-medium text-muted hover:text-text disabled:opacity-50"
+                    className="font-medium text-muted hover:text-text disabled:opacity-50"
                   >
                     {state === "checking" ? "Checking…" : "Refresh access"}
                   </button>
@@ -332,17 +333,17 @@ export function ProPaywall() {
           {error && (
             <p
               role="alert"
-              class="mt-4 rounded-lg bg-(--color-danger)/10 px-3 py-2.5 text-xs text-(--color-danger)"
+              className="mt-4 rounded-lg bg-(--color-danger)/10 px-3 py-2.5 text-xs text-(--color-danger)"
             >
               {error}
             </p>
           )}
 
-          <footer class="mt-7 text-center text-[10px] leading-4 text-faint">
+          <footer className="mt-7 text-center text-[10px] leading-4 text-faint">
             <p>
               Local features remain free. Cancel anytime, with a 14-day refund.
             </p>
-            <p class="mt-1.5 flex items-center justify-center gap-2">
+            <p className="mt-1.5 flex items-center justify-center gap-2">
               <LegalLink href="https://unifybrowse.com/products/todofy/terms">
                 Terms
               </LegalLink>
@@ -365,14 +366,14 @@ function PlanToggle({
 }: {
   active: boolean;
   onClick: () => void;
-  children: preact.ComponentChildren;
+  children: ReactNode;
 }) {
   return (
     <button
       type="button"
       aria-pressed={active}
       onClick={onClick}
-      class={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+      className={`rounded-lg px-3 py-2 text-xs font-medium transition-all ${
         active
           ? "bg-surface-2 text-text shadow-sm"
           : "text-muted hover:text-text"
@@ -393,14 +394,14 @@ function SelectedPlanPrice({
   const amount = catalogPlan?.amount ?? (plan === "monthly" ? 399 : 3900);
   const period = plan === "monthly" ? "month" : "year";
   return (
-    <div class="mt-6 text-center">
-      <p class="flex items-end justify-center gap-2 text-text">
-        <span class="text-[38px] font-semibold leading-none tracking-[-0.045em]">
+    <div className="mt-6 text-center">
+      <p className="flex items-end justify-center gap-2 text-text">
+        <span className="text-[38px] font-semibold leading-none tracking-[-0.045em]">
           {formatMoney(amount, catalogPlan?.currency ?? "EUR")}
         </span>
-        <span class="pb-0.5 text-xs text-muted">/ {period}</span>
+        <span className="pb-0.5 text-xs text-muted">/ {period}</span>
       </p>
-      <p class="mt-2 min-h-4 text-[11px] font-medium text-(--color-accent)">
+      <p className="mt-2 min-h-4 text-[11px] font-medium text-(--color-accent)">
         {plan === "yearly" ? "Save €8.88 every year" : "Simple monthly billing"}
       </p>
     </div>
@@ -461,15 +462,15 @@ function AccessNotice({
 
 function SignedOutActivation({ onSignIn }: { onSignIn: () => void }) {
   return (
-    <div class="rounded-xl border border-border bg-surface p-4 text-center">
-      <p class="text-xs leading-5 text-muted">
+    <div className="rounded-xl border border-border bg-surface p-4 text-center">
+      <p className="text-xs leading-5 text-muted">
         Sign in or create an account first. Your license will be linked to that
         account on all your devices.
       </p>
       <button
         type="button"
         onClick={onSignIn}
-        class="mt-3 w-full rounded-lg border border-border-strong bg-bg px-3 py-2.5 text-sm font-medium text-text transition-colors hover:bg-surface-2"
+        className="mt-3 w-full rounded-lg border border-border-strong bg-bg px-3 py-2.5 text-sm font-medium text-text transition-colors hover:bg-surface-2"
       >
         Sign in or create account
       </button>
@@ -492,29 +493,29 @@ function LicenseForm({
   busy: boolean;
   onLicenseChange: (value: string) => void;
   onReveal: () => void;
-  onSubmit: (event: Event) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   return (
     <form
       onSubmit={onSubmit}
-      class="rounded-xl border border-border bg-surface p-4"
+      className="rounded-xl border border-border bg-surface p-4"
     >
-      <p class="text-center text-[11px] leading-5 text-muted">
+      <p className="text-center text-[11px] leading-5 text-muted">
         Activate for{" "}
-        <strong class="font-medium text-text">{email ?? "this account"}</strong>
+        <strong className="font-medium text-text">{email ?? "this account"}</strong>
         . A license can belong to only one Todofy account.
       </p>
-      <label class="mt-3 block">
-        <span class="sr-only">Lemon Squeezy license key</span>
-        <div class="relative">
+      <label className="mt-3 block">
+        <span className="sr-only">Lemon Squeezy license key</span>
+        <div className="relative">
           <input
             type={reveal ? "text" : "password"}
             value={license}
             onInput={(event) => onLicenseChange(event.currentTarget.value)}
             placeholder="Paste your license key"
-            autocomplete="off"
-            spellcheck={false}
-            class="w-full rounded-lg border border-border bg-bg py-2.5 pl-3 pr-10 font-mono text-xs text-text outline-none transition-colors placeholder:font-sans placeholder:text-faint focus:border-(--color-accent)"
+            autoComplete="off"
+            spellCheck={false}
+            className="w-full rounded-lg border border-border bg-bg py-2.5 pl-3 pr-10 font-mono text-xs text-text outline-none transition-colors placeholder:font-sans placeholder:text-faint focus:border-(--color-accent)"
           />
           <button
             type="button"
@@ -522,7 +523,7 @@ function LicenseForm({
             onClick={onReveal}
             title={reveal ? "Hide license" : "Show license"}
             aria-label={reveal ? "Hide license" : "Show license"}
-            class="absolute inset-y-0 right-0 grid w-10 place-items-center text-faint hover:text-text"
+            className="absolute inset-y-0 right-0 grid w-10 place-items-center text-faint hover:text-text"
           >
             {reveal ? (
               <EyeOffIcon width={16} height={16} />
@@ -535,7 +536,7 @@ function LicenseForm({
       <button
         type="submit"
         disabled={busy || license.trim().length < 10}
-        class="mt-2.5 w-full rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+        className="mt-2.5 w-full rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
       >
         {busy ? "Verifying license…" : "Activate Todofy Pro"}
       </button>
@@ -586,9 +587,9 @@ function ActivePlan({
         : "Your account can use Cloud Sync.";
 
   return (
-    <div class="mt-8 text-center">
+    <div className="mt-8 text-center">
       <span
-        class={`mx-auto grid h-12 w-12 place-items-center rounded-full ${
+        className={`mx-auto grid h-12 w-12 place-items-center rounded-full ${
           grace
             ? "bg-(--color-warning)/12 text-(--color-warning)"
             : cancelled
@@ -596,26 +597,26 @@ function ActivePlan({
               : "bg-success/12 text-success"
         }`}
       >
-        <CheckIcon width={23} height={23} stroke-width={2.5} />
+        <CheckIcon width={23} height={23} strokeWidth={2.5} />
       </span>
-      <p class="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-faint">
+      <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-faint">
         {plan === "monthly"
           ? "Monthly plan"
           : plan === "yearly"
             ? "Yearly plan"
             : "Cloud Sync"}
       </p>
-      <h3 class="mt-1.5 text-xl font-semibold tracking-tight text-text">
+      <h3 className="mt-1.5 text-xl font-semibold tracking-tight text-text">
         {heading}
       </h3>
-      <p class="mx-auto mt-2 max-w-sm text-xs leading-5 text-muted">{detail}</p>
+      <p className="mx-auto mt-2 max-w-sm text-xs leading-5 text-muted">{detail}</p>
 
-      <div class="mt-6 grid gap-2 sm:grid-cols-2">
+      <div className="mt-6 grid gap-2 sm:grid-cols-2">
         <button
           type="button"
           onClick={onSync}
           disabled={syncBusy}
-          class="rounded-xl bg-(--color-accent) px-3 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="rounded-xl bg-(--color-accent) px-3 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
           {syncBusy ? "Syncing…" : "Sync now"}
         </button>
@@ -624,7 +625,7 @@ function ActivePlan({
             type="button"
             onClick={onManage}
             disabled={busy}
-            class="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-bg px-3 py-3 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
+            className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-bg px-3 py-3 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
             {grace
               ? "Fix payment"
@@ -638,7 +639,7 @@ function ActivePlan({
             type="button"
             onClick={onRefresh}
             disabled={busy}
-            class="rounded-xl border border-border bg-bg px-3 py-3 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
+            className="rounded-xl border border-border bg-bg px-3 py-3 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
             Refresh access
           </button>
@@ -649,7 +650,7 @@ function ActivePlan({
           type="button"
           onClick={onRefresh}
           disabled={busy}
-          class="mt-3 text-[11px] font-medium text-muted hover:text-text disabled:opacity-50"
+          className="mt-3 text-[11px] font-medium text-muted hover:text-text disabled:opacity-50"
         >
           {state === "checking" ? "Checking…" : "Refresh access"}
         </button>
@@ -663,7 +664,7 @@ function LegalLink({ href, children }: { href: string; children: string }) {
     <button
       type="button"
       onClick={() => void openUrl(href).catch(() => {})}
-      class="underline underline-offset-2 transition-colors hover:text-text"
+      className="underline underline-offset-2 transition-colors hover:text-text"
     >
       {children}
     </button>
@@ -675,7 +676,7 @@ function Notice({
   tone = "neutral",
   className = "",
 }: {
-  children: preact.ComponentChildren;
+  children: ReactNode;
   tone?: "neutral" | "accent" | "warning";
   className?: string;
 }) {
@@ -687,7 +688,7 @@ function Notice({
         : "border-border bg-surface text-muted";
   return (
     <p
-      class={`rounded-xl border px-3.5 py-3 text-center text-[11px] leading-5 ${color} ${className}`}
+      className={`rounded-xl border px-3.5 py-3 text-center text-[11px] leading-5 ${color} ${className}`}
     >
       {children}
     </p>

@@ -1,5 +1,5 @@
-import type { JSX } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DONE_COLUMN } from "./board";
 
 /** Pointer-based column ordering works in WebKitGTK, where native DnD is unreliable. */
@@ -14,7 +14,7 @@ export function useColumnReorder(ids: string[], onReorder: (ids: string[]) => vo
   const setRowRef = (id: string) => (el: HTMLElement | null) => {
     if (el) rows.current.set(id, el); else rows.current.delete(id);
   };
-  const start = (id: string) => (event: JSX.TargetedPointerEvent<HTMLButtonElement>) => {
+  const start = (id: string) => (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0 || id === DONE_COLUMN) return;
     event.preventDefault();
     detach.current?.();

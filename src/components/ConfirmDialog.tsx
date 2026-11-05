@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
 
 export function ConfirmDialog() {
@@ -42,24 +42,24 @@ export function ConfirmDialog() {
 
   return (
     <div
-      class="fixed inset-0 z-100 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-100 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
       onMouseDown={(e) => e.target === e.currentTarget && !running.current && closeConfirm()}
     >
-      <div class="w-full max-w-sm animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
-        <h3 id="confirm-title" class="text-base font-semibold text-text">{confirm.title}</h3>
+      <div className="w-full max-w-sm animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
+        <h3 id="confirm-title" className="text-base font-semibold text-text">{confirm.title}</h3>
         {confirm.message && (
-          <p class="mt-1.5 text-sm leading-relaxed text-muted">
+          <p className="mt-1.5 text-sm leading-relaxed text-muted">
             {confirm.message}
           </p>
         )}
-        <div class="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={closeConfirm}
             disabled={busy}
-            class="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
+            className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
           >
             Cancel
           </button>
@@ -67,7 +67,7 @@ export function ConfirmDialog() {
             onClick={run}
             disabled={busy}
             autoFocus
-            class={`rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-60 ${
+            className={`rounded-lg px-3 py-1.5 text-sm font-medium text-white transition-colors disabled:opacity-60 ${
               confirm.danger
                 ? "bg-(--color-danger) hover:brightness-110"
                 : "bg-(--color-accent) hover:bg-accent-hover"

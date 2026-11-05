@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   isPermissionGranted,
   requestPermission,
@@ -34,26 +34,26 @@ import {
 
 export function WelcomeSlide() {
   return (
-    <div class="px-2 pt-2 text-center">
-      <div class="relative mx-auto grid h-31 w-31 place-items-center">
-        <span class="onb-orb pointer-events-none absolute -inset-3.5 rounded-full bg-(--color-accent) opacity-[0.18] blur-3xl" />
-        <span class="onb-bloom relative">
+    <div className="px-2 pt-2 text-center">
+      <div className="relative mx-auto grid h-31 w-31 place-items-center">
+        <span className="onb-orb pointer-events-none absolute -inset-3.5 rounded-full bg-(--color-accent) opacity-[0.18] blur-3xl" />
+        <span className="onb-bloom relative">
           <Mark />
         </span>
       </div>
 
-      <div class="onb-stagger mt-6">
+      <div className="onb-stagger mt-6">
         <Eyebrow>Welcome to todofy</Eyebrow>
-        <h2 class="mt-2 text-[27px] font-semibold leading-[1.16] tracking-[-0.035em] text-text">
+        <h2 className="mt-2 text-[27px] font-semibold leading-[1.16] tracking-[-0.035em] text-text">
           Everything you need to do.
           <br />
           Nothing you don't.
         </h2>
-        <p class="mx-auto mt-3 max-w-108 text-[13px] leading-5 text-muted">
+        <p className="mx-auto mt-3 max-w-108 text-[13px] leading-5 text-muted">
           Your tasks live on this machine, in a plain database file you own. Two
           minutes here and it will feel like yours.
         </p>
-        <div class="mt-6 flex flex-wrap items-center justify-center gap-2">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
           <TrustChip icon={<BoltIcon width={12} height={12} />}>
             Opens instantly
           </TrustChip>
@@ -88,8 +88,8 @@ function Mark() {
           y2="960"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0" stop-color="#7d8bff" />
-          <stop offset="1" stop-color="#6c7cff" />
+          <stop offset="0" stopColor="#7d8bff" />
+          <stop offset="1" stopColor="#6c7cff" />
         </linearGradient>
       </defs>
       <rect
@@ -101,13 +101,13 @@ function Mark() {
         fill="url(#onb-mark)"
       />
       <path
-        class="onb-draw"
-        style={{ "--len": 600 } as never}
+        className="onb-draw"
+        style={{ strokeDasharray: 600, strokeDashoffset: 600 }}
         d="M300 524 L442 666 L724 384"
         stroke="#ffffff"
-        stroke-width="84"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="84"
+        strokeLinecap="round"
+        strokeLinejoin="round"
         fill="none"
       />
     </svg>
@@ -123,39 +123,39 @@ export function ThemeSlide() {
   const toggleTheme = useStore((s) => s.toggleTheme);
 
   return (
-    <div class="onb-stagger text-center">
+    <div className="onb-stagger text-center">
       <Eyebrow>Appearance</Eyebrow>
       <SlideTitle>Pick a side</SlideTitle>
       <SlideText>
         Todofy follows you either way — switch whenever you like from Settings.
       </SlideText>
 
-      <div class="mt-7 grid grid-cols-2 gap-4">
+      <div className="mt-7 grid grid-cols-2 gap-4">
         {(["dark", "light"] as const).map((mode) => (
           <button
             key={mode}
             type="button"
             aria-pressed={theme === mode}
             onClick={() => theme !== mode && toggleTheme()}
-            class={`group rounded-2xl border-2 p-2.5 text-left transition-[border-color,transform] active:translate-y-px ${
+            className={`group rounded-2xl border-2 p-2.5 text-left transition-[border-color,transform] active:translate-y-px ${
               theme === mode
                 ? "border-(--color-accent)"
                 : "border-border hover:border-border-strong"
             }`}
           >
             <ThemePreview mode={mode} />
-            <span class="mt-2.5 flex items-center justify-between px-1 pb-0.5">
-              <span class="text-[13px] font-medium text-text">
+            <span className="mt-2.5 flex items-center justify-between px-1 pb-0.5">
+              <span className="text-[13px] font-medium text-text">
                 {mode === "dark" ? "Dark" : "Light"}
               </span>
               <span
-                class={`grid h-4.5 w-4.5 place-items-center rounded-full transition-colors ${
+                className={`grid h-4.5 w-4.5 place-items-center rounded-full transition-colors ${
                   theme === mode
                     ? "bg-(--color-accent) text-white"
                     : "border border-border-strong text-transparent"
                 }`}
               >
-                <CheckIcon width={11} height={11} stroke-width={3} />
+                <CheckIcon width={11} height={11} strokeWidth={3} />
               </span>
             </span>
           </button>
@@ -189,40 +189,40 @@ function ThemePreview({ mode }: { mode: "dark" | "light" }) {
         };
   return (
     <span
-      class="flex h-26 gap-1.5 overflow-hidden rounded-xl p-1.5"
+      className="flex h-26 gap-1.5 overflow-hidden rounded-xl p-1.5"
       style={{ background: c.bg }}
       aria-hidden="true"
     >
       <span
-        class="flex w-[26%] flex-col gap-1.5 rounded-lg p-1.5"
+        className="flex w-[26%] flex-col gap-1.5 rounded-lg p-1.5"
         style={{ background: c.side }}
       >
         <span
-          class="h-1.5 w-[70%] rounded-full"
+          className="h-1.5 w-[70%] rounded-full"
           style={{ background: "#6c7cff" }}
         />
         {[60, 80, 50].map((w, i) => (
           <span
             key={i}
-            class="h-1.5 rounded-full"
+            className="h-1.5 rounded-full"
             style={{ background: c.text, width: `${w}%` }}
           />
         ))}
       </span>
-      <span class="flex flex-1 flex-col gap-1.5">
-        <span class="h-2 w-[45%] rounded-full" style={{ background: c.text }} />
+      <span className="flex flex-1 flex-col gap-1.5">
+        <span className="h-2 w-[45%] rounded-full" style={{ background: c.text }} />
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            class="flex flex-1 items-center gap-1.5 rounded-lg px-1.5"
+            className="flex flex-1 items-center gap-1.5 rounded-lg px-1.5"
             style={{ background: c.row, border: `1px solid ${c.line}` }}
           >
             <span
-              class="h-2 w-2 shrink-0 rounded-full"
+              className="h-2 w-2 shrink-0 rounded-full"
               style={{ border: `1.5px solid ${i === 0 ? "#6c7cff" : c.text}` }}
             />
             <span
-              class="h-1.5 rounded-full"
+              className="h-1.5 rounded-full"
               style={{ background: c.text, width: `${[70, 52, 62][i]}%` }}
             />
           </span>
@@ -283,7 +283,7 @@ export function CaptureSlide() {
   }, [touched, value, setDraftText]);
 
   return (
-    <div class="onb-stagger text-center">
+    <div className="onb-stagger text-center">
       <Eyebrow>Quick add</Eyebrow>
       <SlideTitle>Type it like you'd say it</SlideTitle>
       <SlideText>
@@ -291,18 +291,18 @@ export function CaptureSlide() {
         sentence. Write yours — it'll be waiting when the tour ends.
       </SlideText>
 
-      <div class="mt-7">
-        <div class="flex items-center gap-3 rounded-2xl border border-border-strong bg-bg px-4 py-3.5 text-left shadow-inner shadow-black/5 transition-colors focus-within:border-(--color-accent)">
+      <div className="mt-7">
+        <div className="flex items-center gap-3 rounded-2xl border border-border-strong bg-bg px-4 py-3.5 text-left shadow-inner shadow-black/5 transition-colors focus-within:border-(--color-accent)">
           <PlusIcon
             width={20}
             height={20}
-            class="shrink-0 text-(--color-accent)"
+            className="shrink-0 text-(--color-accent)"
           />
-          <div class="relative min-w-0 flex-1">
+          <div className="relative min-w-0 flex-1">
             {!touched && (
-              <div class="pointer-events-none absolute inset-0 flex items-center whitespace-pre text-[13px] text-muted">
+              <div className="pointer-events-none absolute inset-0 flex items-center whitespace-pre text-[13px] text-muted">
                 {ghost}
-                <span class="onb-caret ml-px inline-block h-3.75 w-[1.5px] bg-(--color-accent) align-middle" />
+                <span className="onb-caret ml-px inline-block h-3.75 w-[1.5px] bg-(--color-accent) align-middle" />
               </div>
             )}
             <input
@@ -313,13 +313,13 @@ export function CaptureSlide() {
                 setValue(event.currentTarget.value);
               }}
               aria-label="Your first task"
-              spellcheck={false}
-              class="w-full bg-transparent text-[13px] text-text outline-none"
+              spellCheck={false}
+              className="w-full bg-transparent text-[13px] text-text outline-none"
             />
           </div>
         </div>
 
-        <div class="mt-3 flex min-h-6.5 flex-wrap items-center justify-center gap-1.5">
+        <div className="mt-3 flex min-h-6.5 flex-wrap items-center justify-center gap-1.5">
           {parsed.priority !== null && (
             <ParsedChip
               key={`p${parsed.priority}`}
@@ -348,7 +348,7 @@ export function CaptureSlide() {
             </ParsedChip>
           )}
           {parsed.title.trim() && (
-            <span class="text-[11px] text-faint">
+            <span className="text-[11px] text-faint">
               → “{parsed.title.trim()}”
             </span>
           )}
@@ -363,11 +363,11 @@ function ParsedChip({
   children,
 }: {
   color?: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
     <span
-      class="onb-pop inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+      className="onb-pop inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
       style={
         color
           ? { background: `${color}22`, color }
@@ -412,7 +412,7 @@ export function FocusSlide() {
   };
 
   return (
-    <div class="onb-stagger text-center">
+    <div className="onb-stagger text-center">
       <Eyebrow>Focus</Eyebrow>
       <SlideTitle>One task at a time</SlideTitle>
       <SlideText>
@@ -420,12 +420,12 @@ export function FocusSlide() {
         backend, so they keep counting with the window closed.
       </SlideText>
 
-      <div class="relative mx-auto mt-6 grid h-33.5 w-33.5 place-items-center">
+      <div className="relative mx-auto mt-6 grid h-33.5 w-33.5 place-items-center">
         <svg
           width="134"
           height="134"
           viewBox="0 0 134 134"
-          class="absolute inset-0 -rotate-90"
+          className="absolute inset-0 -rotate-90"
         >
           <circle
             cx="67"
@@ -433,40 +433,40 @@ export function FocusSlide() {
             r="58"
             fill="none"
             stroke="var(--color-border)"
-            stroke-width="7"
+            strokeWidth="7"
           />
           <circle
-            class="onb-ring"
-            style={{ "--len": 365 } as never}
+            className="onb-ring"
+            style={{ strokeDasharray: 365, strokeDashoffset: 365 }}
             cx="67"
             cy="67"
             r="58"
             fill="none"
             stroke="var(--color-accent)"
-            stroke-width="7"
-            stroke-linecap="round"
+            strokeWidth="7"
+            strokeLinecap="round"
           />
         </svg>
-        <span class="relative text-center">
-          <span class="block text-[26px] font-semibold tabular-nums tracking-tight text-text">
+        <span className="relative text-center">
+          <span className="block text-[26px] font-semibold tabular-nums tracking-tight text-text">
             {focusMin}:00
           </span>
-          <span class="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-faint">
+          <span className="mt-0.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-faint">
             Focus
           </span>
         </span>
       </div>
 
-      <div class="mt-6">
-        <p class="text-[11px] font-medium text-muted">Session length</p>
-        <div class="mt-2 inline-grid grid-cols-3 gap-1 rounded-xl border border-border bg-bg p-1">
+      <div className="mt-6">
+        <p className="text-[11px] font-medium text-muted">Session length</p>
+        <div className="mt-2 inline-grid grid-cols-3 gap-1 rounded-xl border border-border bg-bg p-1">
           {LENGTHS.map((minutes) => (
             <button
               key={minutes}
               type="button"
               aria-pressed={focusMin === minutes}
               onClick={() => void choose(minutes)}
-              class={`rounded-lg px-5 py-1.5 text-xs font-medium transition-colors ${
+              className={`rounded-lg px-5 py-1.5 text-xs font-medium transition-colors ${
                 focusMin === minutes
                   ? "bg-(--color-accent) text-white"
                   : "text-muted hover:text-text"
@@ -531,7 +531,7 @@ export function RemindersSlide() {
   };
 
   return (
-    <div class="onb-stagger text-center">
+    <div className="onb-stagger text-center">
       <Eyebrow>Capture &amp; reminders</Eyebrow>
       <SlideTitle>Never lose a thought</SlideTitle>
       <SlideText>
@@ -541,15 +541,15 @@ export function RemindersSlide() {
 
       <HotkeyArt />
 
-      <div class="mt-6 space-y-2">
+      <div className="mt-6 space-y-2">
         <ActionRow
           icon={<BellIcon width={17} height={17} />}
           title="Desktop notifications"
           desc="Get a notification the moment a reminder or timer is due."
         >
           {permission === "granted" ? (
-            <span class="inline-flex items-center gap-1.5 rounded-lg bg-success/12 px-3 py-1.5 text-xs font-medium text-success">
-              <CheckIcon width={12} height={12} stroke-width={3} />
+            <span className="inline-flex items-center gap-1.5 rounded-lg bg-success/12 px-3 py-1.5 text-xs font-medium text-success">
+              <CheckIcon width={12} height={12} strokeWidth={3} />
               Enabled
             </span>
           ) : (
@@ -557,7 +557,7 @@ export function RemindersSlide() {
               type="button"
               disabled={permission === "working"}
               onClick={() => void enableNotifications()}
-              class="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
+              className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
             >
               {permission === "working"
                 ? "Asking…"
@@ -582,7 +582,7 @@ export function RemindersSlide() {
       </div>
 
       {permission === "denied" && (
-        <p class="mt-3 text-[11px] text-(--color-warning)">
+        <p className="mt-3 text-[11px] text-(--color-warning)">
           Your system refused the request. You can still allow todofy in your
           desktop's notification settings.
         </p>
@@ -595,14 +595,14 @@ export function RemindersSlide() {
 function HotkeyArt() {
   return (
     <div
-      class="relative mx-auto mt-6 h-37.5 w-full max-w-100"
+      className="relative mx-auto mt-6 h-37.5 w-full max-w-100"
       aria-hidden="true"
     >
-      <div class="absolute bottom-1 left-2 flex items-center gap-1">
+      <div className="absolute bottom-1 left-2 flex items-center gap-1">
         {["Ctrl", "Alt", "A"].map((key, i) => (
           <span
             key={key}
-            class="onb-key rounded-md border border-border-strong bg-surface-2 px-2 py-1 text-[10px] font-semibold text-muted shadow-sm"
+            className="onb-key rounded-md border border-border-strong bg-surface-2 px-2 py-1 text-[10px] font-semibold text-muted shadow-sm"
             style={{ animationDelay: `${i * 70}ms` }}
           >
             {key}
@@ -610,26 +610,26 @@ function HotkeyArt() {
         ))}
       </div>
 
-      <div class="onb-drop absolute left-1/2 top-0 w-63 -translate-x-1/2 overflow-hidden rounded-xl border border-border-strong bg-elevated shadow-2xl shadow-black/40">
-        <div class="flex items-center gap-2 px-3 py-2.5">
-          <PlusIcon width={14} height={14} class="text-(--color-accent)" />
-          <span class="text-[11px] text-muted">Book the dentist…</span>
-          <span class="onb-caret -ml-1 inline-block h-2.75 w-[1.5px] bg-(--color-accent)" />
+      <div className="onb-drop absolute left-1/2 top-0 w-63 -translate-x-1/2 overflow-hidden rounded-xl border border-border-strong bg-elevated shadow-2xl shadow-black/40">
+        <div className="flex items-center gap-2 px-3 py-2.5">
+          <PlusIcon width={14} height={14} className="text-(--color-accent)" />
+          <span className="text-[11px] text-muted">Book the dentist…</span>
+          <span className="onb-caret -ml-1 inline-block h-2.75 w-[1.5px] bg-(--color-accent)" />
         </div>
-        <div class="border-t border-border px-3 py-1.5 text-[9px] text-faint">
+        <div className="border-t border-border px-3 py-1.5 text-[9px] text-faint">
           Enter to save · Esc to dismiss
         </div>
       </div>
 
-      <div class="onb-toast absolute bottom-0 right-0 flex w-52.5 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 shadow-lg shadow-black/20">
-        <span class="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-accent-soft text-(--color-accent)">
+      <div className="onb-toast absolute bottom-0 right-0 flex w-52.5 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 shadow-lg shadow-black/20">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-accent-soft text-(--color-accent)">
           <BellIcon width={12} height={12} />
         </span>
-        <span class="min-w-0 text-left">
-          <span class="block truncate text-[10px] font-medium text-text">
+        <span className="min-w-0 text-left">
+          <span className="block truncate text-[10px] font-medium text-text">
             Call the bank
           </span>
-          <span class="block text-[9px] text-faint">Due now · 10:00</span>
+          <span className="block text-[9px] text-faint">Due now · 10:00</span>
         </span>
       </div>
     </div>
@@ -665,8 +665,8 @@ const FEATURES = [
 
 export function FeaturesSlide() {
   return (
-    <div class="text-center">
-      <div class="onb-stagger">
+    <div className="text-center">
+      <div className="onb-stagger">
         <Eyebrow>And there's more</Eyebrow>
         <SlideTitle>More than a task list</SlideTitle>
         <SlideText>
@@ -675,23 +675,23 @@ export function FeaturesSlide() {
         </SlideText>
       </div>
 
-      <div class="mt-7 grid grid-cols-2 gap-3 text-left">
+      <div className="mt-7 grid grid-cols-2 gap-3 text-left">
         {FEATURES.map((feature, i) => (
           <div
             key={feature.title}
-            class="onb-pop rounded-2xl border border-border bg-surface p-4"
+            className="onb-pop rounded-2xl border border-border bg-surface p-4"
             style={{ animationDelay: `${140 + i * 90}ms` }}
           >
             <span
-              class="onb-float grid h-9 w-9 place-items-center rounded-xl bg-accent-soft text-(--color-accent)"
+              className="onb-float grid h-9 w-9 place-items-center rounded-xl bg-accent-soft text-(--color-accent)"
               style={{ animationDelay: `${i * 420}ms` }}
             >
               {feature.icon}
             </span>
-            <p class="mt-3 text-[13px] font-medium text-text">
+            <p className="mt-3 text-[13px] font-medium text-text">
               {feature.title}
             </p>
-            <p class="mt-1 text-[11px] leading-4 text-muted">{feature.desc}</p>
+            <p className="mt-1 text-[11px] leading-4 text-muted">{feature.desc}</p>
           </div>
         ))}
       </div>
@@ -715,9 +715,9 @@ export function FinishSlide() {
   const openGate = useBilling((s) => s.openGate);
 
   return (
-    <div class="onb-stagger text-center">
-      <span class="onb-bloom mx-auto grid h-14 w-14 place-items-center rounded-full bg-success/12 text-success">
-        <CheckIcon width={26} height={26} stroke-width={2.5} />
+    <div className="onb-stagger text-center">
+      <span className="onb-bloom mx-auto grid h-14 w-14 place-items-center rounded-full bg-success/12 text-success">
+        <CheckIcon width={26} height={26} strokeWidth={2.5} />
       </span>
 
       <div>
@@ -729,22 +729,22 @@ export function FinishSlide() {
         </SlideText>
       </div>
 
-      <div class="mt-6 space-y-2">
+      <div className="mt-6 space-y-2">
         {SHORTCUTS.map(([keys, what]) => (
           <div
             key={keys}
-            class="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-2.5"
+            className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-2.5"
           >
-            <kbd class="rounded-md border border-border-strong bg-surface-2 px-2 py-1 text-[11px] font-semibold text-text">
+            <kbd className="rounded-md border border-border-strong bg-surface-2 px-2 py-1 text-[11px] font-semibold text-text">
               {keys}
             </kbd>
-            <span class="text-[12px] text-muted">{what}</span>
+            <span className="text-[12px] text-muted">{what}</span>
           </div>
         ))}
       </div>
 
       {billingConfigured && (
-        <p class="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-faint">
+        <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-faint">
           <DevicesIcon width={13} height={13} />
           On more than one machine? Todofy Pro syncs them.
           <button
@@ -753,14 +753,14 @@ export function FinishSlide() {
               void finish();
               openGate("upgrade");
             }}
-            class="font-medium text-muted underline underline-offset-2 transition-colors hover:text-text"
+            className="font-medium text-muted underline underline-offset-2 transition-colors hover:text-text"
           >
             Take a look
           </button>
         </p>
       )}
 
-      <p class="mt-2 text-[10px] text-faint">
+      <p className="mt-2 text-[10px] text-faint">
         You can replay this tour anytime from Settings → About.
       </p>
     </div>
@@ -771,9 +771,9 @@ export function FinishSlide() {
  * Shared pieces
  * ---------------------------------------------------------------- */
 
-function Eyebrow({ children }: { children: ComponentChildren }) {
+function Eyebrow({ children }: { children: ReactNode }) {
   return (
-    <p class="text-[10px] font-semibold uppercase tracking-[0.26em] text-(--color-accent)">
+    <p className="text-[10px] font-semibold uppercase tracking-[0.26em] text-(--color-accent)">
       {children}
     </p>
   );
@@ -783,21 +783,21 @@ function SlideTitle({
   children,
   class: className = "",
 }: {
-  children: ComponentChildren;
+  children: ReactNode;
   class?: string;
 }) {
   return (
     <h2
-      class={`text-[24px] font-semibold leading-[1.2] tracking-[-0.035em] text-text ${className}`}
+      className={`text-[24px] font-semibold leading-[1.2] tracking-[-0.035em] text-text ${className}`}
     >
       {children}
     </h2>
   );
 }
 
-function SlideText({ children }: { children: ComponentChildren }) {
+function SlideText({ children }: { children: ReactNode }) {
   return (
-    <p class="mx-auto mt-2.5 max-w-108 text-[13px] leading-5 text-muted">
+    <p className="mx-auto mt-2.5 max-w-108 text-[13px] leading-5 text-muted">
       {children}
     </p>
   );
@@ -807,12 +807,12 @@ function TrustChip({
   icon,
   children,
 }: {
-  icon: ComponentChildren;
-  children: ComponentChildren;
+  icon: ReactNode;
+  children: ReactNode;
 }) {
   return (
-    <span class="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-muted">
-      <span class="text-(--color-accent)">{icon}</span>
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-[11px] font-medium text-muted">
+      <span className="text-(--color-accent)">{icon}</span>
       {children}
     </span>
   );
@@ -824,21 +824,21 @@ function ActionRow({
   desc,
   children,
 }: {
-  icon: ComponentChildren;
+  icon: ReactNode;
   title: string;
   desc: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
-    <div class="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-left">
-      <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+    <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-left">
+      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
         {icon}
       </span>
-      <span class="min-w-0 flex-1">
-        <span class="block text-[13px] font-medium text-text">{title}</span>
-        <span class="mt-0.5 block text-[11px] text-muted">{desc}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[13px] font-medium text-text">{title}</span>
+        <span className="mt-0.5 block text-[11px] text-muted">{desc}</span>
       </span>
-      <span class="shrink-0">{children}</span>
+      <span className="shrink-0">{children}</span>
     </div>
   );
 }
@@ -859,12 +859,12 @@ function MiniSwitch({
       aria-checked={checked}
       disabled={disabled}
       onClick={onChange}
-      class={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
         checked ? "bg-(--color-accent)" : "bg-surface-2"
       }`}
     >
       <span
-        class={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
           checked ? "translate-x-6" : "translate-x-1"
         }`}
       />

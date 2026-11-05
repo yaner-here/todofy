@@ -1,4 +1,4 @@
-import type { JSX } from "preact";
+import type { PointerEvent as ReactPointerEvent } from "react";
 import { useStore } from "../store";
 import { formatDue, formatReminder, isPast } from "../lib/dates";
 import type { Task } from "../types";
@@ -35,7 +35,7 @@ interface DragProps {
   dragging?: boolean;
   dropEdge?: "top" | "bottom" | null;
   rowRef?: (element: HTMLElement | null) => void;
-  onHandlePointerDown?: (event: JSX.TargetedPointerEvent<HTMLElement>) => void;
+  onHandlePointerDown?: (event: ReactPointerEvent<HTMLElement>) => void;
 }
 
 export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
@@ -83,14 +83,14 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
           if (!event.repeat) select(task.id);
         }
       }}
-      class={`task-row ${selected ? "is-selected" : ""} ${done ? "is-done" : ""} ${drag?.dragging ? "is-dragging" : ""} ${tracking !== "off" ? "is-tracked" : ""}`}
+      className={`task-row ${selected ? "is-selected" : ""} ${done ? "is-done" : ""} ${drag?.dragging ? "is-dragging" : ""} ${tracking !== "off" ? "is-tracked" : ""}`}
     >
-      {drag?.dropEdge && <span class={`drop-indicator is-${drag.dropEdge}`} />}
+      {drag?.dropEdge && <span className={`drop-indicator is-${drag.dropEdge}`} />}
       {drag?.reorderable && (
         <span
           onPointerDown={drag.onHandlePointerDown}
           onClick={(event) => event.stopPropagation()}
-          class="task-drag-handle"
+          className="task-drag-handle"
           title="Drag to reorder"
         >
           <GripIcon width={16} height={16} />
@@ -99,7 +99,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
 
       <button
         type="button"
-        class="task-complete"
+        className="task-complete"
         style={!done ? { borderColor: priority.color } : undefined}
         title={done ? "Mark active" : "Complete"}
         onClick={(event) => {
@@ -107,10 +107,10 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
           toggleTask(task.id, !done);
         }}
       >
-        {done && <CheckIcon width={12} height={12} stroke-width={3} />}
+        {done && <CheckIcon width={12} height={12} strokeWidth={3} />}
       </button>
 
-      <div class="task-row-title">
+      <div className="task-row-title">
         <p>{task.title}</p>
         {subtaskTotal > 0 && (
           <span title={`${subtaskDone} of ${subtaskTotal} steps done`}>
@@ -120,17 +120,17 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
         )}
       </div>
 
-      <div class="task-row-meta">
+      <div className="task-row-meta">
         {showsPriority(task.priority, priorityProfiles) && (
           <span style={{ color: priority.color }} title={priority.name}>
             <FlagIcon width={13} height={13} />
             {priorityTag(task.priority, priorityProfiles)}
           </span>
         )}
-        {due && <span class={DUE_TONE[due.tone]}>{due.label}</span>}
+        {due && <span className={DUE_TONE[due.tone]}>{due.label}</span>}
         {task.remindAt && (
           <span
-            class={lateReminder ? "is-overdue" : ""}
+            className={lateReminder ? "is-overdue" : ""}
             title={
               lateReminder
                 ? `Reminder passed — ${formatReminder(task.remindAt)}`
@@ -152,7 +152,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
         )}
         {elapsed > 0 && (
           <span
-            class={
+            className={
               over > 0
                 ? "is-over"
                 : tracking === "running"
@@ -176,13 +176,13 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
           </span>
         )}
         {taskLabels.map((label) => (
-          <span key={label.id} class="task-label" style={{ color: label.color }}>
+          <span key={label.id} className="task-label" style={{ color: label.color }}>
             <i style={{ background: label.color }} />{label.name}
           </span>
         ))}
       </div>
 
-      <div class="task-row-actions">
+      <div className="task-row-actions">
         {!done && (
           <button
             type="button"
@@ -192,7 +192,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
               else if (tracking === "running") pauseTaskTimer();
               else resumeTaskTimer();
             }}
-            class={tracking === "running" ? "is-running" : tracking === "paused" ? "is-held" : ""}
+            className={tracking === "running" ? "is-running" : tracking === "paused" ? "is-held" : ""}
             title={
               tracking === "running"
                 ? "Pause tracking"
@@ -215,7 +215,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
               event.stopPropagation();
               stopTaskTimer();
             }}
-            class="is-running"
+            className="is-running"
             title="Stop tracking and bank the time"
           >
             <StopIcon width={15} height={15} />
@@ -227,7 +227,7 @@ export function TaskItem({ task, drag }: { task: Task; drag?: DragProps }) {
             event.stopPropagation();
             patchTask({ id: task.id, pinned: !task.pinned });
           }}
-          class={task.pinned ? "is-pinned" : ""}
+          className={task.pinned ? "is-pinned" : ""}
           title={task.pinned ? "Unpin" : "Pin to top"}
         >
           <PinIcon width={15} height={15} />

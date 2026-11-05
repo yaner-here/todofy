@@ -1,4 +1,4 @@
-import { useRef, useState } from "preact/hooks";
+import { useRef, useState } from "react";
 import { useStore } from "../store";
 import { today } from "../lib/dates";
 import { daySummary, summaryText } from "../lib/journal";
@@ -66,10 +66,10 @@ export function JournalEditor({
   };
 
   return (
-    <div class="journal-composer">
-      <div ref={voicePanelRef} class="voice-capture-host" />
+    <div className="journal-composer">
+      <div ref={voicePanelRef} className="voice-capture-host" />
       <input
-        class="journal-composer-title"
+        className="journal-composer-title"
         value={title}
         onInput={(e) => setTitle(e.currentTarget.value)}
         placeholder="Title (optional)"
@@ -77,7 +77,7 @@ export function JournalEditor({
       <textarea
         ref={bodyRef}
         id={initial ? undefined : "journal-add-input"}
-        class="journal-composer-body"
+        className="journal-composer-body"
         value={body}
         onInput={(e) => setBody(e.currentTarget.value)}
         onKeyDown={(e) => {
@@ -90,7 +90,7 @@ export function JournalEditor({
       {prompt && (
         <button
           type="button"
-          class="journal-summary-chip"
+          className="journal-summary-chip"
           onClick={() =>
             setBody((b) => (b.trim() ? `${b}\n\n${prompt}` : prompt))
           }
@@ -100,7 +100,7 @@ export function JournalEditor({
         </button>
       )}
 
-      <div class="journal-toolbar">
+      <div className="journal-toolbar">
         <VoiceInputButton
           kind="journal"
           getPanelHost={() => voicePanelRef.current}
@@ -120,14 +120,14 @@ export function JournalEditor({
             });
           }}
         />
-        <div class="mood-picker" role="group" aria-label="Mood">
+        <div className="mood-picker" role="group" aria-label="Mood">
           {MOODS.map((face, i) => {
             const value = i + 1;
             return (
               <button
                 key={value}
                 type="button"
-                class={`mood-btn ${mood === value ? "is-active" : ""}`}
+                className={`mood-btn ${mood === value ? "is-active" : ""}`}
                 onClick={() => setMood(mood === value ? null : value)}
                 title={MOOD_LABELS[i]}
                 aria-label={MOOD_LABELS[i]}
@@ -145,12 +145,12 @@ export function JournalEditor({
           allowClear={false}
         />
 
-        <div class="journal-toolbar-actions">
+        <div className="journal-toolbar-actions">
           {onCancel && (
             <button
               type="button"
               onClick={onCancel}
-              class="rounded-md px-2.5 py-1.5 text-sm text-muted hover:text-text"
+              className="rounded-md px-2.5 py-1.5 text-sm text-muted hover:text-text"
             >
               Cancel
             </button>
@@ -159,7 +159,7 @@ export function JournalEditor({
             type="button"
             onClick={() => void submit()}
             disabled={saving || voiceBusy || (!body.trim() && !title.trim())}
-            class="rounded-md bg-(--color-accent) px-3.5 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-md bg-(--color-accent) px-3.5 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {submitLabel}
           </button>

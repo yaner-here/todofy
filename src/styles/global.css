@@ -2284,7 +2284,6 @@ body {
 }
 
 .calendar-entry-pill {
-  --entry-color: var(--color-accent);
   --entry-bg: var(--color-accent-soft);
   display: flex;
   width: 100%;
@@ -2296,7 +2295,7 @@ body {
   border-radius: 5px;
   padding: 0 6px;
   background: var(--entry-bg);
-  color: var(--entry-color);
+  color: var(--color-accent);
   font-size: 10px;
   font-weight: 570;
   line-height: 1;
@@ -2327,22 +2326,22 @@ body {
   height: 5px;
   flex: 0 0 5px;
   border-radius: 999px;
-  background: var(--entry-color);
+  background: currentColor;
 }
 
 .calendar-entry-pill.is-local,
 .calendar-timed-entry.is-local {
-  --entry-color: var(--color-accent);
+  color: var(--color-accent);
   --entry-bg: var(--color-accent-soft);
 }
 
 .calendar-entry-pill.is-task,
 .calendar-timed-entry.is-task {
-  --entry-color: var(--color-muted);
+  color: var(--color-muted);
   --entry-bg: color-mix(in srgb, var(--color-elevated) 88%, var(--color-bg));
 }
 
-/* A task entry's `--entry-color` is set inline from its priority profile
+/* A task entry's `color` is set inline from its priority profile
    (see `entryColor` in CalendarView); the rule above is the fallback for
    events and for a priority with nothing to show. */
 
@@ -2538,7 +2537,6 @@ body {
 }
 
 .calendar-timed-entry {
-  --entry-color: var(--color-accent);
   --entry-bg: var(--color-accent-soft);
   position: absolute;
   z-index: 2;
@@ -2547,12 +2545,12 @@ body {
   flex-direction: column;
   gap: 2px;
   overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--entry-color) 28%, transparent);
-  border-left: 3px solid var(--entry-color);
+  border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+  border-left: 3px solid currentColor;
   border-radius: 6px;
   padding: 4px 6px;
   background: var(--entry-bg);
-  color: var(--entry-color);
+  color: var(--color-accent);
   text-align: left;
   box-shadow: 0 2px 7px color-mix(in srgb, black 13%, transparent);
   cursor: pointer;
@@ -2948,20 +2946,14 @@ body {
   border: 1px solid var(--color-border-strong);
   border-radius: 13px;
   background: color-mix(in srgb, var(--color-elevated) 92%, var(--color-bg));
+  color: var(--color-accent);
   box-shadow: none;
-
-  /* A reminder sets these inline from its priority's color; everything else
-     (an update notice, the Settings test) keeps todofy's own accent. The soft
-     tone is a theme color rather than a tint of the accent, so it needs its
-     own variable instead of being mixed from the one above. */
-  --notification-accent: var(--color-accent);
-  --notification-accent-soft: var(--color-accent-soft);
 }
 
 .notification-accent {
   width: 3px;
   flex: 0 0 3px;
-  background: var(--notification-accent);
+  background: currentColor;
 }
 
 .notification-content {
@@ -2980,10 +2972,9 @@ body {
   flex: 0 0 38px;
   place-items: center;
   border: 1px solid
-    color-mix(in srgb, var(--notification-accent) 28%, var(--color-border));
+    color-mix(in srgb, currentColor 28%, var(--color-border));
   border-radius: 10px;
-  background: var(--notification-accent-soft);
-  color: var(--notification-accent);
+  background: var(--color-accent-soft);
 }
 
 .notification-copy {
@@ -2992,7 +2983,6 @@ body {
 }
 
 .notification-eyebrow {
-  color: var(--notification-accent);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -3081,7 +3071,7 @@ body {
   bottom: 0;
   left: 3px;
   height: 2px;
-  background: var(--notification-accent);
+  background: currentColor;
 }
 
 /* Narrowest width that still fits the brand rail, every labelled item and its
@@ -3279,9 +3269,8 @@ body {
   }
 }
 
-/* A quick confetti burst on task completion. Each piece is translated to its
-   own (--dx,--dy) offset and spun by (--rot), then fades. Disabled wholesale
-   by the reduced-motion block below. */
+/* A quick confetti burst on task completion. Each piece moves to its inline
+   transform and fades. Disabled by the reduced-motion block below. */
 @keyframes confetti {
   0% {
     opacity: 1;
@@ -3289,7 +3278,6 @@ body {
   }
   100% {
     opacity: 0;
-    transform: translate(var(--dx), var(--dy)) rotate(var(--rot));
   }
 }
 .animate-confetti {
@@ -3462,24 +3450,19 @@ body {
   animation: onb-bloom 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Stroke drawing; each user sets --len to its own path length. */
+/* Stroke drawing starts from each path's inline dash offset. */
 @keyframes onb-draw {
-  from {
-    stroke-dashoffset: var(--len);
-  }
   to {
     stroke-dashoffset: 0;
   }
 }
 .onb-draw {
-  stroke-dasharray: var(--len);
   animation: onb-draw 0.85s cubic-bezier(0.65, 0, 0.35, 1) 0.3s both;
 }
 
 /* The focus ring filling a session, on a loop. */
 .onb-ring {
-  stroke-dasharray: var(--len);
-  animation: onb-draw 7s linear infinite;
+  animation: onb-draw 7s linear infinite forwards;
 }
 
 /* Parsed chips landing as you type. */
@@ -3752,7 +3735,7 @@ body {
   left: 0;
   width: 2px;
   border-radius: 0 2px 2px 0;
-  background: var(--card-accent);
+  background: currentColor;
   content: "";
   opacity: 0.75;
 }
@@ -4335,7 +4318,7 @@ button.voice-capture-action:hover:not(:disabled) {
 }
 
 /* Configurable board columns: accents never replace task priority colors. */
-.board-column-head { border-top: 3px solid var(--column-color, var(--color-accent)); }
+.board-column-head { border-top: 3px solid var(--color-accent); }
 .board-column-count.wip-full { color: var(--color-prio-2); background: color-mix(in srgb, var(--color-prio-2) 14%, transparent); }
 .board-column-count.wip-over { color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 14%, transparent); }
 .board-manage-button { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 8px; color: var(--color-muted); font-size: 12px; white-space: nowrap; }

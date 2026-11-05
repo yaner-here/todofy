@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 
 /** Stored text remains authoritative until the user starts editing. */
 export function useTextDraft(source: string) {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { emit, listen } from "@tauri-apps/api/event";
 import {
   CheckCircleIcon,
@@ -85,8 +85,8 @@ export function VoiceSettingsSection() {
       ? Math.min(100, Math.round((100 * progress.received) / progress.total))
       : 0;
   const downloadProgress = busy && progress && (
-    <div class="voice-download-progress">
-      <div class="flex items-center justify-between gap-3">
+    <div className="voice-download-progress">
+      <div className="flex items-center justify-between gap-3">
         <span>
           {downloadLabel} · {downloadPercent}% ·{" "}
           {Math.round(progress.received / 1024 / 1024)} /{" "}
@@ -95,13 +95,13 @@ export function VoiceSettingsSection() {
         <button
           type="button"
           onClick={() => void voiceApi.cancelDownload()}
-          class="shrink-0 font-medium text-(--color-accent) hover:underline"
+          className="shrink-0 font-medium text-(--color-accent) hover:underline"
         >
           Cancel
         </button>
       </div>
       <div
-        class="voice-download-track"
+        className="voice-download-track"
         role="progressbar"
         aria-label={`${downloadLabel} download`}
         aria-valuemin={0}
@@ -114,17 +114,17 @@ export function VoiceSettingsSection() {
   );
 
   return (
-    <section id="voice-settings" class="mb-6 scroll-mt-2">
-      <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+    <section id="voice-settings" className="mb-6 scroll-mt-2">
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
         Voice
       </h3>
-      <div class="overflow-hidden rounded-xl border border-border bg-surface">
-        <div class="flex items-start gap-3 px-4 py-4">
-          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-color-accent">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="flex items-start gap-3 px-4 py-4">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-color-accent">
             <MicrophoneIcon width={18} height={18} />
           </span>
           <div>
-            <p class="mt-1 text-xs text-muted">
+            <p className="mt-1 text-xs text-muted">
               Optional and off by default. Download the engine and a
               multilingual model only if you want to dictate tasks or journal
               entries. Speech stays on this device, the spoken language is
@@ -133,7 +133,7 @@ export function VoiceSettingsSection() {
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-3 border-t border-border px-4 py-2.5 text-xs text-muted">
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2.5 text-xs text-muted">
           <span>
             {status?.developmentAssets
               ? "Using local test files in this debug build."
@@ -145,7 +145,7 @@ export function VoiceSettingsSection() {
           </span>
           {!status?.developmentAssets && (
             <button
-              class={buttonClass}
+              className={buttonClass}
               disabled={!!busy}
               onClick={() => void run("catalog", voiceApi.refreshCatalog)}
             >
@@ -155,7 +155,7 @@ export function VoiceSettingsSection() {
         </div>
 
         {status?.developmentAssets && (
-          <p class="border-t border-border px-4 py-3 text-xs text-muted">
+          <p className="border-t border-border px-4 py-3 text-xs text-muted">
             Choose Tiny below, then enable Voice Mode. Local files are used only
             for testing; download and removal controls are available with a
             published voice catalog.
@@ -163,31 +163,31 @@ export function VoiceSettingsSection() {
         )}
 
         {!status?.platformSupported && status && (
-          <p class="border-t border-border px-4 py-3 text-xs text-(--color-danger)">
+          <p className="border-t border-border px-4 py-3 text-xs text-(--color-danger)">
             Voice downloads are not available for this platform yet.
           </p>
         )}
 
-        <div class="voice-engine-row">
-          <span class="voice-engine-mark" aria-hidden="true">
+        <div className="voice-engine-row">
+          <span className="voice-engine-mark" aria-hidden="true">
             <DownloadIcon width={18} height={18} />
           </span>
-          <div class="min-w-0">
-            <p class="text-sm font-semibold text-text">Voice engine</p>
-            <p class="mt-0.5 text-xs text-muted">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-text">Voice engine</p>
+            <p className="mt-0.5 text-xs text-muted">
               Local speech processing by whisper.cpp · separate optional
               download
             </p>
           </div>
-          <div class="voice-engine-actions">
+          <div className="voice-engine-actions">
             {targetEngineInstalled ? (
-              <span class="voice-engine-installed">
+              <span className="voice-engine-installed">
                 <CheckCircleIcon width={16} height={16} /> Installed
               </span>
             ) : (
               <button
                 type="button"
-                class="voice-engine-download"
+                className="voice-engine-download"
                 disabled={
                   !!busy ||
                   !status?.platformSupported ||
@@ -211,7 +211,7 @@ export function VoiceSettingsSection() {
               (status?.engineInstalled || status?.updateEngineInstalled) && (
                 <button
                   type="button"
-                  class={buttonClass}
+                  className={buttonClass}
                   disabled={!!busy}
                   onClick={() =>
                     void run("remove-engine", () => voiceApi.remove("engine"))
@@ -226,13 +226,13 @@ export function VoiceSettingsSection() {
         </div>
         {busy === "engine" && downloadProgress}
 
-        <div class="border-t border-border px-4 py-3.5">
-          <p class="mb-2 text-sm font-medium">Speech model</p>
-          <div class="flex flex-col gap-2">
+        <div className="border-t border-border px-4 py-3.5">
+          <p className="mb-2 text-sm font-medium">Speech model</p>
+          <div className="flex flex-col gap-2">
             {MODELS.map((model) => (
               <div
                 key={model.id}
-                class="flex items-center gap-2 rounded-lg border border-border px-3 py-2"
+                className="flex items-center gap-2 rounded-lg border border-border px-3 py-2"
               >
                 <input
                   type="radio"
@@ -247,26 +247,26 @@ export function VoiceSettingsSection() {
                   }
                   aria-label={`Select ${model.label}`}
                 />
-                <div class="min-w-0 flex-1">
-                  <p class="text-xs font-medium">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium">
                     {model.label}{" "}
-                    <span class="font-normal text-faint">
+                    <span className="font-normal text-faint">
                       · {status?.developmentAssets ? "Local file" : model.size}
                     </span>
                   </p>
-                  <p class="text-[11px] text-muted">{model.detail}</p>
+                  <p className="text-[11px] text-muted">{model.detail}</p>
                 </div>
                 {(
                   updateAvailable
                     ? status?.updateModelsInstalled[model.id]
                     : status?.modelsInstalled[model.id]
                 ) ? (
-                  <span class="text-[11px] text-(--color-accent)">
+                  <span className="text-[11px] text-(--color-accent)">
                     Installed
                   </span>
                 ) : (
                   <button
-                    class={buttonClass}
+                    className={buttonClass}
                     disabled={
                       !!busy ||
                       !status?.platformSupported ||
@@ -289,7 +289,7 @@ export function VoiceSettingsSection() {
                   (status?.modelsInstalled[model.id] ||
                     status?.updateModelsInstalled[model.id]) && (
                     <button
-                      class={buttonClass}
+                      className={buttonClass}
                       disabled={!!busy}
                       onClick={() =>
                         void run(`remove-${model.id}`, () =>
@@ -308,10 +308,10 @@ export function VoiceSettingsSection() {
 
         {busy !== "engine" && downloadProgress}
 
-        <div class="flex items-center gap-3 border-t border-border px-4 py-3.5">
-          <div class="min-w-0 flex-1">
-            <p class="text-sm font-medium">Voice Mode</p>
-            <p class="text-xs text-muted">
+        <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">Voice Mode</p>
+            <p className="text-xs text-muted">
               Show microphone controls in task capture and journal editors.
             </p>
           </div>
@@ -326,15 +326,15 @@ export function VoiceSettingsSection() {
             onClick={() =>
               void run("mode", () => voiceApi.setMode(!status?.enabled))
             }
-            class={`relative inline-flex h-6 w-11 items-center rounded-full disabled:opacity-50 ${status?.enabled ? "bg-(--color-accent)" : "bg-surface-2"}`}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full disabled:opacity-50 ${status?.enabled ? "bg-(--color-accent)" : "bg-surface-2"}`}
           >
             <span
-              class={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${status?.enabled ? "translate-x-6" : "translate-x-1"}`}
+              className={`inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${status?.enabled ? "translate-x-6" : "translate-x-1"}`}
             />
           </button>
         </div>
         {status?.engineInstalled && !installed && !status.enabled && (
-          <p class="border-t border-border px-4 py-3 text-xs text-muted">
+          <p className="border-t border-border px-4 py-3 text-xs text-muted">
             Select an installed speech model above to enable Voice Mode.
           </p>
         )}
@@ -346,9 +346,9 @@ export function VoiceSettingsSection() {
             status?.updateEngineInstalled ||
             status?.updateModelsInstalled.base ||
             status?.updateModelsInstalled.tiny) && (
-            <div class="border-t border-border px-4 py-3">
+            <div className="border-t border-border px-4 py-3">
               <button
-                class="text-xs text-(--color-danger) hover:underline disabled:opacity-50"
+                className="text-xs text-(--color-danger) hover:underline disabled:opacity-50"
                 disabled={!!busy}
                 onClick={() =>
                   void run("remove-all", () => voiceApi.remove("all"))
@@ -361,7 +361,7 @@ export function VoiceSettingsSection() {
         {error && (
           <p
             role="alert"
-            class="border-t border-border px-4 py-3 text-xs text-(--color-danger)"
+            className="border-t border-border px-4 py-3 text-xs text-(--color-danger)"
           >
             {error}
           </p>

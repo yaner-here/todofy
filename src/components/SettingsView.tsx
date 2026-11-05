@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useState } from "preact/hooks";
+import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { api } from "../lib/api";
@@ -400,13 +400,13 @@ export function SettingsView() {
   };
 
   return (
-    <main class="redesign-secondary settings-main flex flex-1 flex-col overflow-hidden bg-bg">
-      <header class="app-page-header shrink-0 px-8 pt-8 pb-4">
-        <h2 class="text-2xl font-semibold tracking-tight">Settings</h2>
-        <p class="mt-0.5 text-sm text-muted">Startup, appearance, and about</p>
+    <main className="redesign-secondary settings-main flex flex-1 flex-col overflow-hidden bg-bg">
+      <header className="app-page-header shrink-0 px-8 pt-8 pb-4">
+        <h2 className="text-2xl font-semibold tracking-tight">Settings</h2>
+        <p className="mt-0.5 text-sm text-muted">Startup, appearance, and about</p>
       </header>
 
-      <div class="secondary-scroll settings-content mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-8">
+      <div className="secondary-scroll settings-content mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-8">
         <AccountSection />
         <CalendarSection />
         <VoiceSettingsSection />
@@ -426,11 +426,11 @@ export function SettingsView() {
           </Row>
 
           {autostart && (
-            <div class="animate-fade-rise border-t border-border px-4 py-3.5">
-              <p class="mb-2.5 text-xs font-medium text-muted">
+            <div className="animate-fade-rise border-t border-border px-4 py-3.5">
+              <p className="mb-2.5 text-xs font-medium text-muted">
                 When todofy starts at login
               </p>
-              <div class="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <ModeOption
                   active={mode === "window"}
                   onSelect={() => chooseMode("window")}
@@ -457,7 +457,7 @@ export function SettingsView() {
             title="Global quick-add hotkey"
             desc="Press this from any app to pop up todofy's capture box — jot a task and it's saved to your inbox without switching windows."
           >
-            <kbd class="shrink-0 rounded-lg border border-border bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
+            <kbd className="shrink-0 rounded-lg border border-border bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">
               Ctrl + Alt + A
             </kbd>
           </Row>
@@ -478,11 +478,11 @@ export function SettingsView() {
           </Row>
 
           {desktopNotifications && (
-            <div class="animate-fade-rise border-t border-border px-4 py-3.5">
-              <p class="mb-2.5 text-xs font-medium text-muted">
+            <div className="animate-fade-rise border-t border-border px-4 py-3.5">
+              <p className="mb-2.5 text-xs font-medium text-muted">
                 Notification style
               </p>
-              <div class="flex flex-col gap-2">
+              <div className="flex flex-col gap-2">
                 <ModeOption
                   active={notifStyle === "custom"}
                   onSelect={() => chooseStyle("custom")}
@@ -498,16 +498,16 @@ export function SettingsView() {
               </div>
 
               {notifStyle === "custom" && (
-                <div class="mt-3.5 animate-fade-rise">
-                  <p class="mb-2 text-xs font-medium text-muted">
+                <div className="mt-3.5 animate-fade-rise">
+                  <p className="mb-2 text-xs font-medium text-muted">
                     Position on screen
                   </p>
-                  <div class="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2">
                     {CORNERS.map((c) => (
                       <button
                         key={c.value}
                         onClick={() => choosePosition(c.value)}
-                        class={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+                        className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
                           notifPosition === c.value
                             ? "border-(--color-accent) bg-accent-soft text-text"
                             : "border-border text-muted hover:bg-surface-2 hover:text-text"
@@ -523,11 +523,11 @@ export function SettingsView() {
           )}
 
           {desktopNotifications && (
-            <div class="border-t border-border px-4 py-3.5">
-              <p class="mb-2 text-xs font-medium text-muted">
+            <div className="border-t border-border px-4 py-3.5">
+              <p className="mb-2 text-xs font-medium text-muted">
                 Repeat an unanswered reminder
               </p>
-              <div class="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {REPEAT_INTERVALS.map((option) => (
                   <Choice
                     key={option.value}
@@ -537,14 +537,14 @@ export function SettingsView() {
                   />
                 ))}
               </div>
-              <p class="mt-3 text-xs text-faint">
+              <p className="mt-3 text-xs text-faint">
                 {repeatEvery === "0"
                   ? "A reminder shows once and then waits for you."
                   : `Keeps going every ${repeatEvery} minutes for as long as it takes — it never gives up on its own. It stops when you open, dismiss or snooze it, complete the task, or start timing it.`}
               </p>
 
-              <p class="mt-4 mb-2 text-xs font-medium text-muted">Sound</p>
-              <div class="grid grid-cols-3 gap-2">
+              <p className="mt-4 mb-2 text-xs font-medium text-muted">Sound</p>
+              <div className="grid grid-cols-3 gap-2">
                 {SOUNDS.map((option) => (
                   <Choice
                     key={option.value}
@@ -562,22 +562,22 @@ export function SettingsView() {
               {sound === "custom" && (
                 <button
                   onClick={pickCustomSound}
-                  class="mt-2 text-xs text-(--color-accent) hover:underline"
+                  className="mt-2 text-xs text-(--color-accent) hover:underline"
                 >
                   Choose a different file…
                 </button>
               )}
               {soundError && (
-                <p class="mt-2 text-xs text-(--color-danger)">{soundError}</p>
+                <p className="mt-2 text-xs text-(--color-danger)">{soundError}</p>
               )}
 
               {sound !== "none" && (
-                <div class="mt-4 animate-fade-rise">
-                  <div class="mb-2 flex items-center justify-between">
-                    <p class="text-xs font-medium text-muted">Volume</p>
+                <div className="mt-4 animate-fade-rise">
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-xs font-medium text-muted">Volume</p>
                     <button
                       onClick={() => previewSound(sound, volume)}
-                      class="text-xs text-(--color-accent) hover:underline"
+                      className="text-xs text-(--color-accent) hover:underline"
                     >
                       Play
                     </button>
@@ -589,10 +589,14 @@ export function SettingsView() {
                     step={5}
                     value={volume}
                     onInput={(e) => setVolume(Number(e.currentTarget.value))}
-                    onChange={(e) =>
-                      changeVolume(Number(e.currentTarget.value))
-                    }
-                    class="w-full accent-(--color-accent)"
+                    ref={(input) => {
+                      if (!input) return;
+                      // Persist on native change, not React's per-step onChange.
+                      const commit = () => changeVolume(Number(input.value));
+                      input.addEventListener("change", commit);
+                      return () => input.removeEventListener("change", commit);
+                    }}
+                    className="w-full accent-(--color-accent)"
                     aria-label="Reminder volume"
                   />
 
@@ -601,15 +605,15 @@ export function SettingsView() {
                     role="checkbox"
                     aria-checked={ramp}
                     onClick={toggleRamp}
-                    class="mt-3 flex w-full items-start gap-2.5 text-left text-xs text-muted"
+                    className="mt-3 flex w-full items-start gap-2.5 text-left text-xs text-muted"
                   >
-                    <span class="mt-0.5">
+                    <span className="mt-0.5">
                       <Checkbox checked={ramp} interactive={false} size={16} />
                     </span>
                     <span>
                       Get louder each time a reminder repeats
                       {repeatEvery === "0" && (
-                        <em class="not-italic text-faint">
+                        <em className="not-italic text-faint">
                           {" "}
                           — needs repeating reminders, above
                         </em>
@@ -621,10 +625,10 @@ export function SettingsView() {
             </div>
           )}
 
-          <div class="flex items-center gap-3 border-t border-border px-4 py-3.5">
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-text">Test notification</p>
-              <p class="mt-0.5 text-xs text-muted">
+          <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text">Test notification</p>
+              <p className="mt-0.5 text-xs text-muted">
                 {testStatus === "sent"
                   ? `Sent via ${ROUTE_LABEL[testRoute] ?? "notification"} — check your screen.`
                   : testStatus === "error"
@@ -635,7 +639,7 @@ export function SettingsView() {
             <button
               onClick={sendTestNotification}
               disabled={testStatus === "sending"}
-              class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+              className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               {testStatus === "sending" ? "Sending…" : "Send test"}
             </button>
@@ -644,9 +648,9 @@ export function SettingsView() {
 
         {/* Date & time */}
         <Section title="Date & time">
-          <div class="px-4 py-3.5">
-            <p class="mb-2.5 text-xs font-medium text-muted">Clock</p>
-            <div class="grid grid-cols-3 gap-2">
+          <div className="px-4 py-3.5">
+            <p className="mb-2.5 text-xs font-medium text-muted">Clock</p>
+            <div className="grid grid-cols-3 gap-2">
               {TIME_FORMATS.map((option) => (
                 <Choice
                   key={option.value}
@@ -657,10 +661,10 @@ export function SettingsView() {
               ))}
             </div>
 
-            <p class="mt-3.5 mb-2.5 text-xs font-medium text-muted">
+            <p className="mt-3.5 mb-2.5 text-xs font-medium text-muted">
               Week starts on
             </p>
-            <div class="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {WEEK_STARTS.map((option) => (
                 <Choice
                   key={option.value}
@@ -671,20 +675,20 @@ export function SettingsView() {
               ))}
             </div>
 
-            <p class="mt-3 text-xs text-faint">
+            <p className="mt-3 text-xs text-faint">
               Auto follows your system settings — currently {autoSummary()}.
             </p>
 
-            <p class="mt-4 mb-2 text-xs font-medium text-muted">
+            <p className="mt-4 mb-2 text-xs font-medium text-muted">
               Quick times in the date picker
             </p>
-            <div class="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {quickTimes.map((t) => (
                 <button
                   key={t}
                   onClick={() => removeQuickTime(t)}
                   title="Remove"
-                  class="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-text transition-colors hover:border-(--color-danger) hover:text-(--color-danger)"
+                  className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs text-text transition-colors hover:border-(--color-danger) hover:text-(--color-danger)"
                 >
                   {formatTime(t)}
                   <CloseIcon width={12} height={12} />
@@ -699,7 +703,7 @@ export function SettingsView() {
                 />
               )}
             </div>
-            <p class="mt-2 text-xs text-faint">
+            <p className="mt-2 text-xs text-faint">
               {quickTimes.length
                 ? "Shown as one-tap buttons when you set a time. Click one to remove it."
                 : "No shortcuts — the date picker shows only the time field."}
@@ -709,11 +713,11 @@ export function SettingsView() {
 
         {/* Task timer */}
         <Section title="Task timer">
-          <div class="px-4 py-3.5">
-            <p class="mb-2.5 text-xs font-medium text-muted">
+          <div className="px-4 py-3.5">
+            <p className="mb-2.5 text-xs font-medium text-muted">
               The play button on a task
             </p>
-            <div class="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {TIMER_MODES.map((option) => (
                 <Choice
                   key={option.value}
@@ -723,7 +727,7 @@ export function SettingsView() {
                 />
               ))}
             </div>
-            <p class="mt-3 text-xs text-faint">
+            <p className="mt-3 text-xs text-faint">
               {
                 TIMER_MODES.find((option) => option.value === taskTimerMode)
                   ?.hint
@@ -749,7 +753,7 @@ export function SettingsView() {
           >
             <button
               onClick={toggleTheme}
-              class="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               Switch to {theme === "dark" ? "light" : "dark"}
             </button>
@@ -772,7 +776,7 @@ export function SettingsView() {
           >
             <button
               onClick={() => toggleShortcuts(true)}
-              class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
+              className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               View shortcuts
             </button>
@@ -782,7 +786,7 @@ export function SettingsView() {
         {/* Updates */}
         <Section title="Updates">
           <UpdateRow version={version} />
-          <div class="border-t border-border" />
+          <div className="border-t border-border" />
           <Row
             icon={<RotateIcon width={18} height={18} />}
             title="Check automatically"
@@ -793,7 +797,7 @@ export function SettingsView() {
               onChange={() => void setAutoCheckUpdates(!autoCheckUpdates)}
             />
           </Row>
-          <div class="border-t border-border" />
+          <div className="border-t border-border" />
           <Row
             icon={<DownloadIcon width={18} height={18} />}
             title="Install automatically"
@@ -820,12 +824,12 @@ export function SettingsView() {
           >
             <button
               onClick={() => useOnboarding.getState().start()}
-              class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
+              className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
               Show tour
             </button>
           </Row>
-          <div class="border-t border-border" />
+          <div className="border-t border-border" />
           <Row
             icon={<WebsiteIcon width={18} height={18} />}
             title="Todofy website"
@@ -836,7 +840,7 @@ export function SettingsView() {
               onClick={() => openExternal(WEBSITE_URL)}
             />
           </Row>
-          <div class="border-t border-border" />
+          <div className="border-t border-border" />
           <Row
             icon={<GitHubIcon width={18} height={18} />}
             title="GitHub repository"
@@ -847,12 +851,12 @@ export function SettingsView() {
               onClick={() => openExternal(GITHUB_URL)}
             />
           </Row>
-          <div class="border-t border-border" />
+          <div className="border-t border-border" />
           <Row
             title="Version"
             desc="You're running the latest installed build."
           >
-            <span class="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">
               {version ? `v${version}` : "—"}
             </span>
           </Row>
@@ -902,10 +906,10 @@ function UpdateRow({ version }: { version: string }) {
                 : "Check whether a newer version is available.";
 
   return (
-    <div class="px-4 py-3.5">
-      <div class="flex items-center gap-3">
+    <div className="px-4 py-3.5">
+      <div className="flex items-center gap-3">
         <span
-          class={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${
             state === "available" || state === "ready"
               ? "bg-accent-soft text-(--color-accent)"
               : "bg-surface-2 text-muted"
@@ -913,28 +917,28 @@ function UpdateRow({ version }: { version: string }) {
         >
           <DownloadIcon width={18} height={18} />
         </span>
-        <div class="min-w-0 flex-1">
-          <p class="text-sm font-medium text-text">Software update</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-text">Software update</p>
           <p
-            class={`mt-0.5 text-xs ${
+            className={`mt-0.5 text-xs ${
               state === "error" ? "text-(--color-danger)" : "text-muted"
             }`}
           >
             {desc}
           </p>
         </div>
-        <div class="shrink-0">
+        <div className="shrink-0">
           {state === "ready" ? (
             <button
               onClick={() => void restart()}
-              class="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
+              className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
             >
               Restart now
             </button>
           ) : state === "available" ? (
             <button
               onClick={() => void install()}
-              class="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
+              className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
             >
               {canSelfUpdate ? "Download and install" : "Open releases"}
             </button>
@@ -942,7 +946,7 @@ function UpdateRow({ version }: { version: string }) {
             <button
               onClick={() => void check(true)}
               disabled={state === "checking" || state === "downloading"}
-              class="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+              className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               {state === "checking"
                 ? "Checking…"
@@ -957,9 +961,9 @@ function UpdateRow({ version }: { version: string }) {
       </div>
 
       {state === "downloading" && (
-        <div class="mt-3 h-1 overflow-hidden rounded-full bg-surface-2">
+        <div className="mt-3 h-1 overflow-hidden rounded-full bg-surface-2">
           <div
-            class="h-full rounded-full bg-(--color-accent) transition-[width] duration-200"
+            className="h-full rounded-full bg-(--color-accent) transition-[width] duration-200"
             style={{ width: total > 0 ? `${percent}%` : "35%" }}
           />
         </div>
@@ -968,7 +972,7 @@ function UpdateRow({ version }: { version: string }) {
       {(state === "available" || state === "ready") && (
         <button
           onClick={() => openExternal(RELEASES_URL)}
-          class="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted transition-colors hover:text-text"
+          className="mt-2 inline-flex items-center gap-1.5 text-[11px] font-medium text-muted transition-colors hover:text-text"
         >
           See what's new in v{next}
           <ExternalLinkIcon width={11} height={11} />
@@ -992,7 +996,7 @@ function Choice({
     <button
       onClick={onSelect}
       aria-pressed={active}
-      class={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
+      className={`rounded-lg border px-3 py-2 text-xs font-medium transition-colors ${
         active
           ? "border-(--color-accent) bg-accent-soft text-text"
           : "border-border text-muted hover:bg-surface-2 hover:text-text"
@@ -1013,7 +1017,7 @@ function ExternalButton({
   return (
     <button
       onClick={onClick}
-      class="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text"
     >
       {label}
       <ExternalLinkIcon width={13} height={13} />
@@ -1026,14 +1030,14 @@ function Section({
   children,
 }: {
   title: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
-    <section class="mb-6">
-      <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+    <section className="mb-6">
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
         {title}
       </h3>
-      <div class="overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {children}
       </div>
     </section>
@@ -1046,23 +1050,23 @@ function Row({
   desc,
   children,
 }: {
-  icon?: ComponentChildren;
+  icon?: ReactNode;
   title: string;
   desc?: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
-    <div class="flex items-center gap-3 px-4 py-3.5">
+    <div className="flex items-center gap-3 px-4 py-3.5">
       {icon && (
-        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
           {icon}
         </span>
       )}
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium text-text">{title}</p>
-        {desc && <p class="mt-0.5 text-xs text-muted">{desc}</p>}
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-text">{title}</p>
+        {desc && <p className="mt-0.5 text-xs text-muted">{desc}</p>}
       </div>
-      <div class="shrink-0">{children}</div>
+      <div className="shrink-0">{children}</div>
     </div>
   );
 }
@@ -1082,12 +1086,12 @@ function Switch({
       aria-checked={checked}
       disabled={disabled}
       onClick={onChange}
-      class={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+      className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
         checked ? "bg-(--color-accent)" : "bg-surface-2"
       }`}
     >
       <span
-        class={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
           checked ? "translate-x-6" : "translate-x-1"
         }`}
       />
@@ -1109,22 +1113,22 @@ function ModeOption({
   return (
     <button
       onClick={onSelect}
-      class={`flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+      className={`flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
         active
           ? "border-(--color-accent) bg-accent-soft"
           : "border-border hover:bg-surface-2"
       }`}
     >
       <span
-        class={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 transition-colors ${
+        className={`mt-0.5 grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 transition-colors ${
           active ? "border-(--color-accent)" : "border-border-strong"
         }`}
       >
-        {active && <span class="h-2 w-2 rounded-full bg-(--color-accent)" />}
+        {active && <span className="h-2 w-2 rounded-full bg-(--color-accent)" />}
       </span>
-      <div class="min-w-0">
-        <p class="text-sm font-medium text-text">{title}</p>
-        <p class="mt-0.5 text-xs text-muted">{desc}</p>
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-text">{title}</p>
+        <p className="mt-0.5 text-xs text-muted">{desc}</p>
       </div>
     </button>
   );

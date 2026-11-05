@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import { eventDate } from "../store";
 import { combineDateTime, timeOf } from "../lib/dates";
@@ -94,28 +94,28 @@ export function EventEditor({
 
   return (
     <div
-      class="fixed inset-0 z-100 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-100 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
       onMouseDown={(e) => e.target === e.currentTarget && !busy && onClose()}
     >
-      <div class="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50">
+      <div className="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50">
         <button
           onClick={onClose}
           title="Close"
-          class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text"
+          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
           <CloseIcon width={16} height={16} />
         </button>
 
-        <div class="flex items-center gap-2.5 px-6 pt-6 pb-2">
-          <span class="grid h-9 w-9 place-items-center rounded-xl bg-surface-2 text-muted">
+        <div className="flex items-center gap-2.5 px-6 pt-6 pb-2">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-surface-2 text-muted">
             <CalendarIcon width={18} height={18} />
           </span>
-          <h3 class="text-base font-semibold text-text">
+          <h3 className="text-base font-semibold text-text">
             {event ? "Edit event" : "New event"}
           </h3>
         </div>
 
-        <div class="flex flex-col gap-3 px-6 pt-2 pb-6">
+        <div className="flex flex-col gap-3 px-6 pt-2 pb-6">
           <input
             type="text"
             value={title}
@@ -123,11 +123,11 @@ export function EventEditor({
             placeholder="Event title"
             autoFocus
             onKeyDown={(e) => e.key === "Enter" && void save()}
-            class="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:ring-1 focus:ring-(--color-accent) disabled:opacity-70"
+            className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:ring-1 focus:ring-(--color-accent) disabled:opacity-70"
           />
 
-          <div class="flex items-center justify-between">
-            <div class="*:text-sm!">
+          <div className="flex items-center justify-between">
+            <div className="*:text-sm!">
               <DatePicker
                 value={date}
                 onChange={(d) => d && setDate(d)}
@@ -135,20 +135,20 @@ export function EventEditor({
                 placeholder="Pick a date"
               />
             </div>
-            <label class="flex cursor-pointer items-center gap-2 text-xs text-muted">
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-muted">
               All day
               <Switch checked={allDay} onChange={() => setAllDay((v) => !v)} />
             </label>
           </div>
 
           {!allDay && (
-            <div class="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <TimeField
                 label="Start"
                 value={startTime || null}
                 onChange={(v) => setStartTime(v ?? "")}
               />
-              <span class="text-xs text-faint">to</span>
+              <span className="text-xs text-faint">to</span>
               <TimeField
                 label="End"
                 value={endTime || null}
@@ -159,7 +159,7 @@ export function EventEditor({
           )}
 
           {invalidTimeRange && (
-            <p role="alert" class="text-xs text-(--color-danger)">
+            <p role="alert" className="text-xs text-(--color-danger)">
               End time must be later than start time.
             </p>
           )}
@@ -169,17 +169,17 @@ export function EventEditor({
             onInput={(e) => setDescription(e.currentTarget.value)}
             placeholder="Notes (optional)"
             rows={3}
-            class="w-full resize-none rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:ring-1 focus:ring-(--color-accent)"
+            className="w-full resize-none rounded-lg border border-border bg-bg px-3 py-2 text-sm text-text outline-none focus:ring-1 focus:ring-(--color-accent)"
           />
 
-          <div class="mt-1 flex gap-2">
+          <div className="mt-1 flex gap-2">
             {event && (
               <button
                 type="button"
                 onClick={() => void remove()}
                 disabled={busy}
                 title="Delete event"
-                class="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border text-muted transition-colors hover:border-(--color-danger)/50 hover:text-(--color-danger) disabled:opacity-50"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border text-muted transition-colors hover:border-(--color-danger)/50 hover:text-(--color-danger) disabled:opacity-50"
               >
                 <TrashIcon width={16} height={16} />
               </button>
@@ -188,7 +188,7 @@ export function EventEditor({
               type="button"
               onClick={onClose}
               disabled={busy}
-              class="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+              className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               Cancel
             </button>
@@ -196,7 +196,7 @@ export function EventEditor({
               type="button"
               onClick={() => void save()}
               disabled={busy || !canSave}
-              class="flex-1 rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+              className="flex-1 rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
             >
               {busy ? "Saving…" : event ? "Save" : "Add event"}
             </button>
@@ -231,12 +231,12 @@ function Switch({
       aria-checked={checked}
       disabled={disabled}
       onClick={onChange}
-      class={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
+      className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${
         checked ? "bg-(--color-accent)" : "bg-surface-2"
       }`}
     >
       <span
-        class={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform ${
           checked ? "translate-x-5" : "translate-x-1"
         }`}
       />

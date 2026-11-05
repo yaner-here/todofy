@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
 import { PRIORITY_VALUES, profileFor } from "../lib/priority";
 import { CloseIcon, FlagIcon, SearchIcon } from "./Icons";
@@ -42,8 +42,8 @@ export function SearchBar() {
   }, [open]);
 
   return (
-    <div ref={toolsRef} class="agenda-tools">
-      <div class="compact-search">
+    <div ref={toolsRef} className="agenda-tools">
+      <div className="compact-search">
         <SearchIcon width={15} height={15} />
         <input
           ref={inputRef}
@@ -70,7 +70,7 @@ export function SearchBar() {
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        class={`filter-trigger ${hasFilters ? "has-filters" : ""}`}
+        className={`filter-trigger ${hasFilters ? "has-filters" : ""}`}
         aria-expanded={open}
       >
         <FlagIcon width={15} height={15} />
@@ -79,10 +79,10 @@ export function SearchBar() {
       </button>
 
       {open && (
-        <div class="filter-popover">
+        <div className="filter-popover">
           <div>
             <p>Priority</p>
-            <div class="filter-options">
+            <div className="filter-options">
               {PRIORITY_VALUES.map((priority) => {
                 const profile = profileFor(priority, priorityProfiles);
                 return (
@@ -90,7 +90,7 @@ export function SearchBar() {
                     key={priority}
                     type="button"
                     onClick={() => toggleFilterPriority(priority)}
-                    class={filterPriorities.includes(priority) ? "is-active" : ""}
+                    className={filterPriorities.includes(priority) ? "is-active" : ""}
                   >
                     <FlagIcon width={12} height={12} style={{ color: profile.color }} />
                     {profile.name}
@@ -102,13 +102,13 @@ export function SearchBar() {
           {labels.length > 0 && (
             <div>
               <p>Labels</p>
-              <div class="filter-options">
+              <div className="filter-options">
                 {labels.map((label) => (
                   <button
                     key={label.id}
                     type="button"
                     onClick={() => toggleFilterLabel(label.id)}
-                    class={filterLabelIds.includes(label.id) ? "is-active" : ""}
+                    className={filterLabelIds.includes(label.id) ? "is-active" : ""}
                   >
                     <i style={{ background: label.color }} />
                     {label.name}
@@ -118,7 +118,7 @@ export function SearchBar() {
             </div>
           )}
           {hasFilters && (
-            <button type="button" class="clear-filter-button" onClick={clearFilters}>
+            <button type="button" className="clear-filter-button" onClick={clearFilters}>
               Clear all filters
             </button>
           )}

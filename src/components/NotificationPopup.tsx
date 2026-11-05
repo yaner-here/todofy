@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { BellIcon, CloseIcon, DownloadIcon } from "./Icons";
@@ -119,41 +119,41 @@ export function NotificationPopup() {
   if (!note) return null;
 
   return (
-    <div class="notification-stage">
+    <div className="notification-stage">
       <div
         key={note.nonce}
         onMouseEnter={pause}
         onMouseLeave={startTimer}
         onClick={open}
-        class="notification-card group animate-slide-left"
-        style={
-          note.accent
-            ? {
-                "--notification-accent": note.accent,
-                // The theme's soft tone belongs to todofy's accent, so a
-                // priority color needs its own tint to sit the icon on.
-                "--notification-accent-soft": `color-mix(in srgb, ${note.accent} 16%, transparent)`,
-              }
-            : undefined
-        }
+        className="notification-card group animate-slide-left"
+        style={{ color: note.accent ?? undefined }}
       >
-        <div class="notification-accent" />
-        <div class="notification-content">
-          <span class="notification-icon">
+        <div className="notification-accent" />
+        <div className="notification-content">
+          <span
+            className="notification-icon"
+            style={{
+              // The theme's soft tone belongs to todofy's accent, so a
+              // priority color needs its own tint to sit the icon on.
+              background: note.accent
+                ? `color-mix(in srgb, ${note.accent} 16%, transparent)`
+                : undefined,
+            }}
+          >
             {note.kind === "update" ? (
               <DownloadIcon width={19} height={19} />
             ) : (
               <BellIcon width={19} height={19} />
             )}
           </span>
-          <div class="notification-copy">
-            <div class="notification-eyebrow">
+          <div className="notification-copy">
+            <div className="notification-eyebrow">
               {note.kind === "update" ? "Update available" : "Reminder · now"}
             </div>
-            <p class="notification-title">{note.title}</p>
-            <p class="notification-body">{note.body}</p>
+            <p className="notification-title">{note.title}</p>
+            <p className="notification-body">{note.body}</p>
             {note.task_id && (
-              <div class="notification-actions">
+              <div className="notification-actions">
                 <span>Snooze</span>
                 {SNOOZE_OPTIONS.map((minutes) => (
                   <button
@@ -177,7 +177,7 @@ export function NotificationPopup() {
             close();
           }}
           title="Dismiss"
-          class="notification-dismiss"
+          className="notification-dismiss"
         >
           <CloseIcon width={14} height={14} />
         </button>
@@ -188,7 +188,7 @@ export function NotificationPopup() {
             animationDuration: `${AUTO_DISMISS_MS}ms`,
             animationPlayState: paused ? "paused" : "running",
           }}
-          class="notification-progress animate-progress"
+          className="notification-progress animate-progress"
         />
       </div>
     </div>

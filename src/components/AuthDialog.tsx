@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState, type FormEvent } from "react";
 import { useAuth } from "../lib/auth";
 import { CloseIcon, EyeIcon, EyeOffIcon, GoogleIcon, UserIcon } from "./Icons";
 
@@ -66,7 +66,7 @@ export function AuthDialog() {
     }
   };
 
-  const submit = async (event: Event) => {
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (busy) return;
     setError(null);
@@ -92,7 +92,7 @@ export function AuthDialog() {
 
   return (
     <div
-      class="fixed inset-0 z-[120] grid place-items-center bg-black/55 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[120] grid place-items-center bg-black/55 p-4 backdrop-blur-sm"
       onMouseDown={(event) =>
         event.target === event.currentTarget &&
         !busy &&
@@ -104,7 +104,7 @@ export function AuthDialog() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="auth-dialog-title"
-        class="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50"
+        className="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50"
       >
         <button
           type="button"
@@ -112,49 +112,49 @@ export function AuthDialog() {
           disabled={busy || googleBusy}
           title="Close"
           aria-label="Close account dialog"
-          class="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full text-faint transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
           <CloseIcon width={16} height={16} />
         </button>
 
-        <div class="flex flex-col items-center gap-2 px-6 pt-8 pb-2 text-center">
-          <span class="grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-(--color-accent)">
+        <div className="flex flex-col items-center gap-2 px-6 pt-8 pb-2 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-(--color-accent)">
             <UserIcon width={24} height={24} />
           </span>
-          <h3 id="auth-dialog-title" class="text-lg font-semibold text-text">
+          <h3 id="auth-dialog-title" className="text-lg font-semibold text-text">
             {signup
               ? "Create your Todofy account"
               : proIntent
                 ? "Sign in to activate Pro"
                 : "Welcome back"}
           </h3>
-          <p class="text-xs text-muted">
+          <p className="text-xs text-muted">
             {proIntent
               ? "Your license is linked to the account you choose here."
               : "An account is only needed for optional Cloud Sync."}
           </p>
         </div>
 
-        <div class="flex flex-col gap-3 px-6 pt-4">
+        <div className="flex flex-col gap-3 px-6 pt-4">
           <button
             type="button"
             onClick={() => void google()}
             disabled={googleBusy || busy}
-            class="flex items-center justify-center gap-2.5 rounded-lg border border-border bg-bg px-3 py-2.5 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
+            className="flex items-center justify-center gap-2.5 rounded-lg border border-border bg-bg px-3 py-2.5 text-sm font-medium text-text transition-colors hover:bg-surface-2 disabled:opacity-50"
           >
             <GoogleIcon width={18} height={18} />
             {googleBusy ? "Waiting for browser…" : "Continue with Google"}
           </button>
-          <div class="flex items-center gap-3">
-            <span class="h-px flex-1 bg-border" />
-            <span class="text-[10px] font-medium uppercase tracking-wider text-faint">
+          <div className="flex items-center gap-3">
+            <span className="h-px flex-1 bg-border" />
+            <span className="text-[10px] font-medium uppercase tracking-wider text-faint">
               or
             </span>
-            <span class="h-px flex-1 bg-border" />
+            <span className="h-px flex-1 bg-border" />
           </div>
         </div>
 
-        <form onSubmit={submit} class="flex flex-col gap-3 px-6 pt-3 pb-6">
+        <form onSubmit={submit} className="flex flex-col gap-3 px-6 pt-3 pb-6">
           <Field
             label="Email"
             type="email"
@@ -176,7 +176,7 @@ export function AuthDialog() {
           {notice && (
             <p
               role="status"
-              class="rounded-lg bg-[var(--color-success)]/10 px-3 py-2 text-xs text-success"
+              className="rounded-lg bg-[var(--color-success)]/10 px-3 py-2 text-xs text-success"
             >
               {notice}
             </p>
@@ -184,7 +184,7 @@ export function AuthDialog() {
           {error && (
             <p
               role="alert"
-              class="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)"
+              className="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)"
             >
               {error}
             </p>
@@ -195,7 +195,7 @@ export function AuthDialog() {
             disabled={
               busy || googleBusy || !email.trim() || password.length < 6
             }
-            class="mt-1 rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="mt-1 rounded-lg bg-(--color-accent) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {busy
               ? signup
@@ -207,7 +207,7 @@ export function AuthDialog() {
           </button>
         </form>
 
-        <div class="border-t border-border px-6 py-3.5 text-center">
+        <div className="border-t border-border px-6 py-3.5 text-center">
           <button
             type="button"
             onClick={() => {
@@ -216,10 +216,10 @@ export function AuthDialog() {
               setNotice(null);
               setPassword("");
             }}
-            class="group text-xs text-muted"
+            className="group text-xs text-muted"
           >
             {signup ? "Already have an account? " : "New to Todofy? "}
-            <span class="font-medium text-(--color-accent) transition-colors group-hover:text-[var(--color-accent-hover)]">
+            <span className="font-medium text-(--color-accent) transition-colors group-hover:text-[var(--color-accent-hover)]">
               {signup ? "Sign in" : "Create an account"}
             </span>
           </button>
@@ -249,18 +249,18 @@ function Field({
   const [reveal, setReveal] = useState(false);
   const inputType = revealable && reveal ? "text" : type;
   return (
-    <label class="flex flex-col gap-1 text-left">
-      <span class="text-[10px] font-medium uppercase tracking-wider text-faint">
+    <label className="flex flex-col gap-1 text-left">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-faint">
         {label}
       </span>
-      <div class="relative">
+      <div className="relative">
         <input
           type={inputType}
           value={value}
           placeholder={placeholder}
-          autocomplete={autocomplete}
+          autoComplete={autocomplete}
           onInput={(event) => onInput(event.currentTarget.value)}
-          class={`w-full rounded-lg border border-border bg-bg py-2 pl-3 text-sm outline-none transition-colors focus:border-(--color-accent) ${revealable ? "pr-10" : "pr-3"}`}
+          className={`w-full rounded-lg border border-border bg-bg py-2 pl-3 text-sm outline-none transition-colors focus:border-(--color-accent) ${revealable ? "pr-10" : "pr-3"}`}
         />
         {revealable && (
           <button
@@ -269,7 +269,7 @@ function Field({
             onClick={() => setReveal((value) => !value)}
             title={reveal ? "Hide password" : "Show password"}
             aria-label={reveal ? "Hide password" : "Show password"}
-            class="absolute inset-y-0 right-0 grid w-10 place-items-center text-faint transition-colors hover:text-text"
+            className="absolute inset-y-0 right-0 grid w-10 place-items-center text-faint transition-colors hover:text-text"
           >
             {reveal ? (
               <EyeOffIcon width={16} height={16} />

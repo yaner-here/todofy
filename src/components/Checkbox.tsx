@@ -36,12 +36,12 @@ export function Checkbox({
     interactive && !checked ? "hover:border-(--color-accent)" : ""
   }`;
   const mark = checked ? (
-    <CheckIcon width={check} height={check} stroke-width={3} />
+    <CheckIcon width={check} height={check} strokeWidth={3} />
   ) : null;
 
   if (!interactive) {
     return (
-      <span class={cls} style={style} aria-hidden="true">
+      <span className={cls} style={style} aria-hidden="true">
         {mark}
       </span>
     );
@@ -54,7 +54,7 @@ export function Checkbox({
       disabled={disabled}
       title={title}
       onClick={onChange}
-      class={cls}
+      className={cls}
       style={style}
     >
       {mark}

@@ -1,5 +1,5 @@
-import type { JSX } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import type { CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { eventDate, useStore } from "../store";
 import {
   layoutTimeBlocks,
@@ -95,7 +95,7 @@ export function CalendarView() {
   };
 
   return (
-    <main class="redesign-main calendar-page">
+    <main className="redesign-main calendar-page">
       <CalendarToolbar
         anchor={anchor}
         mode={mode}
@@ -107,7 +107,7 @@ export function CalendarView() {
         onNew={() => openNew(toLocalDate(anchor))}
       />
 
-      <div class="calendar-surface">
+      <div className="calendar-surface">
         {mode === "month" ? (
           <MonthCalendar
             anchor={anchor}
@@ -163,12 +163,12 @@ function CalendarToolbar({
   onNew: () => void;
 }) {
   return (
-    <header class="calendar-toolbar">
-      <div class="calendar-toolbar-primary">
-        <button type="button" onClick={onToday} class="calendar-today-button">
+    <header className="calendar-toolbar">
+      <div className="calendar-toolbar-primary">
+        <button type="button" onClick={onToday} className="calendar-today-button">
           Today
         </button>
-        <div class="calendar-stepper">
+        <div className="calendar-stepper">
           <button
             type="button"
             onClick={() => onStep(-1)}
@@ -186,19 +186,19 @@ function CalendarToolbar({
             <ChevronRightIcon width={18} height={18} />
           </button>
         </div>
-        <div class="calendar-title">
+        <div className="calendar-title">
           <h2>{calendarRangeLabel(anchor, mode)}</h2>
           <span>{mode === "month" ? "Calendar overview" : localTimeZone()}</span>
         </div>
       </div>
 
-      <div class="calendar-toolbar-actions">
-        <div class="calendar-view-switch" aria-label="Calendar view">
+      <div className="calendar-toolbar-actions">
+        <div className="calendar-view-switch" aria-label="Calendar view">
           {(["month", "week", "day"] as const).map((view) => (
             <button
               key={view}
               type="button"
-              class={view === mode ? "is-active" : ""}
+              className={view === mode ? "is-active" : ""}
               aria-pressed={view === mode}
               onClick={() => onModeChange(view)}
             >
@@ -206,7 +206,7 @@ function CalendarToolbar({
             </button>
           ))}
         </div>
-        <button type="button" onClick={onNew} class="calendar-new-button">
+        <button type="button" onClick={onNew} className="calendar-new-button">
           <PlusIcon width={16} height={16} />
           <span>New event</span>
         </button>
@@ -235,14 +235,14 @@ function MonthCalendar({
   onOpenTaskDay: (date: string) => void;
 }) {
   return (
-    <div class="calendar-month">
-      <div class="calendar-month-weekdays">
+    <div className="calendar-month">
+      <div className="calendar-month-weekdays">
         {weekdayNames("short").map((weekday) => (
           <span key={weekday.index}>{weekday.label}</span>
         ))}
       </div>
       <div
-        class="calendar-month-grid"
+        className="calendar-month-grid"
         style={{
           gridTemplateRows: `repeat(${days.length / 7}, minmax(7.2rem, 1fr))`,
         }}
@@ -256,15 +256,15 @@ function MonthCalendar({
           return (
             <div
               key={key}
-              class={`calendar-month-day ${inMonth ? "" : "is-outside"} ${
+              className={`calendar-month-day ${inMonth ? "" : "is-outside"} ${
                 key === todayKey ? "is-today" : ""
               }`}
               onClick={() => onAdd(key)}
             >
-              <div class="calendar-month-date-row">
+              <div className="calendar-month-date-row">
                 <button
                   type="button"
-                  class="calendar-date-number"
+                  className="calendar-date-number"
                   onClick={(event) => {
                     event.stopPropagation();
                     onOpenDay(date);
@@ -281,7 +281,7 @@ function MonthCalendar({
                 </button>
                 <button
                   type="button"
-                  class="calendar-day-add"
+                  className="calendar-day-add"
                   onClick={(event) => {
                     event.stopPropagation();
                     onAdd(key);
@@ -291,7 +291,7 @@ function MonthCalendar({
                   <PlusIcon width={13} height={13} />
                 </button>
               </div>
-              <div class="calendar-month-entries">
+              <div className="calendar-month-entries">
                 {visible.map((entry) => (
                   <CalendarPill
                     key={`${entry.kind}-${entry.id}`}
@@ -303,7 +303,7 @@ function MonthCalendar({
                 {hidden > 0 && (
                   <button
                     type="button"
-                    class="calendar-more-button"
+                    className="calendar-more-button"
                     onClick={(event) => {
                       event.stopPropagation();
                       onOpenDay(date);
@@ -344,9 +344,9 @@ function ScheduleCalendar({
 }) {
   const columns = scheduleColumns(days.length);
   return (
-    <div class="calendar-schedule">
-      <div class="calendar-schedule-header" style={{ gridTemplateColumns: columns }}>
-        <span class="calendar-timezone">GMT{timeZoneOffset(now)}</span>
+    <div className="calendar-schedule">
+      <div className="calendar-schedule-header" style={{ gridTemplateColumns: columns }}>
+        <span className="calendar-timezone">GMT{timeZoneOffset(now)}</span>
         {days.map((date) => {
           const key = toLocalDate(date);
           const current = key === todayKey;
@@ -354,7 +354,7 @@ function ScheduleCalendar({
             <button
               key={key}
               type="button"
-              class={`calendar-schedule-date ${current ? "is-today" : ""}`}
+              className={`calendar-schedule-date ${current ? "is-today" : ""}`}
               onClick={() => onOpenDay(date)}
             >
               <span>{date.toLocaleDateString(undefined, { weekday: "short" })}</span>
@@ -364,15 +364,15 @@ function ScheduleCalendar({
         })}
       </div>
 
-      <div class="calendar-all-day" style={{ gridTemplateColumns: columns }}>
-        <span class="calendar-all-day-label">all-day</span>
+      <div className="calendar-all-day" style={{ gridTemplateColumns: columns }}>
+        <span className="calendar-all-day-label">all-day</span>
         {days.map((date) => {
           const key = toLocalDate(date);
           const entries = (entriesByDate.get(key) ?? []).filter((entry) => entry.allDay);
           return (
             <div
               key={key}
-              class="calendar-all-day-cell"
+              className="calendar-all-day-cell"
               onClick={() => onAdd(key, undefined, true)}
             >
               {entries.map((entry) => (
@@ -388,9 +388,9 @@ function ScheduleCalendar({
         })}
       </div>
 
-      <div ref={scrollRef} class="calendar-time-scroll">
-        <div class="calendar-time-grid" style={{ gridTemplateColumns: columns }}>
-          <div class="calendar-time-axis">
+      <div ref={scrollRef} className="calendar-time-scroll">
+        <div className="calendar-time-grid" style={{ gridTemplateColumns: columns }}>
+          <div className="calendar-time-axis">
             {HOURS.slice(1).map((hour) => (
               <span key={hour} style={{ top: `${hour * HOUR_HEIGHT}px` }}>
                 {hourLabel(hour)}
@@ -412,7 +412,7 @@ function ScheduleCalendar({
             return (
               <div
                 key={key}
-                class={`calendar-time-day ${key === todayKey ? "is-today" : ""}`}
+                className={`calendar-time-day ${key === todayKey ? "is-today" : ""}`}
                 onClick={(event) => {
                   const rect = event.currentTarget.getBoundingClientRect();
                   const rawMinute = ((event.clientY - rect.top) / HOUR_HEIGHT) * 60;
@@ -433,7 +433,7 @@ function ScheduleCalendar({
                 ))}
                 {key === todayKey && (
                   <span
-                    class="calendar-now-line"
+                    className="calendar-now-line"
                     style={{ top: `${minutesInDay(now) * MINUTE_HEIGHT}px` }}
                     aria-hidden="true"
                   />
@@ -461,7 +461,7 @@ function CalendarPill({
   return (
     <button
       type="button"
-      class={`calendar-entry-pill ${entryTone(entry)}`}
+      className={`calendar-entry-pill ${entryTone(entry)}`}
       style={entryColor(entry, priorityProfiles)}
       title={`${time ? `${formatTime(time)} · ` : ""}${entry.title}`}
       onClick={(event) => {
@@ -470,7 +470,7 @@ function CalendarPill({
         else onOpenTaskDay(entry.date);
       }}
     >
-      <span class="calendar-entry-dot" />
+      <span className="calendar-entry-dot" />
       {time && <time>{formatTime(time)}</time>}
       <span>{entry.title}</span>
     </button>
@@ -498,7 +498,7 @@ function TimedCalendarCard({
   return (
     <button
       type="button"
-      class={`calendar-timed-entry ${entryTone(entry)}`}
+      className={`calendar-timed-entry ${entryTone(entry)}`}
       style={{
         ...entryColor(entry, priorityProfiles),
         top: `${entry.startMinute * MINUTE_HEIGHT}px`,
@@ -664,9 +664,9 @@ function entryTone(entry: CalendarEntry): string {
 function entryColor(
   entry: CalendarEntry,
   profiles: PriorityProfile[],
-): JSX.CSSProperties | undefined {
+): CSSProperties | undefined {
   if (entry.source === "local" || !showsPriority(entry.priority ?? 4, profiles)) {
     return undefined;
   }
-  return { "--entry-color": priorityColor(entry.priority ?? 4, profiles) };
+  return { color: priorityColor(entry.priority ?? 4, profiles) };
 }

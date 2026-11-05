@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { useAuth, type AuthResult } from "../lib/auth";
 import { useSync, type SyncStatus } from "../lib/sync";
 import { syncConfigured } from "../lib/supabase";
@@ -13,12 +13,12 @@ export function AccountSection() {
 
   if (!syncConfigured) {
     return (
-      <section class="mb-6">
-        <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+      <section className="mb-6">
+        <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
           Account
         </h3>
-        <div class="overflow-hidden rounded-xl border border-border bg-surface">
-          <div class="px-4 py-3.5 text-sm text-muted">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface">
+          <div className="px-4 py-3.5 text-sm text-muted">
             Account sync isn't configured in this build.
           </div>
         </div>
@@ -27,13 +27,13 @@ export function AccountSection() {
   }
 
   return (
-    <section class="mb-6">
-      <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+    <section className="mb-6">
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
         Account
       </h3>
-      <div class="overflow-hidden rounded-xl border border-border bg-surface">
+      <div className="overflow-hidden rounded-xl border border-border bg-surface">
         {!ready ? (
-          <div class="px-4 py-3.5 text-sm text-muted">Loading…</div>
+          <div className="px-4 py-3.5 text-sm text-muted">Loading…</div>
         ) : session ? (
           <SignedInRow
             email={email}
@@ -59,22 +59,22 @@ function SignInRow({
   onExplorePro: () => void;
 }) {
   return (
-    <div class="flex items-center gap-3 px-4 py-3.5">
-      <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+    <div className="flex items-center gap-3 px-4 py-3.5">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
         <UserIcon width={18} height={18} />
       </span>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium text-text">Cloud Sync account</p>
-        <p class="mt-0.5 text-xs text-muted">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-text">Cloud Sync account</p>
+        <p className="mt-0.5 text-xs text-muted">
           Local Todofy stays free. Sign in when you want Pro sync.
         </p>
       </div>
-      <div class="flex shrink-0 gap-2">
+      <div className="flex shrink-0 gap-2">
         {billingConfigured && (
           <button
             type="button"
             onClick={onExplorePro}
-            class="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-(--color-accent) transition-colors hover:bg-accent-soft"
+            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-(--color-accent) transition-colors hover:bg-accent-soft"
           >
             View Pro
           </button>
@@ -82,7 +82,7 @@ function SignInRow({
         <button
           type="button"
           onClick={onSignIn}
-          class="rounded-lg bg-(--color-accent) px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
+          className="rounded-lg bg-(--color-accent) px-3.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-accent-hover"
         >
           Sign in
         </button>
@@ -104,15 +104,15 @@ function SignedInRow({
   const [deleteOpen, setDeleteOpen] = useState(false);
   return (
     <>
-      <div class="flex items-center gap-3 px-4 py-3.5">
-        <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
+      <div className="flex items-center gap-3 px-4 py-3.5">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-surface-2 text-muted">
           <UserIcon width={18} height={18} />
         </span>
-        <div class="min-w-0 flex-1">
-          <p class="truncate text-sm font-medium text-text">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-text">
             {email ?? "Signed in"}
           </p>
-          <p class="mt-0.5 text-xs text-muted">
+          <p className="mt-0.5 text-xs text-muted">
             This is the account your license and cloud data belong to.
           </p>
         </div>
@@ -127,21 +127,21 @@ function SignedInRow({
             }
           }}
           disabled={busy}
-          class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+          className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
         >
           {busy ? "Signing out…" : "Sign out"}
         </button>
       </div>
       {billingConfigured && <CloudSyncPlanRow />}
       <SyncStatusRow />
-      <div class="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
-        <p class="text-xs text-muted">
+      <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
+        <p className="text-xs text-muted">
           Delete your account, cloud data, and cancel linked billing.
         </p>
         <button
           type="button"
           onClick={() => setDeleteOpen(true)}
-          class="shrink-0 rounded-lg border border-(--color-danger)/40 px-3 py-1.5 text-xs font-medium text-(--color-danger) transition-colors hover:bg-(--color-danger)/10"
+          className="shrink-0 rounded-lg border border-(--color-danger)/40 px-3 py-1.5 text-xs font-medium text-(--color-danger) transition-colors hover:bg-(--color-danger)/10"
         >
           Delete account
         </button>
@@ -185,9 +185,9 @@ function CloudSyncPlanRow() {
           : "€3.99 monthly or €39 yearly. You can also activate an existing license.";
 
   return (
-    <div class="flex items-center gap-3 border-t border-border px-4 py-3.5">
+    <div className="flex items-center gap-3 border-t border-border px-4 py-3.5">
       <span
-        class={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${allowed ? "bg-accent-soft text-(--color-accent)" : "bg-surface-2 text-muted"}`}
+        className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${allowed ? "bg-accent-soft text-(--color-accent)" : "bg-surface-2 text-muted"}`}
       >
         {allowed ? (
           <CrownIcon width={18} height={18} />
@@ -195,14 +195,14 @@ function CloudSyncPlanRow() {
           <CloudIcon width={18} height={18} />
         )}
       </span>
-      <div class="min-w-0 flex-1">
-        <p class="text-sm font-medium text-text">{title}</p>
-        <p class="mt-0.5 text-xs text-muted">{detail}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-text">{title}</p>
+        <p className="mt-0.5 text-xs text-muted">{detail}</p>
       </div>
       <button
         type="button"
         onClick={() => openGate(allowed ? "upgrade" : "license")}
-        class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-(--color-accent) transition-colors hover:bg-accent-soft"
+        className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-(--color-accent) transition-colors hover:bg-accent-soft"
       >
         {allowed ? "View plan" : "Unlock sync"}
       </button>
@@ -236,19 +236,19 @@ function SyncStatusRow() {
           : "";
 
   return (
-    <div class="flex items-center gap-3 border-t border-border bg-surface px-4 py-3">
-      <span class={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
-      <div class="min-w-0 flex-1">
-        <p class="text-xs font-medium text-text">{meta.label}</p>
+    <div className="flex items-center gap-3 border-t border-border bg-surface px-4 py-3">
+      <span className={`h-2 w-2 shrink-0 rounded-full ${meta.dot}`} />
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-medium text-text">{meta.label}</p>
         {detail && (
-          <p class="mt-0.5 truncate text-[11px] text-muted">{detail}</p>
+          <p className="mt-0.5 truncate text-[11px] text-muted">{detail}</p>
         )}
       </div>
       <button
         type="button"
         onClick={() => (gated ? openGate("cloud_sync") : void syncNow(true))}
         disabled={status === "syncing"}
-        class="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+        className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
       >
         {status === "syncing" ? "Syncing…" : gated ? "Unlock sync" : "Sync now"}
       </button>
@@ -301,7 +301,7 @@ function DeleteAccountModal({
 
   return (
     <div
-      class="fixed inset-0 z-130 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-130 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
       onMouseDown={(event) =>
         event.target === event.currentTarget && !busy && onClose()
       }
@@ -310,54 +310,54 @@ function DeleteAccountModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="delete-account-title"
-        class="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50"
+        className="relative w-full max-w-sm animate-fade-rise overflow-hidden rounded-2xl border border-border-strong bg-elevated shadow-2xl shadow-black/50"
       >
-        <div class="flex flex-col items-center gap-2 px-6 pt-8 pb-2 text-center">
-          <span class="grid h-12 w-12 place-items-center rounded-2xl bg-(--color-danger)/10 text-(--color-danger)">
+        <div className="flex flex-col items-center gap-2 px-6 pt-8 pb-2 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-(--color-danger)/10 text-(--color-danger)">
             <TrashIcon width={24} height={24} />
           </span>
-          <h3 id="delete-account-title" class="text-lg font-semibold text-text">
+          <h3 id="delete-account-title" className="text-lg font-semibold text-text">
             Delete account
           </h3>
-          <p class="text-xs leading-5 text-muted">
+          <p className="text-xs leading-5 text-muted">
             This permanently deletes your Todofy account and cloud data. Any
             linked recurring subscription is cancelled first. This can't be
             undone.
           </p>
         </div>
 
-        <div class="flex flex-col gap-3 px-6 pt-3 pb-6">
+        <div className="flex flex-col gap-3 px-6 pt-3 pb-6">
           <button
             type="button"
             role="checkbox"
             aria-checked={wipeLocal}
             onClick={() => setWipeLocal((value) => !value)}
-            class={`flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+            className={`flex w-full items-start gap-3 rounded-lg border px-3 py-2.5 text-left transition-colors ${
               wipeLocal
                 ? "border-(--color-danger)/50 bg-(--color-danger)/5"
                 : "border-border bg-bg hover:bg-surface-2"
             }`}
           >
-            <span class="mt-0.5">
+            <span className="mt-0.5">
               <Checkbox
                 checked={wipeLocal}
                 interactive={false}
                 color="var(--color-danger)"
               />
             </span>
-            <span class="text-xs text-text">
+            <span className="text-xs text-text">
               Also delete app data stored on this device.
-              <span class="mt-0.5 block text-muted">
+              <span className="mt-0.5 block text-muted">
                 Leave unchecked to keep your local tasks, journal, and calendar
                 events.
               </span>
             </span>
           </button>
 
-          <label class="flex flex-col gap-1 text-left">
-            <span class="text-[10px] font-medium uppercase tracking-wider text-faint">
+          <label className="flex flex-col gap-1 text-left">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-faint">
               Type{" "}
-              <code class="rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] normal-case tracking-normal text-(--color-danger)">
+              <code className="rounded border border-border bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] normal-case tracking-normal text-(--color-danger)">
                 DELETE
               </code>{" "}
               to confirm
@@ -366,25 +366,25 @@ function DeleteAccountModal({
               value={confirm}
               placeholder="DELETE"
               onInput={(event) => setConfirm(event.currentTarget.value)}
-              class="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none transition-colors focus:border-(--color-danger)"
+              className="w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm outline-none transition-colors focus:border-(--color-danger)"
             />
           </label>
 
           {error && (
             <p
               role="alert"
-              class="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)"
+              className="rounded-lg bg-(--color-danger)/10 px-3 py-2 text-xs text-(--color-danger)"
             >
               {error}
             </p>
           )}
 
-          <div class="mt-1 flex gap-2">
+          <div className="mt-1 flex gap-2">
             <button
               type="button"
               onClick={onClose}
               disabled={busy}
-              class="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
+              className="flex-1 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               Cancel
             </button>
@@ -392,7 +392,7 @@ function DeleteAccountModal({
               type="button"
               onClick={() => void run()}
               disabled={!canDelete || busy}
-              class="flex-1 rounded-lg bg-(--color-danger) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-(--color-danger) px-3 py-2.5 text-sm font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
             >
               {busy ? "Cancelling and deleting…" : "Delete account"}
             </button>

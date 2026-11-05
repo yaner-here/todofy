@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "react";
 import { useStore } from "../store";
 import { api } from "../lib/api";
 import { today } from "../lib/dates";
@@ -37,13 +37,13 @@ export function JournalView() {
   }, [journal]);
 
   return (
-    <main class="redesign-secondary flex flex-1 flex-col overflow-hidden bg-bg">
-      <header class="app-page-header shrink-0 px-8 pt-8 pb-4">
-        <h2 class="text-2xl font-semibold tracking-tight">Journal</h2>
-        <p class="mt-0.5 text-sm text-muted">Write and reflect on your days</p>
+    <main className="redesign-secondary flex flex-1 flex-col overflow-hidden bg-bg">
+      <header className="app-page-header shrink-0 px-8 pt-8 pb-4">
+        <h2 className="text-2xl font-semibold tracking-tight">Journal</h2>
+        <p className="mt-0.5 text-sm text-muted">Write and reflect on your days</p>
       </header>
 
-      <div class="secondary-scroll mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-10">
+      <div className="secondary-scroll mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-10">
         <JournalEditor
           sessions={sessions}
           submitLabel="Add entry"
@@ -53,14 +53,14 @@ export function JournalView() {
         />
 
         {journal.length === 0 ? (
-          <p class="mt-10 text-center text-sm text-faint">
+          <p className="mt-10 text-center text-sm text-faint">
             No entries yet. Start writing above.
           </p>
         ) : (
-          <div class="mt-7 flex flex-col gap-7">
+          <div className="mt-7 flex flex-col gap-7">
             {groups.map(([date, entries]) => (
-              <section key={date} class="journal-day">
-                <div class="journal-day-heading">
+              <section key={date} className="journal-day">
+                <div className="journal-day-heading">
                   <strong>{groupHeading(date)}</strong>
                   <span>
                     {entries.length}{" "}

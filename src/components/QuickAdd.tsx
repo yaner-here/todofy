@@ -1,5 +1,5 @@
-import type { ComponentChildren } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import type { FormEvent, ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useStore } from "../store";
 import {
   combineDateTime,
@@ -58,7 +58,7 @@ export function QuickAdd() {
     parsed.repeat !== null ||
     parsed.labelNames.length > 0;
 
-  const submit = async (e: Event) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (voiceBusy) return;
     // Natural-language tokens win over the manual pickers when present.
@@ -94,10 +94,10 @@ export function QuickAdd() {
   return (
     <form
       onSubmit={submit}
-      class={`quick-add-composer ${focused ? "is-focused" : ""}`}
+      className={`quick-add-composer ${focused ? "is-focused" : ""}`}
     >
-      <div ref={voicePanelRef} class="voice-capture-host" />
-      <div class="quick-add-main">
+      <div ref={voicePanelRef} className="voice-capture-host" />
+      <div className="quick-add-main">
         <PlusIcon width={22} height={22} />
         <input
           ref={inputRef}
@@ -107,7 +107,7 @@ export function QuickAdd() {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           placeholder="Capture anything…  try “pay rent Friday 5pm”"
-          class="quick-add-input"
+          className="quick-add-input"
         />
         <VoiceInputButton kind="task" getPanelHost={() => voicePanelRef.current} onBusyChange={setVoiceBusy} onTranscript={(text) => {
           const input = inputRef.current;
@@ -138,14 +138,14 @@ export function QuickAdd() {
         <button
           type="submit"
           disabled={!parsed.title.trim() || voiceBusy}
-          class="quick-add-submit"
+          className="quick-add-submit"
         >
           Add
         </button>
       </div>
 
       {hasChips && (
-        <div class="quick-add-chips">
+        <div className="quick-add-chips">
           {parsed.priority !== null && (
             <Chip color={PRIORITY_COLOR[parsed.priority]}>
               <FlagIcon width={11} height={11} />
@@ -174,7 +174,7 @@ export function QuickAdd() {
             const color = labels.find((l) => l.name === name)?.color;
             return (
               <Chip key={name} color={color}>
-                <span class="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+                <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
                 {name}
               </Chip>
             );
@@ -190,11 +190,11 @@ function Chip({
   children,
 }: {
   color?: string;
-  children: ComponentChildren;
+  children: ReactNode;
 }) {
   return (
     <span
-      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium"
       style={
         color
           ? { background: color + "22", color }

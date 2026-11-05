@@ -35,24 +35,24 @@ export function ShortcutsOverlay() {
   return (
     <div
       onClick={() => close(false)}
-      class="absolute inset-0 z-50 grid animate-fade-rise place-items-center bg-black/40 p-6"
+      className="absolute inset-0 z-50 grid animate-fade-rise place-items-center bg-black/40 p-6"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        class="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-black/30"
+        className="w-full max-w-md overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-black/30"
       >
-        <div class="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <h2 class="text-sm font-semibold">Keyboard shortcuts</h2>
+        <div className="flex items-center justify-between border-b border-border px-5 py-3.5">
+          <h2 className="text-sm font-semibold">Keyboard shortcuts</h2>
           <button
             onClick={() => close(false)}
-            class="rounded-md p-1 text-faint transition-colors hover:bg-surface-2 hover:text-text"
+            className="rounded-md p-1 text-faint transition-colors hover:bg-surface-2 hover:text-text"
             title="Close"
           >
             <CloseIcon width={18} height={18} />
           </button>
         </div>
 
-        <div class="max-h-[70vh] overflow-y-auto px-5 py-4">
+        <div className="max-h-[70vh] overflow-y-auto px-5 py-4">
           <Group title="Navigation" rows={NAVIGATION} />
           <Group title="Selected task" rows={ACTIONS} />
           <Group title="Global" rows={GLOBAL} />
@@ -64,22 +64,22 @@ export function ShortcutsOverlay() {
 
 function Group({ title, rows }: { title: string; rows: Shortcut[] }) {
   return (
-    <div class="mb-4 last:mb-0">
-      <p class="mb-1.5 text-xs font-semibold uppercase tracking-wider text-faint">
+    <div className="mb-4 last:mb-0">
+      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wider text-faint">
         {title}
       </p>
-      <div class="flex flex-col">
+      <div className="flex flex-col">
         {rows.map((r) => (
           <div
             key={r.desc}
-            class="flex items-center justify-between gap-4 py-1.5"
+            className="flex items-center justify-between gap-4 py-1.5"
           >
-            <span class="text-sm text-muted">{r.desc}</span>
-            <span class="flex shrink-0 items-center gap-1">
+            <span className="text-sm text-muted">{r.desc}</span>
+            <span className="flex shrink-0 items-center gap-1">
               {r.keys.map((k) => (
                 <kbd
                   key={k}
-                  class="rounded border border-border bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-muted"
+                  className="rounded border border-border bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-muted"
                 >
                   {k}
                 </kbd>

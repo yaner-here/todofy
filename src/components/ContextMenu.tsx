@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 export interface MenuItem {
   label: string;
@@ -76,11 +76,11 @@ export function ContextMenu({ appItems }: { appItems?: AppItems }) {
         top: pos ? pos.top : menu.y,
         visibility: pos ? "visible" : "hidden",
       }}
-      class="fixed z-200 min-w-47.5 animate-fade-rise overflow-hidden rounded-xl border border-border-strong bg-elevated p-1 shadow-2xl shadow-black/50"
+      className="fixed z-200 min-w-47.5 animate-fade-rise overflow-hidden rounded-xl border border-border-strong bg-elevated p-1 shadow-2xl shadow-black/50"
     >
       {menu.items.map((item, i) =>
         item === "divider" ? (
-          <div key={i} class="my-1 h-px bg-border" />
+          <div key={i} className="my-1 h-px bg-border" />
         ) : (
           <button
             key={i}
@@ -88,14 +88,14 @@ export function ContextMenu({ appItems }: { appItems?: AppItems }) {
               setMenu(null);
               item.onClick();
             }}
-            class={`flex w-full items-center justify-between gap-6 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors ${
+            className={`flex w-full items-center justify-between gap-6 rounded-lg px-2.5 py-1.5 text-left text-sm transition-colors ${
               item.danger
                 ? "text-(--color-danger) hover:bg-(--color-danger)/12"
                 : "text-text hover:bg-surface-2"
             }`}
           >
             <span>{item.label}</span>
-            {item.hint && <span class="text-xs text-faint">{item.hint}</span>}
+            {item.hint && <span className="text-xs text-faint">{item.hint}</span>}
           </button>
         ),
       )}
@@ -172,7 +172,7 @@ async function readClipboard(): Promise<string> {
 }
 
 /** Replace the field's current selection with `text` and fire an input event so
- *  a controlled Preact input picks up the change. */
+ *  a controlled React input picks up the change. */
 function replaceSelection(
   field: HTMLInputElement | HTMLTextAreaElement,
   text: string,

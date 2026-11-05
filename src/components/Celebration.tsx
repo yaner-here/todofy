@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
 
 const COLORS = ["#6c7cff", "#4fd18b", "#f2b155", "#f2555a", "#7d8bff"];
@@ -41,18 +41,16 @@ export function Celebration() {
   if (pieces.length === 0) return null;
 
   return (
-    <div class="pointer-events-none absolute inset-0 z-[60] overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 z-[60] overflow-hidden">
       {pieces.map((p) => (
         <span
           key={p.id}
-          class="animate-confetti absolute left-1/2 top-1/4 h-2 w-2 rounded-[1px]"
+          className="animate-confetti absolute left-1/2 top-1/4 h-2 w-2 rounded-[1px]"
           style={{
             background: p.color,
-            // Consumed by the `confetti` keyframes in global.css.
-            "--dx": p.dx,
-            "--dy": p.dy,
-            "--rot": p.rot,
-          } as any}
+            // The keyframes animate from the origin to this destination.
+            transform: `translate(${p.dx}, ${p.dy}) rotate(${p.rot})`,
+          }}
         />
       ))}
     </div>

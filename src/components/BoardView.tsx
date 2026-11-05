@@ -1,5 +1,5 @@
-import { Fragment, type JSX } from "preact";
-import { useMemo, useState } from "preact/hooks";
+import { Fragment, type PointerEvent as ReactPointerEvent } from "react";
+import { useMemo, useState } from "react";
 import { applySearchAndFilters, useStore } from "../store";
 import {
   boardColumns,
@@ -94,20 +94,20 @@ export function BoardView() {
   const active = visible.filter((task) => task.status !== "done").length;
 
   return (
-    <main class="redesign-main board-page">
-      <header class="app-page-header">
+    <main className="redesign-main board-page">
+      <header className="app-page-header">
         <div>
           <h2>Board</h2>
           <p>Move work across stages</p>
         </div>
-        <div class="board-toolbar">
-          <div class="board-scope-switch" role="group" aria-label="Board scope">
+        <div className="board-toolbar">
+          <div className="board-scope-switch" role="group" aria-label="Board scope">
             {SCOPES.map(({ id, label }) => (
               <button
                 key={id}
                 type="button"
                 onClick={() => setScope(id)}
-                class={scope === id ? "is-active" : ""}
+                className={scope === id ? "is-active" : ""}
                 aria-pressed={scope === id}
               >
                 {label}
@@ -115,14 +115,14 @@ export function BoardView() {
             ))}
           </div>
           <SearchBar />
-          <button type="button" class="board-manage-button" onClick={() => { select(null); setManagement({}); }}><SettingsIcon width={16} height={16} />Manage columns</button>
+          <button type="button" className="board-manage-button" onClick={() => { select(null); setManagement({}); }}><SettingsIcon width={16} height={16} />Manage columns</button>
         </div>
       </header>
 
-      {loadError && <div class="load-error" role="alert"><p>{loadError}</p><button type="button" onClick={() => void load()}>Try again</button></div>}
-      {boardNotice && <div class="board-notice" role="status"><span>{boardNotice}</span><button type="button" onClick={clearBoardNotice} aria-label="Dismiss board notice"><CloseIcon width={14} height={14} /></button></div>}
-      <div class="board-surface">
-        <div class="board-columns" ref={setScrollerRef}>
+      {loadError && <div className="load-error" role="alert"><p>{loadError}</p><button type="button" onClick={() => void load()}>Try again</button></div>}
+      {boardNotice && <div className="board-notice" role="status"><span>{boardNotice}</span><button type="button" onClick={clearBoardNotice} aria-label="Dismiss board notice"><CloseIcon width={14} height={14} /></button></div>}
+      <div className="board-surface">
+        <div className="board-columns" ref={setScrollerRef}>
           {columns.map((column) => {
             const target = over?.column === column.id ? over : null;
             // The drop target is an index into the column *without* the card
@@ -139,24 +139,23 @@ export function BoardView() {
               <section
                 key={column.id}
                 ref={setColumnRef(column.id)}
-                class={`board-column ${target ? "is-drop-target" : ""}`}
+                className={`board-column ${target ? "is-drop-target" : ""}`}
                 aria-label={column.title}
-                style={{ "--column-color": column.color }}
               >
-                <header class="board-column-head">
+                <header className="board-column-head" style={{ borderTopColor: column.color }}>
                   <div>
                     <h3>{column.title}</h3>
                     <small>{column.wipLimit !== null ? `${column.tasks.length} shown · ${column.activeCount}/${column.wipLimit} total active` : column.hint}</small>
                   </div>
-                  <span class={`board-column-count wip-${column.wipState}`} title={column.wipLimit === null ? "Tasks shown" : `All active tasks: ${column.activeCount}. WIP limit: ${column.wipLimit}. ${column.wipState === "over" ? "Over limit; moves remain allowed." : column.wipState === "full" ? "Column is full." : ""}`}>
+                  <span className={`board-column-count wip-${column.wipState}`} title={column.wipLimit === null ? "Tasks shown" : `All active tasks: ${column.activeCount}. WIP limit: ${column.wipLimit}. ${column.wipState === "over" ? "Over limit; moves remain allowed." : column.wipState === "full" ? "Column is full." : ""}`}>
                     {column.wipLimit === null ? column.tasks.length : `${column.activeCount}/${column.wipLimit}`}
                   </span>
-                  <button type="button" class="board-column-options" aria-label={`Edit ${column.title} column`} title="Column options" onClick={() => { select(null); setManagement({ id: column.id }); }}><SettingsIcon width={14} height={14} /></button>
+                  <button type="button" className="board-column-options" aria-label={`Edit ${column.title} column`} title="Column options" onClick={() => { select(null); setManagement({ id: column.id }); }}><SettingsIcon width={14} height={14} /></button>
                 </header>
 
-                <div class="board-column-cards">
+                <div className="board-column-cards">
                   {column.tasks.length === 0 && !target && (
-                    <p class="board-column-empty">
+                    <p className="board-column-empty">
                       {column.id === DONE_COLUMN
                         ? "Nothing finished yet."
                         : "Drop a card here."}
@@ -187,7 +186,7 @@ export function BoardView() {
         </div>
       </div>
 
-      <footer class="board-status">
+      <footer className="board-status">
         <span>
           {active} active card{active === 1 ? "" : "s"}
         </span>
@@ -208,7 +207,7 @@ export function BoardView() {
 
 /** The gap a dragged card would drop into. */
 function DropSlot() {
-  return <div class="board-drop-slot" aria-hidden="true" />;
+  return <div className="board-drop-slot" aria-hidden="true" />;
 }
 
 /**
@@ -229,16 +228,16 @@ function TaskModal({
 }) {
   return (
     <div
-      class="fixed inset-0 z-[100] grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
       data-task-dialog
       aria-label={title}
     >
-      <div class="task-modal animate-fade-rise">
-        <header class="task-modal-head">
-          <p class="section-kicker">{title}</p>
+      <div className="task-modal animate-fade-rise">
+        <header className="task-modal-head">
+          <p className="section-kicker">{title}</p>
           <button
             type="button"
             onClick={onClose}
@@ -248,7 +247,7 @@ function TaskModal({
             <CloseIcon width={15} height={15} />
           </button>
         </header>
-        <div class="task-modal-body">
+        <div className="task-modal-body">
           <TaskDetail taskId={taskId} compact />
         </div>
       </div>
@@ -261,7 +260,7 @@ interface CardProps {
   selected: boolean;
   dragging: boolean;
   cardRef: (element: HTMLElement | null) => void;
-  onPointerDown: (event: JSX.TargetedPointerEvent<HTMLElement>) => void;
+  onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
   onSelect: () => void;
 }
 
@@ -304,15 +303,15 @@ function BoardCard({
           if (!event.repeat) onSelect();
         }
       }}
-      class={`board-card ${selected ? "is-selected" : ""} ${done ? "is-done" : ""} ${
+      className={`board-card ${selected ? "is-selected" : ""} ${done ? "is-done" : ""} ${
         tracking !== "off" ? "is-tracked" : ""
       } ${task.pinned ? "is-pinned" : ""} ${dragging ? "is-dragging" : ""}`}
-      style={{ "--card-accent": priority.color }}
+      style={{ color: priority.color }}
     >
-      <div class="board-card-head">
+      <div className="board-card-head">
         <button
           type="button"
-          class="task-complete"
+          className="task-complete"
           style={!done ? { borderColor: priority.color } : undefined}
           title={done ? "Mark active" : "Complete"}
           onPointerDown={(event) => event.stopPropagation()}
@@ -321,21 +320,21 @@ function BoardCard({
             toggleTask(task.id, !done);
           }}
         >
-          {done && <CheckIcon width={11} height={11} stroke-width={3} />}
+          {done && <CheckIcon width={11} height={11} strokeWidth={3} />}
         </button>
-        <p class="board-card-title">{task.title}</p>
+        <p className="board-card-title">{task.title}</p>
       </div>
 
-      <div class="board-card-meta">
+      <div className="board-card-meta">
         {showsPriority(task.priority, priorityProfiles) && (
           <span style={{ color: priority.color }} title={priority.name}>
             <FlagIcon width={12} height={12} />
             {priorityTag(task.priority, priorityProfiles)}
           </span>
         )}
-        {due && <span class={DUE_TONE[due.tone]}>{due.label}</span>}
+        {due && <span className={DUE_TONE[due.tone]}>{due.label}</span>}
         {task.remindAt && lateReminder && (
-          <span class="is-overdue" title="Reminder passed">
+          <span className="is-overdue" title="Reminder passed">
             <BellIcon width={12} height={12} />
           </span>
         )}
@@ -358,7 +357,7 @@ function BoardCard({
         )}
         {elapsed > 0 && (
           <span
-            class={
+            className={
               over > 0
                 ? "is-over"
                 : tracking === "running"
@@ -380,7 +379,7 @@ function BoardCard({
       </div>
 
       {taskLabels.length > 0 && (
-        <div class="board-card-labels">
+        <div className="board-card-labels">
           {taskLabels.map((label) => (
             <span key={label.id} style={{ color: label.color }}>
               <i style={{ background: label.color }} />

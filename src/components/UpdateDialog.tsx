@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { useUpdater } from "../lib/updater";
 import { DownloadIcon, RotateIcon } from "./Icons";
 
@@ -63,28 +63,28 @@ export function UpdateDialog() {
 
   return (
     <div
-      class="fixed inset-0 z-110 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-110 grid place-items-center bg-black/50 p-4 backdrop-blur-sm"
       onMouseDown={(event) => event.target === event.currentTarget && close()}
       role="dialog"
       aria-modal="true"
       aria-label={asking ? "Update available" : "Update installed"}
     >
-      <div class="w-full max-w-md animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
-        <div class="flex items-start gap-3">
-          <span class="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-(--color-accent)">
+      <div className="w-full max-w-md animate-fade-rise rounded-xl border border-border-strong bg-elevated p-5 shadow-2xl shadow-black/50">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent-soft text-(--color-accent)">
             {asking ? (
               <DownloadIcon width={18} height={18} />
             ) : (
               <RotateIcon width={18} height={18} />
             )}
           </span>
-          <div class="min-w-0 flex-1">
-            <h3 class="text-base font-semibold text-text">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-semibold text-text">
               {asking
                 ? `todofy v${promptVersion} is available`
                 : `todofy v${version} is installed`}
             </h3>
-            <p class="mt-1.5 text-sm leading-relaxed text-muted">
+            <p className="mt-1.5 text-sm leading-relaxed text-muted">
               {asking
                 ? "Download and install it now? todofy keeps running while it downloads."
                 : "Restart to start using it. Your tasks and timers are saved either way."}
@@ -93,25 +93,25 @@ export function UpdateDialog() {
         </div>
 
         {asking && notes && (
-          <div class="mt-4 max-h-40 overflow-y-auto rounded-lg border border-border bg-surface p-3">
-            <p class="text-xs font-semibold text-faint uppercase">What's new</p>
-            <p class="mt-1.5 text-xs leading-relaxed whitespace-pre-line text-muted">
+          <div className="mt-4 max-h-40 overflow-y-auto rounded-lg border border-border bg-surface p-3">
+            <p className="text-xs font-semibold text-faint uppercase">What's new</p>
+            <p className="mt-1.5 text-xs leading-relaxed whitespace-pre-line text-muted">
               {notes}
             </p>
           </div>
         )}
 
-        <div class="mt-5 flex justify-end gap-2">
+        <div className="mt-5 flex justify-end gap-2">
           <button
             onClick={close}
-            class="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
+            className="rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
           >
             {asking ? "Not now" : "Later"}
           </button>
           <button
             onClick={() => void (asking ? acceptPrompt() : restart())}
             autoFocus
-            class="rounded-lg bg-(--color-accent) px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+            className="rounded-lg bg-(--color-accent) px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
           >
             {asking ? "Update now" : "Restart now"}
           </button>

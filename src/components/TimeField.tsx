@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { clockHourText, composeClock, parseClock } from "../lib/dates";
 import { usesHour12 } from "../lib/locale";
 
@@ -96,7 +96,7 @@ export function TimeField({
     commit(hourText, text, pm);
   };
 
-  const onKeyDown = (event: KeyboardEvent, segment: "hour" | "minute") => {
+  const onKeyDown = (event: KeyboardEvent<HTMLInputElement>, segment: "hour" | "minute") => {
     if (event.key === "ArrowUp" || event.key === "ArrowDown") {
       event.preventDefault();
       step(segment, event.key === "ArrowUp" ? 1 : -1);
@@ -155,7 +155,7 @@ export function TimeField({
 
   return (
     <div
-      class={`flex flex-1 items-center justify-center gap-1 rounded-lg border bg-bg px-3 py-2 focus-within:ring-1 ${
+      className={`flex flex-1 items-center justify-center gap-1 rounded-lg border bg-bg px-3 py-2 focus-within:ring-1 ${
         invalid
           ? "border-(--color-danger) ring-1 ring-(--color-danger) focus-within:ring-(--color-danger)"
           : "border-border focus-within:ring-(--color-accent)"
@@ -171,9 +171,9 @@ export function TimeField({
         onKeyDown={(event) => onKeyDown(event, "hour")}
         onFocus={(event) => event.currentTarget.select()}
         onBlur={onBlur}
-        class={segment}
+        className={segment}
       />
-      <span class="text-sm text-faint">:</span>
+      <span className="text-sm text-faint">:</span>
       <input
         ref={minuteRef}
         type="text"
@@ -185,19 +185,19 @@ export function TimeField({
         onKeyDown={(event) => onKeyDown(event, "minute")}
         onFocus={(event) => event.currentTarget.select()}
         onBlur={onBlur}
-        class={segment}
+        className={segment}
       />
       {hour12 && (
         // Two explicit options, not a toggle: a lone "AM" reads as a label and
         // leaves the user guessing whether it's the state or the action.
-        <div class="ml-1.5 flex items-center gap-0.5 rounded-md bg-surface-2 p-0.5">
+        <div className="ml-1.5 flex items-center gap-0.5 rounded-md bg-surface-2 p-0.5">
           {[false, true].map((afternoon) => (
             <button
               key={afternoon ? "PM" : "AM"}
               type="button"
               aria-pressed={afternoon === pm}
               onClick={() => setMeridiem(afternoon)}
-              class={`rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
+              className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
                 afternoon === pm
                   ? "bg-(--color-accent) text-white"
                   : "text-muted hover:text-text"

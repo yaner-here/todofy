@@ -1,15 +1,17 @@
 import { afterEach, beforeEach, expect, mock, spyOn, test } from "bun:test";
 import { Window } from "happy-dom";
-import { h, render } from "preact";
-import { act } from "preact/test-utils";
-import * as compat from "preact/compat";
-import type { Task, TaskPatch } from "../types";
+import { act, createElement as h, Fragment, useState } from "react";
+import type { Root } from "react-dom/client";
+import { clearMocks, mockIPC, mockWindows } from "@tauri-apps/api/mocks";
+import type { NewTask, Task, TaskPatch } from "../types";
+import type { VoiceStatus } from "./voice";
 
 const dom = new Window({ url: "http://localhost" });
-// Match the React alias supplied by @preact/preset-vite in the app build.
-mock.module("react", () => compat);
+Object.defineProperty(globalThis, "navigator", { configurable: true, value: dom.navigator });
 Object.assign(globalThis, {
+  IS_REACT_ACT_ENVIRONMENT: true,
   window: dom,
+  MouseEvent: dom.MouseEvent,
   document: dom.document,
   HTMLElement: dom.HTMLElement,
   Element: dom.Element,
@@ -24,6 +26,7 @@ Object.assign(globalThis, {
   cancelAnimationFrame: dom.cancelAnimationFrame.bind(dom),
 });
 
+const { createRoot } = await import("react-dom/client");
 const { useStore } = await import("../store");
 const { useKeyboard } = await import("./useKeyboard");
 const { BoardView } = await import("../components/BoardView");
@@ -33,10 +36,24 @@ const { api } = await import("./api");
 const { DEFAULT_COLUMNS } = await import("./board");
 const { TaskList } = await import("../components/TaskList");
 const { visibleTaskIds } = await import("../store");
+const { EstimatePicker } = await import("../components/EstimatePicker");
+const { ContextMenu } = await import("../components/ContextMenu");
+const { QuickCapture } = await import("../components/QuickCapture");
+const { NotificationPopup } = await import("../components/NotificationPopup");
+const { SettingsView } = await import("../components/SettingsView");
+const { DEFAULT_PROFILES } = await import("./priority");
 
 const initialState = useStore.getState();
 let root: HTMLDivElement;
+let reactRoot: Root;
 const toggleTask = mock(async () => {});
+const disabledVoice: VoiceStatus = {
+  enabled: false, ready: false, engineInstalled: false,
+  modelsInstalled: { tiny: false, base: false }, selectedModel: "base",
+  catalogVersion: null, updateVersion: null, updateEngineInstalled: false,
+  updateModelsInstalled: { tiny: false, base: false },
+  platformSupported: true, developmentAssets: false,
+};
 
 function task(overrides: Partial<Task> = {}): Task {
   return {
@@ -81,17 +98,19 @@ beforeEach(() => {
   useStore.setState({ ...initialState, view: { kind: "board" }, loading: false, tasks: [task()], toggleTask }, true);
   root = document.createElement("div");
   document.body.append(root);
+  reactRoot = createRoot(root);
 });
 
 afterEach(async () => {
-  await act(() => render(null, root));
+  await act(async () => reactRoot.unmount());
   root.remove();
   useStore.setState(initialState, true);
+  clearMocks();
 });
 
 test("Enter opens a recurring board card without completing or advancing it", async () => {
   useStore.setState({ tasks: [task({ repeat: "daily" })] });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   await act(() => key(element(".board-card"), "Enter"));
   expect(root.querySelector("[data-task-dialog]")).not.toBeNull();
   expect(useStore.getState().selectedId).toBe("task");
@@ -100,7 +119,7 @@ test("Enter opens a recurring board card without completing or advancing it", as
 
 test("Enter on a nested completion button is owned by that button", async () => {
   useStore.setState({ selectedId: "task" });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   const button = element<HTMLButtonElement>(".board-card .task-complete");
   await act(() => {
     key(button, "Enter");
@@ -113,8 +132,8 @@ test("Enter on a nested completion button is owned by that button", async () => 
 test("confirmation Enter runs the confirmation without completing the background task", async () => {
   const confirm = mock(async () => {});
   useStore.setState({ selectedId: "task", confirm: { title: "Delete?", onConfirm: confirm } });
-  await act(() => render(h(KeyboardConfirmation, {}), root));
-  await act(() => key(document.body, "Enter"));
+  await act(async () => reactRoot.render(h(KeyboardConfirmation, {})));
+  await act(async () => key(document.body, "Enter"));
   expect(confirm).toHaveBeenCalledTimes(1);
   expect(toggleTask).not.toHaveBeenCalled();
 });
@@ -122,7 +141,7 @@ test("confirmation Enter runs the confirmation without completing the background
 test("Enter on Cancel does not run the confirmation", async () => {
   const confirm = mock(async () => {});
   useStore.setState({ selectedId: "task", confirm: { title: "Delete?", onConfirm: confirm } });
-  await act(() => render(h(KeyboardConfirmation, {}), root));
+  await act(() => reactRoot.render(h(KeyboardConfirmation, {})));
   const cancel = element<HTMLButtonElement>("button");
   await act(() => { key(cancel, "Enter"); cancel.click(); });
   expect(confirm).not.toHaveBeenCalled();
@@ -132,7 +151,7 @@ test("Enter on Cancel does not run the confirmation", async () => {
 
 test("holding a completion shortcut does not advance a recurring task repeatedly", async () => {
   useStore.setState({ selectedId: "task" });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   await act(() => { key(document.body, "c"); key(document.body, "c", true); });
   expect(toggleTask).toHaveBeenCalledTimes(1);
 });
@@ -149,26 +168,26 @@ function blur(field: HTMLInputElement) {
 test("synced title and notes refresh untouched fields without writing stale text back", async () => {
   const patchTask = mock(async (_patch: TaskPatch) => {});
   useStore.setState({ patchTask });
-  await act(() => render(h(TaskDetail, { taskId: "task" }), root));
-  await act(() => useStore.setState({ tasks: [task({ title: "Remote title", notes: "Remote notes" })] }));
+  await act(async () => reactRoot.render(h(TaskDetail, { taskId: "task" })));
+  await act(async () => useStore.setState({ tasks: [task({ title: "Remote title", notes: "Remote notes" })] }));
   const title = element<HTMLInputElement>('[aria-label="Task title"]');
   const notes = element<HTMLInputElement>('[aria-label="Task notes"]');
   expect(title.value).toBe("Remote title");
   expect(notes.value).toBe("Remote notes");
-  await act(() => { blur(title); blur(notes); });
+  await act(async () => { blur(title); blur(notes); });
   expect(patchTask).not.toHaveBeenCalled();
 });
 
 test("sync preserves an unsaved title while refreshing untouched notes", async () => {
   const patchTask = mock(async (_patch: TaskPatch) => {});
   useStore.setState({ patchTask });
-  await act(() => render(h(TaskDetail, { taskId: "task" }), root));
+  await act(async () => reactRoot.render(h(TaskDetail, { taskId: "task" })));
   const title = element<HTMLInputElement>('[aria-label="Task title"]');
-  await act(() => input(title, "My unsaved title"));
-  await act(() => useStore.setState({ tasks: [task({ title: "Remote title", notes: "Remote notes" })] }));
+  await act(async () => input(title, "My unsaved title"));
+  await act(async () => useStore.setState({ tasks: [task({ title: "Remote title", notes: "Remote notes" })] }));
   expect(title.value).toBe("My unsaved title");
   expect(element<HTMLInputElement>('[aria-label="Task notes"]').value).toBe("Remote notes");
-  await act(() => blur(title));
+  await act(async () => blur(title));
   expect(patchTask).toHaveBeenCalledWith({ id: "task", title: "My unsaved title" });
 });
 
@@ -178,7 +197,7 @@ test("a save response preserves newer text typed while the save is pending", asy
     await new Promise<void>((resolve) => { finish = resolve; });
     useStore.setState({ tasks: [task({ title: patch.title })] });
   } });
-  await act(() => render(h(TaskDetail, { taskId: "task" }), root));
+  await act(() => reactRoot.render(h(TaskDetail, { taskId: "task" })));
   const title = element<HTMLInputElement>('[aria-label="Task title"]');
   await act(() => input(title, "First edit"));
   await act(() => blur(title));
@@ -189,7 +208,7 @@ test("a save response preserves newer text typed while the save is pending", asy
 
 test("switching tasks resets drafts and cannot leak text into the next task", async () => {
   useStore.setState({ selectedId: "task", tasks: [task(), task({ id: "second", title: "Second task" })] });
-  await act(() => render(h(TaskDetail, { taskId: undefined }), root));
+  await act(() => reactRoot.render(h(TaskDetail, { taskId: undefined })));
   await act(() => input(element('[aria-label="Task title"]'), "Unsaved first task"));
   await act(() => useStore.getState().select("second"));
   expect(element<HTMLInputElement>('[aria-label="Task title"]').value).toBe("Second task");
@@ -197,7 +216,7 @@ test("switching tasks resets drafts and cannot leak text into the next task", as
 
 test("a failed save preserves the draft and shows an actionable error", async () => {
   useStore.setState({ patchTask: async () => { throw new Error("Database unavailable"); } });
-  await act(() => render(h(TaskDetail, { taskId: "task" }), root));
+  await act(() => reactRoot.render(h(TaskDetail, { taskId: "task" })));
   const title = element<HTMLInputElement>('[aria-label="Task title"]');
   await act(() => input(title, "Keep this edit"));
   await act(async () => { blur(title); await Promise.resolve(); });
@@ -215,7 +234,7 @@ function completedTasks(count: number) {
 test("Completed keyboard navigation follows page two and stops at its boundary", async () => {
   useStore.setState({ view: { kind: "completed" }, tasks: completedTasks(32) });
   useStore.getState().setCompletedPage(2);
-  await act(() => render(h(KeyboardList, {}), root));
+  await act(() => reactRoot.render(h(KeyboardList, {})));
   const displayed = Array.from(root.querySelectorAll(".task-row-title p"), (row) => row.textContent);
   expect(displayed).toEqual(Array.from({ length: 15 }, (_, i) => `Completed ${i + 15}`));
   expect(visibleTaskIds(useStore.getState().tasks, { kind: "completed" })).toEqual(
@@ -231,7 +250,7 @@ test("search resets Completed to page one and clears the previous selection", as
   useStore.setState({ view: { kind: "completed" }, tasks: completedTasks(32) });
   useStore.getState().setCompletedPage(2);
   useStore.getState().select("done-20");
-  await act(() => render(h(KeyboardList, {}), root));
+  await act(() => reactRoot.render(h(KeyboardList, {})));
   await act(() => useStore.getState().setSearchQuery("Completed 31"));
   expect(useStore.getState().completedPage).toBe(1);
   expect(useStore.getState().selectedId).toBeNull();
@@ -244,7 +263,7 @@ test("removing the last Completed page clamps both the list and keyboard navigat
   const tasks = completedTasks(32);
   useStore.setState({ view: { kind: "completed" }, tasks });
   useStore.getState().setCompletedPage(3);
-  await act(() => render(h(KeyboardList, {}), root));
+  await act(() => reactRoot.render(h(KeyboardList, {})));
   await act(() => useStore.setState({ tasks: tasks.slice(0, 30) }));
   expect(useStore.getState().completedPage).toBe(2);
   expect(root.querySelectorAll(".task-row")).toHaveLength(15);
@@ -256,7 +275,7 @@ test("completion shortcuts cannot mutate an off-page selection", async () => {
   useStore.setState({ view: { kind: "completed" }, tasks: completedTasks(32) });
   useStore.getState().setCompletedPage(2);
   useStore.getState().select("done-0");
-  await act(() => render(h(KeyboardList, {}), root));
+  await act(() => reactRoot.render(h(KeyboardList, {})));
   await act(() => key(document.body, "c"));
   expect(toggleTask).not.toHaveBeenCalled();
   expect(root.querySelector(".next-up-card")).toBeNull();
@@ -268,7 +287,7 @@ test("the board shows saved names and global WIP counts under search", async () 
     tasks: [task({ title: "Visible", stage: "doing" }), task({ id: "hidden", title: "Hidden", stage: "doing" })],
     searchQuery: "Visible",
   });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   expect(element('[aria-label="Working"] .board-column-count').textContent).toBe("2/1");
   expect(element('[aria-label="Working"] .board-column-count').classList.contains("wip-over")).toBe(true);
   expect(element('[aria-label="Working"] small').textContent).toContain("1 shown");
@@ -279,7 +298,7 @@ test("column management saves name, color and WIP settings without task shortcut
     useStore.setState({ boardDefinitions: useStore.getState().boardDefinitions.map((c) => c.id === id ? { ...c, ...input } : c) });
   });
   useStore.setState({ selectedId: "task", updateBoardColumn: update });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   await act(() => element<HTMLButtonElement>('[aria-label="Edit In progress column"]').click());
   const fields = root.querySelectorAll<HTMLInputElement>(".column-editor input");
   await act(() => { input(fields[0], "Writing"); input(fields[1], "#f26cc9"); input(fields[2], "3"); });
@@ -295,7 +314,7 @@ test("column reorder buttons preserve Done last and the default destination", as
     useStore.setState({ boardDefinitions: useStore.getState().boardDefinitions.map((c) => ({ ...c, orderIndex: ids.indexOf(c.id) })) });
   });
   useStore.setState({ reorderBoardColumns: reorder });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   await act(() => element<HTMLButtonElement>(".board-manage-button").click());
   await act(async () => { element<HTMLButtonElement>('[aria-label="Move To do right"]').click(); await Promise.resolve(); });
   expect(reorder).toHaveBeenCalledWith(["doing", "todo", "blocked", "done"]);
@@ -305,7 +324,7 @@ test("column reorder buttons preserve Done last and the default destination", as
 test("pointer dragging reorders columns and pointer cancellation leaves them unchanged", async () => {
   const reorder = mock(async (_ids: string[]) => {});
   useStore.setState({ reorderBoardColumns: reorder });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   await act(() => element<HTMLButtonElement>(".board-manage-button").click());
   root.querySelectorAll<HTMLElement>(".column-manager-row").forEach((row, index) => {
     row.getBoundingClientRect = () => new DOMRect(0, index * 60, 400, 40);
@@ -329,7 +348,7 @@ test("pointer dragging reorders columns and pointer cancellation leaves them unc
 test("deleting a column requires a destination and never offers protected column deletion", async () => {
   const remove = mock(async (_id: string, _destination: string) => {});
   useStore.setState({ deleteBoardColumn: remove });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   await act(() => element<HTMLButtonElement>(".board-manage-button").click());
   expect(root.querySelectorAll(".column-delete")).toHaveLength(2);
   await act(() => element<HTMLButtonElement>(".column-delete").click());
@@ -364,7 +383,7 @@ test("moving a completed task uses one native move and warns about its new WIP c
 test("canceling a card drag never commits a move", async () => {
   const move = mock(async (_id: string, _column: string, _index: number) => {});
   useStore.setState({ moveTaskToColumn: move });
-  await act(() => render(h(KeyboardBoard, {}), root));
+  await act(() => reactRoot.render(h(KeyboardBoard, {})));
   root.querySelectorAll<HTMLElement>(".board-column").forEach((column, i) => {
     column.getBoundingClientRect = () => new DOMRect(i * 300, 0, 274, 400);
   });
@@ -375,4 +394,110 @@ test("canceling a card drag never commits a move", async () => {
     document.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true }));
   });
   expect(move).not.toHaveBeenCalled();
+});
+
+function EstimateForm() {
+  const [minutes, setMinutes] = useState<number | null>(null);
+  return h("form", null,
+    h(EstimatePicker, { value: minutes, onChange: setMinutes }),
+    h("output", null, minutes),
+  );
+}
+
+test("custom estimates commit from the floating picker without submitting the form", async () => {
+  await act(async () => reactRoot.render(h(EstimateForm)));
+  await act(async () => element<HTMLButtonElement>('[title="Estimated time for this task"]').click());
+  const field = document.querySelector<HTMLInputElement>('[aria-label="Custom estimate"]')!;
+  expect(root.contains(field)).toBe(false);
+  expect(field.isConnected).toBe(true);
+  await act(async () => input(field, "1h 30m"));
+  const enter = new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true });
+  await act(async () => { field.dispatchEvent(enter); });
+  expect(enter.defaultPrevented).toBe(true);
+  expect(element("output").textContent).toBe("90");
+  expect(document.querySelector('[aria-label="Custom estimate"]')).toBeNull();
+});
+
+test("context-menu paste updates the controlled task title and saves the pasted text", async () => {
+  const clipboard = spyOn(navigator.clipboard, "readText").mockResolvedValue("Pasted task");
+  const save = spyOn(api, "updateTask").mockImplementation(async (patch) => task({ title: patch.title }));
+  try {
+    await act(async () => reactRoot.render(h(Fragment, null,
+      h(TaskDetail, { taskId: "task" }), h(ContextMenu),
+    )));
+    const title = element<HTMLInputElement>('[aria-label="Task title"]');
+    title.setSelectionRange(0, title.value.length);
+    await act(async () => { title.dispatchEvent(new MouseEvent("contextmenu", { bubbles: true, cancelable: true })); });
+    const paste = Array.from(root.querySelectorAll("button")).find((button) => button.textContent?.startsWith("Paste"))!;
+    await act(async () => paste.click());
+    expect(title.value).toBe("Pasted task");
+    await act(async () => blur(title));
+    expect(useStore.getState().tasks[0].title).toBe("Pasted task");
+  } finally { clipboard.mockRestore(); save.mockRestore(); }
+});
+
+test("quick capture submits the controlled draft to the native backend and clears it", async () => {
+  const created: NewTask[] = [];
+  let hidden = false;
+  mockWindows("quickadd");
+  mockIPC((command, args) => {
+    switch (command) {
+      case "list_labels": return [];
+      case "list_priority_profiles": return DEFAULT_PROFILES;
+      case "voice_status": return disabledVoice;
+      case "create_task": {
+        created.push((args as { task: NewTask }).task);
+        return task({ title: created[0].title, priority: 1 });
+      }
+      case "plugin:window|hide": hidden = true; return;
+      case "plugin:window|set_size":
+      case "plugin:window|center": return;
+      default: throw new Error(`Unexpected IPC command: ${command}`);
+    }
+  }, { shouldMockEvents: true });
+  await act(async () => reactRoot.render(h(QuickCapture)));
+  const title = element<HTMLInputElement>("input");
+  await act(async () => input(title, "Capture draft p1"));
+  await act(async () => { element("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+  expect(created).toEqual([{ title: "Capture draft", priority: 1 }]);
+  expect(title.value).toBe("");
+  expect(hidden).toBe(true);
+});
+
+test("a pending reminder renders and snoozing does not open the task", async () => {
+  const commands: string[] = [];
+  mockWindows("notification");
+  mockIPC((command) => {
+    commands.push(command);
+    if (command === "notify_popup_pending") return {
+      nonce: 1, kind: "reminder", title: "Review report", body: "Due now",
+      accent: "#f2555a", task_id: "task",
+    };
+  }, { shouldMockEvents: true });
+  await act(async () => reactRoot.render(h(NotificationPopup)));
+  expect(element(".notification-title").textContent).toBe("Review report");
+  expect(element(".notification-card").style.color).toBe("#f2555a");
+  await act(async () => element<HTMLButtonElement>(".notification-actions button").click());
+  expect(commands).toContain("snooze_task");
+  expect(commands).not.toContain("notify_popup_open");
+  expect(root.querySelector(".notification-card")).toBeNull();
+});
+
+test("the volume slider previews each step but persists only the committed value", async () => {
+  const settings = new Map<string, string>();
+  mockWindows("main");
+  mockIPC((command, args) => {
+    const setting = args as { key: string; value: string };
+    if (command === "get_setting") return settings.get(setting.key) ?? null;
+    if (command === "set_setting") settings.set(setting.key, setting.value);
+    if (command === "voice_status") return disabledVoice;
+    if (command === "plugin:app|version") return "1.15.0";
+  }, { shouldMockEvents: true });
+  await act(async () => reactRoot.render(h(SettingsView)));
+  const slider = element<HTMLInputElement>('[aria-label="Reminder volume"]');
+  await act(async () => input(slider, "35"));
+  expect(slider.value).toBe("35");
+  expect(settings.has("reminder_volume")).toBe(false);
+  await act(async () => { slider.dispatchEvent(new Event("change", { bubbles: true })); });
+  expect(settings.get("reminder_volume")).toBe("35");
 });

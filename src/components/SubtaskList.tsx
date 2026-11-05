@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState } from "react";
 import type { Subtask, Task } from "../types";
 import { CloseIcon, PlusIcon } from "./Icons";
 import { Checkbox } from "./Checkbox";
@@ -41,30 +41,30 @@ export function SubtaskList({
   };
 
   return (
-    <div class="mt-4">
-      <div class="mb-2 flex items-center justify-between">
-        <p class="text-xs font-medium uppercase tracking-wider text-faint">
+    <div className="mt-4">
+      <div className="mb-2 flex items-center justify-between">
+        <p className="text-xs font-medium uppercase tracking-wider text-faint">
           Checklist
         </p>
         {subs.length > 0 && (
-          <span class="text-xs text-faint">
+          <span className="text-xs text-faint">
             {doneCount}/{subs.length}
           </span>
         )}
       </div>
 
       {subs.length > 0 && (
-        <div class="mb-2 h-1 w-full overflow-hidden rounded-full bg-surface-2">
+        <div className="mb-2 h-1 w-full overflow-hidden rounded-full bg-surface-2">
           <div
-            class="h-full rounded-full bg-[var(--color-success)] transition-[width]"
+            className="h-full rounded-full bg-[var(--color-success)] transition-[width]"
             style={{ width: `${(doneCount / subs.length) * 100}%` }}
           />
         </div>
       )}
 
-      <div class="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-0.5">
         {subs.map((s) => (
-          <div key={s.id} class="group flex items-center gap-2">
+          <div key={s.id} className="group flex items-center gap-2">
             <Checkbox
               checked={s.done}
               onChange={() => toggle(s.id)}
@@ -82,13 +82,13 @@ export function SubtaskList({
                   (e.currentTarget as HTMLInputElement).blur();
                 }
               }}
-              class={`min-w-0 flex-1 bg-transparent text-sm outline-none ${
+              className={`min-w-0 flex-1 bg-transparent text-sm outline-none ${
                 s.done ? "text-faint line-through" : "text-text"
               }`}
             />
             <button
               onClick={() => remove(s.id)}
-              class="shrink-0 text-faint opacity-0 transition-opacity hover:text-(--color-danger) group-hover:opacity-100"
+              className="shrink-0 text-faint opacity-0 transition-opacity hover:text-(--color-danger) group-hover:opacity-100"
               title="Remove step"
             >
               <CloseIcon width={14} height={14} />
@@ -97,8 +97,8 @@ export function SubtaskList({
         ))}
       </div>
 
-      <div class="mt-1 flex items-center gap-2">
-        <PlusIcon width={14} height={14} class="shrink-0 text-faint" />
+      <div className="mt-1 flex items-center gap-2">
+        <PlusIcon width={14} height={14} className="shrink-0 text-faint" />
         <input
           value={draft}
           onInput={(e) => setDraft(e.currentTarget.value)}
@@ -110,7 +110,7 @@ export function SubtaskList({
           }}
           onBlur={add}
           placeholder="Add a step…"
-          class="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
+          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-faint"
         />
       </div>
     </div>

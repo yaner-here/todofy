@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "../store";
 import { priorityTag, PRIORITY_VALUES, profileFor } from "../lib/priority";
 import { FlagIcon } from "./Icons";
@@ -31,11 +31,11 @@ export function PriorityPicker({
   }, [open]);
 
   return (
-    <div ref={ref} class="relative">
+    <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        class="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted transition-colors hover:bg-surface-2"
+        className="flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-muted transition-colors hover:bg-surface-2"
         title="Priority"
       >
         <FlagIcon width={14} height={14} style={{ color: current.color }} />
@@ -44,7 +44,7 @@ export function PriorityPicker({
 
       {open && (
         <div
-          class={`absolute right-0 z-50 w-40 animate-fade-rise rounded-lg border border-border-strong bg-elevated p-1 shadow-xl shadow-black/40 ${placement === "top" ? "bottom-full mb-2" : "top-full mt-1"}`}
+          className={`absolute right-0 z-50 w-40 animate-fade-rise rounded-lg border border-border-strong bg-elevated p-1 shadow-xl shadow-black/40 ${placement === "top" ? "bottom-full mb-2" : "top-full mt-1"}`}
         >
           {PRIORITY_VALUES.map((priority) => {
             const profile = profileFor(priority, profiles);
@@ -56,7 +56,7 @@ export function PriorityPicker({
                   onChange(priority);
                   setOpen(false);
                 }}
-                class={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-surface-2 ${
+                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-surface-2 ${
                   priority === current.priority ? "text-text" : "text-muted"
                 }`}
               >
@@ -65,9 +65,9 @@ export function PriorityPicker({
                   height={14}
                   style={{ color: profile.color }}
                 />
-                <span class="truncate">{profile.name}</span>
+                <span className="truncate">{profile.name}</span>
                 {priority === current.priority && (
-                  <span class="ml-auto text-(--color-accent)">✓</span>
+                  <span className="ml-auto text-(--color-accent)">✓</span>
                 )}
               </button>
             );
@@ -78,7 +78,7 @@ export function PriorityPicker({
               setOpen(false);
               setView({ kind: "settings" });
             }}
-            class="mt-1 flex w-full items-center rounded-md border-t border-border px-2 py-1.5 text-xs text-faint transition-colors hover:bg-surface-2 hover:text-muted"
+            className="mt-1 flex w-full items-center rounded-md border-t border-border px-2 py-1.5 text-xs text-faint transition-colors hover:bg-surface-2 hover:text-muted"
           >
             Rename or recolor…
           </button>

@@ -1,5 +1,5 @@
-import type { JSX } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { BoardColumn, ColumnId } from "./board";
 import { indexBetween } from "./ordering";
 
@@ -138,7 +138,7 @@ export function useBoardDrag(
   };
 
   const startDrag =
-    (id: string) => (e: JSX.TargetedPointerEvent<HTMLElement>) => {
+    (id: string) => (e: ReactPointerEvent<HTMLElement>) => {
       if (e.button !== 0) return;
       // A press that somehow arrives with a drag still in flight replaces it,
       // rather than stacking a second set of document listeners.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { getVersion } from "@tauri-apps/api/app";
 import { useStore } from "../store";
 import type { ViewId } from "../types";
@@ -84,14 +84,14 @@ export function Sidebar() {
   };
 
   return (
-    <header class="app-topbar">
-      <div class="app-brand">
+    <header className="app-topbar">
+      <div className="app-brand">
         <Logo size={30} />
         <span>todofy</span>
-        {version && <small class="app-version">v{version}</small>}
+        {version && <small className="app-version">v{version}</small>}
         <button
           type="button"
-          class={`rail-toggle ${sidebarCollapsed ? "" : "is-active"}`}
+          className={`rail-toggle ${sidebarCollapsed ? "" : "is-active"}`}
           onClick={toggleSidebar}
           aria-expanded={!sidebarCollapsed}
           aria-controls="day-navigation"
@@ -102,7 +102,7 @@ export function Sidebar() {
         </button>
       </div>
 
-      <nav class="top-navigation" aria-label="Primary navigation">
+      <nav className="top-navigation" aria-label="Primary navigation">
         {NAV.map(({ id, label, Icon }) => {
           const active =
             sameView(view, id) || (id.kind === "upcoming" && view.kind === "date");
@@ -111,7 +111,7 @@ export function Sidebar() {
               key={label}
               type="button"
               onClick={() => navigate(id)}
-              class={`top-nav-item ${active ? "is-active" : ""}`}
+              className={`top-nav-item ${active ? "is-active" : ""}`}
               aria-label={label}
               aria-current={active ? "page" : undefined}
               title={label}
@@ -123,14 +123,14 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div class="top-actions">
+      <div className="top-actions">
         {/* Icon-only on purpose: the top bar is already tight at narrow widths,
             and the full story lives one click away in Settings. */}
         {showUpdate && (
           <button
             type="button"
             onClick={() => navigate({ kind: "settings" })}
-            class={`top-nav-item top-update ${updateState === "downloading" ? "is-downloading" : ""}`}
+            className={`top-nav-item top-update ${updateState === "downloading" ? "is-downloading" : ""}`}
             aria-label={
               updateState === "downloading"
                 ? `Downloading todofy v${updateVersion}${percent === null ? "" : ` — ${percent}%`}`
@@ -159,7 +159,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => openPro(billingAllowed ? "upgrade" : "cloud_sync")}
-            class={`top-nav-item top-pro ${billingAllowed ? "is-active" : ""}`}
+            className={`top-nav-item top-pro ${billingAllowed ? "is-active" : ""}`}
             aria-label={billingAllowed ? "Todofy Pro status" : "Unlock Cloud Sync"}
             title={billingAllowed ? "Todofy Pro" : "Cloud Sync"}
           >
@@ -170,7 +170,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => navigate({ kind: "focus" })}
-          class={`top-nav-item top-focus ${view.kind === "focus" ? "is-active" : ""}`}
+          className={`top-nav-item top-focus ${view.kind === "focus" ? "is-active" : ""}`}
           aria-label="Focus"
           aria-current={view.kind === "focus" ? "page" : undefined}
           title="Focus"
@@ -181,7 +181,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={() => navigate({ kind: "settings" })}
-          class={`top-nav-item top-settings ${view.kind === "settings" ? "is-active" : ""}`}
+          className={`top-nav-item top-settings ${view.kind === "settings" ? "is-active" : ""}`}
           aria-label="Settings"
           aria-current={view.kind === "settings" ? "page" : undefined}
           title="Settings"
@@ -207,17 +207,17 @@ function UpdateProgress({ percent }: { percent: number | null }) {
       width={20}
       height={20}
       viewBox="0 0 20 20"
-      class={`update-ring ${percent === null ? "is-indeterminate" : ""}`}
+      className={`update-ring ${percent === null ? "is-indeterminate" : ""}`}
       aria-hidden="true"
     >
-      <circle class="update-ring-track" cx="10" cy="10" r={radius} />
+      <circle className="update-ring-track" cx="10" cy="10" r={radius} />
       <circle
-        class="update-ring-value"
+        className="update-ring-value"
         cx="10"
         cy="10"
         r={radius}
-        stroke-dasharray={circumference}
-        stroke-dashoffset={
+        strokeDasharray={circumference}
+        strokeDashoffset={
           percent === null
             ? circumference * 0.75
             : circumference * (1 - percent / 100)
@@ -276,14 +276,14 @@ export function DayRail() {
       : `${weekStart.toLocaleDateString(undefined, { month: "short", day: "numeric" })} – ${weekEnd.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`;
 
   return (
-    <aside id="day-navigation" class={`day-rail ${sidebarCollapsed ? "" : "is-open"}`} aria-label="Day navigation">
-      <div class="mini-calendar">
-        <div class="mini-calendar-heading">
+    <aside id="day-navigation" className={`day-rail ${sidebarCollapsed ? "" : "is-open"}`} aria-label="Day navigation">
+      <div className="mini-calendar">
+        <div className="mini-calendar-heading">
           <div>
             <small>This week</small>
             <strong>{rangeLabel}</strong>
           </div>
-          <div class="mini-calendar-actions">
+          <div className="mini-calendar-actions">
             {!isCurrentWeek && (
               <button type="button" onClick={() => setAnchorDate(new Date(todayKey + "T00:00:00"))}>
                 Today
@@ -297,7 +297,7 @@ export function DayRail() {
             </button>
           </div>
         </div>
-        <div class="mini-week">
+        <div className="mini-week">
           {week.map(({ date, key, count, journaled }) => {
             const current = key === todayKey;
             const selected = key === selectedKey;
@@ -306,25 +306,25 @@ export function DayRail() {
                 key={key}
                 type="button"
                 onClick={() => chooseDay(key)}
-                class={`${current ? "is-current" : ""} ${selected ? "is-selected" : ""}`}
+                className={`${current ? "is-current" : ""} ${selected ? "is-selected" : ""}`}
                 aria-pressed={selected}
                 aria-label={`${date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })}${count ? `, ${count} tasks` : ", no tasks"}${journaled ? ", journaled" : ""}`}
               >
                 <span>{date.toLocaleDateString(undefined, { weekday: "narrow" })}</span>
                 <b>{date.getDate()}</b>
-                <i class={count > 0 ? "has-tasks" : ""}>{count || ""}</i>
-                {journaled && <em class="journal-dot" aria-hidden="true" />}
+                <i className={count > 0 ? "has-tasks" : ""}>{count || ""}</i>
+                {journaled && <em className="journal-dot" aria-hidden="true" />}
               </button>
             );
           })}
         </div>
       </div>
 
-      <div class="day-links-heading">
+      <div className="day-links-heading">
         <span>Daily plan</span>
         <small>{week.reduce((total, day) => total + day.count, 0)} tasks</small>
       </div>
-      <div class="day-links">
+      <div className="day-links">
         {week.map(({ date, key, count }) => {
           const current = key === todayKey;
           const active = key === selectedKey;
@@ -333,18 +333,18 @@ export function DayRail() {
               key={key}
               type="button"
               onClick={() => chooseDay(key)}
-              class={`day-link ${active ? "is-active" : ""}`}
+              className={`day-link ${active ? "is-active" : ""}`}
               aria-current={active ? "date" : undefined}
             >
-              <span class="day-link-date">
+              <span className="day-link-date">
                 <b>{date.getDate()}</b>
                 <small>{date.toLocaleDateString(undefined, { month: "short" })}</small>
               </span>
-              <span class="day-link-copy">
+              <span className="day-link-copy">
                 <strong>{current ? "Today" : date.toLocaleDateString(undefined, { weekday: "long" })}</strong>
                 <small>{count ? `${count} task${count === 1 ? "" : "s"} planned` : "Open day"}</small>
               </span>
-              <span class={`day-link-count ${count ? "has-tasks" : ""}`}>{count || "—"}</span>
+              <span className={`day-link-count ${count ? "has-tasks" : ""}`}>{count || "—"}</span>
             </button>
           );
         })}

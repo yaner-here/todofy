@@ -1,5 +1,5 @@
-import type { JSX } from "preact";
-import { useRef, useState } from "preact/hooks";
+import type { PointerEvent as ReactPointerEvent } from "react";
+import { useRef, useState } from "react";
 import { useStore } from "../store";
 import type { Task } from "../types";
 import { TaskItem } from "./TaskItem";
@@ -74,7 +74,7 @@ export function TaskSection({
   };
 
   const startDrag =
-    (id: string) => (e: JSX.TargetedPointerEvent<HTMLElement>) => {
+    (id: string) => (e: ReactPointerEvent<HTMLElement>) => {
       if (!reorderable || e.button !== 0) return;
       // Stop the row's onClick (task selection) from firing on release, and
       // suppress text selection while dragging.
@@ -142,7 +142,7 @@ export function TaskSection({
     };
 
   return (
-    <div class="task-row-list">
+    <div className="task-row-list">
       {tasks.map((t) => (
         <TaskItem
           key={t.id}

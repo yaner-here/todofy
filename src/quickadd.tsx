@@ -1,4 +1,4 @@
-import { render } from "preact";
+import { createRoot } from "react-dom/client";
 import { QuickCapture } from "./components/QuickCapture";
 import { ContextMenu } from "./components/ContextMenu";
 import { applyTheme, initialTheme } from "./lib/theme";
@@ -13,11 +13,10 @@ document.body.style.background = "transparent";
 // The capture bar shows parsed dates and times, so it needs the same clock and
 // calendar conventions the main window resolved.
 initLocale().finally(() => {
-  render(
+  createRoot(document.getElementById("root")!).render(
     <>
       <QuickCapture />
       <ContextMenu />
     </>,
-    document.getElementById("root")!,
   );
 });

@@ -1,4 +1,4 @@
-import type { JSX } from "preact";
+import type { SVGProps } from "react";
 import type { Icon as PhosphorIcon } from "@phosphor-icons/react";
 import {
   ArrowCounterClockwiseIcon,
@@ -53,15 +53,15 @@ import {
 } from "@phosphor-icons/react";
 import logoUrl from "../../src-tauri/icons/32x32.png";
 
-type P = JSX.SVGAttributes<SVGSVGElement>;
+type P = SVGProps<SVGSVGElement>;
 
 function icon(Icon: PhosphorIcon, defaultWeight: "regular" | "bold" | "fill" = "regular") {
   return (props: P) => {
     const {
       width,
       height,
-      class: className,
-      "stroke-width": strokeWidth,
+      className,
+      strokeWidth,
       ...rest
     } = props;
     const numericStroke = Number(strokeWidth ?? 0);
@@ -128,7 +128,7 @@ export const ShieldCheckIcon = icon(PhShieldCheckIcon);
 
 /** The original Todofy app icon, reused as the product mark. */
 export const Logo = ({ size = 28 }: { size?: number }) => (
-  <img src={logoUrl} width={size} height={size} alt="" class="block rounded-[7px]" />
+  <img src={logoUrl} width={size} height={size} alt="" className="block rounded-[7px]" />
 );
 
 /** Google's multi-color "G" mark for the OAuth sign-in button. */
@@ -145,7 +145,7 @@ export const GoogleIcon = ({ width, height }: P) => {
 };
 
 /** Lemon Squeezy's mark, used only beside provider-hosted billing actions. */
-export const LemonSqueezyIcon = ({ width, height, class: className, ...rest }: P) => {
+export const LemonSqueezyIcon = ({ width, height, className, ...rest }: P) => {
   const size = Number(width ?? height ?? 18);
   return (
     <svg
@@ -154,7 +154,7 @@ export const LemonSqueezyIcon = ({ width, height, class: className, ...rest }: P
       viewBox="0 0 24 24"
       fill="currentColor"
       aria-hidden="true"
-      class={className}
+      className={className}
       {...rest}
     >
       <path d="M9.63 14.28 15 16.76c.66.31 1.13.82 1.39 1.42.64 1.5-.24 3.03-1.61 3.58-1.38.55-2.84.2-3.51-1.36l-2.33-5.47c-.18-.42.27-.84.7-.64Zm.32-1.61 5.54-2.09c1.84-.7 3.85.62 3.82 2.53v.08c-.04 1.86-1.99 3.11-3.79 2.46l-5.56-2.04a.498.498 0 0 1 0-.94Zm-.31-.73 5.44-2.31c1.81-.77 2.27-3.08.85-4.41-.02-.02-.04-.03-.06-.05-1.39-1.29-3.69-.84-4.48.86l-2.44 5.25c-.19.42.25.85.68.66Zm-1.4-.91 1.98-5.43c.25-.67.2-1.36-.05-1.95-.64-1.5-2.38-1.98-3.76-1.43S4.26 4.03 4.93 5.59l2.35 5.47c.18.42.81.41.97-.03Z" />

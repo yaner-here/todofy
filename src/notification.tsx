@@ -1,4 +1,4 @@
-import { render } from "preact";
+import { createRoot } from "react-dom/client";
 import { NotificationPopup } from "./components/NotificationPopup";
 import { ContextMenu } from "./components/ContextMenu";
 import { applyTheme, initialTheme } from "./lib/theme";
@@ -9,10 +9,9 @@ import "./styles/global.css";
 applyTheme(initialTheme());
 document.body.style.background = "transparent";
 
-render(
+createRoot(document.getElementById("root")!).render(
   <>
     <NotificationPopup />
     <ContextMenu />
   </>,
-  document.getElementById("root")!,
 );

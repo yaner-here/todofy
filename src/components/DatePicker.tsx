@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { formatDue, formatTime, toLocalDate, today } from "../lib/dates";
 import { BellIcon, CalendarIcon, RepeatIcon } from "./Icons";
 import { Portal } from "./Portal";
@@ -191,7 +191,7 @@ export function DatePicker({
         ref={btnRef}
         type="button"
         onClick={() => (open ? setOpen(false) : openPicker())}
-        class={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors hover:bg-surface-2 ${
+        className={`flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors hover:bg-surface-2 ${
           value
             ? tone === "overdue"
               ? "text-(--color-danger)"
@@ -216,43 +216,43 @@ export function DatePicker({
               // Shortcuts, calendar, time and repeat can outgrow a short window.
               maxHeight: `calc(100vh - ${MARGIN * 2}px)`,
             }}
-            class="z-150 animate-fade-rise overflow-y-auto rounded-xl border border-border-strong bg-elevated p-2.5 shadow-2xl shadow-black/50"
+            className="z-150 animate-fade-rise overflow-y-auto rounded-xl border border-border-strong bg-elevated p-2.5 shadow-2xl shadow-black/50"
           >
             {/* Quick shortcuts */}
-            <div class="mb-2 flex flex-col gap-0.5">
+            <div className="mb-2 flex flex-col gap-0.5">
               {QUICK.map((q) => (
                 <button
                   key={q.label}
                   type="button"
                   onClick={() => pick(q.date)}
-                  class="flex items-center justify-between rounded-lg px-2.5 py-1.5 text-sm text-text transition-colors hover:bg-accent-soft"
+                  className="flex items-center justify-between rounded-lg px-2.5 py-1.5 text-sm text-text transition-colors hover:bg-accent-soft"
                 >
-                  <span class="flex items-center gap-2.5">
-                    <CalendarIcon width={14} height={14} class="text-faint" />
+                  <span className="flex items-center gap-2.5">
+                    <CalendarIcon width={14} height={14} className="text-faint" />
                     {q.label}
                   </span>
-                  <span class="text-xs text-faint">{q.hint}</span>
+                  <span className="text-xs text-faint">{q.hint}</span>
                 </button>
               ))}
             </div>
 
-            <div class="border-t border-border pt-2">
+            <div className="border-t border-border pt-2">
               {/* Header — clickable month / year to jump modes */}
-              <div class="mb-2 flex items-center justify-between">
+              <div className="mb-2 flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => setMonth(paginate(month, mode, -1))}
-                  class="grid h-7 w-7 place-items-center rounded-md text-muted transition-colors hover:bg-surface-2"
+                  className="grid h-7 w-7 place-items-center rounded-md text-muted transition-colors hover:bg-surface-2"
                 >
                   ‹
                 </button>
 
-                <div class="flex items-center gap-1 text-sm font-medium">
+                <div className="flex items-center gap-1 text-sm font-medium">
                   {mode === "days" && (
                     <button
                       type="button"
                       onClick={() => setMode("months")}
-                      class="rounded-md px-1.5 py-0.5 transition-colors hover:bg-surface-2 hover:text-(--color-accent)"
+                      className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-surface-2 hover:text-(--color-accent)"
                     >
                       {month.toLocaleDateString(undefined, { month: "long" })}
                     </button>
@@ -261,13 +261,13 @@ export function DatePicker({
                     <button
                       type="button"
                       onClick={() => setMode("years")}
-                      class="rounded-md px-1.5 py-0.5 transition-colors hover:bg-surface-2 hover:text-(--color-accent)"
+                      className="rounded-md px-1.5 py-0.5 transition-colors hover:bg-surface-2 hover:text-(--color-accent)"
                     >
                       {year}
                     </button>
                   )}
                   {mode === "years" && (
-                    <span class="px-1.5 py-0.5 text-muted">
+                    <span className="px-1.5 py-0.5 text-muted">
                       {yearPageStart(year)} –{" "}
                       {yearPageStart(year) + YEARS_PER_PAGE - 1}
                     </span>
@@ -277,7 +277,7 @@ export function DatePicker({
                 <button
                   type="button"
                   onClick={() => setMonth(paginate(month, mode, 1))}
-                  class="grid h-7 w-7 place-items-center rounded-md text-muted transition-colors hover:bg-surface-2"
+                  className="grid h-7 w-7 place-items-center rounded-md text-muted transition-colors hover:bg-surface-2"
                 >
                   ›
                 </button>
@@ -288,7 +288,7 @@ export function DatePicker({
               )}
 
               {mode === "months" && (
-                <div class="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-3 gap-1">
                   {MONTHS.map((m, i) => {
                     const sel =
                       valueDate?.getFullYear() === year &&
@@ -303,7 +303,7 @@ export function DatePicker({
                           setMonth(new Date(year, i, 1));
                           setMode("days");
                         }}
-                        class={cell(sel, isNow) + " h-9"}
+                        className={cell(sel, isNow) + " h-9"}
                       >
                         {m}
                       </button>
@@ -313,7 +313,7 @@ export function DatePicker({
               )}
 
               {mode === "years" && (
-                <div class="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-3 gap-1">
                   {Array.from(
                     { length: YEARS_PER_PAGE },
                     (_, i) => yearPageStart(year) + i,
@@ -328,7 +328,7 @@ export function DatePicker({
                           setMonth(new Date(y, month.getMonth(), 1));
                           setMode("months");
                         }}
-                        class={cell(sel, isNow) + " h-9"}
+                        className={cell(sel, isNow) + " h-9"}
                       >
                         {y}
                       </button>
@@ -340,27 +340,27 @@ export function DatePicker({
 
             {/* Time / reminder */}
             {withTime && (
-              <div class="mt-2 border-t border-border pt-2">
-                <div class="mb-1.5 flex items-center gap-1.5 px-0.5 text-xs text-muted">
+              <div className="mt-2 border-t border-border pt-2">
+                <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-xs text-muted">
                   <BellIcon width={13} height={13} />
                   Time
                   {time && (
                     <button
                       type="button"
                       onClick={() => setTime(null)}
-                      class="ml-auto text-faint hover:text-(--color-danger)"
+                      className="ml-auto text-faint hover:text-(--color-danger)"
                     >
                       Clear
                     </button>
                   )}
                 </div>
-                <div class="flex flex-wrap items-center gap-1.5 px-0.5">
+                <div className="flex flex-wrap items-center gap-1.5 px-0.5">
                   {quickTimes.map((t) => (
                     <button
                       key={t}
                       type="button"
                       onClick={() => setTime(t)}
-                      class={`rounded-md px-2 py-1 text-xs transition-colors ${
+                      className={`rounded-md px-2 py-1 text-xs transition-colors ${
                         time === t
                           ? "bg-(--color-accent) text-white"
                           : "bg-surface-2 text-muted hover:text-text"
@@ -370,7 +370,7 @@ export function DatePicker({
                     </button>
                   ))}
                 </div>
-                <div class="mt-1.5 flex px-0.5">
+                <div className="mt-1.5 flex px-0.5">
                   <TimeField
                     value={time || null}
                     onChange={setTime}
@@ -381,8 +381,8 @@ export function DatePicker({
                 {onSnooze &&
                   reminderAt &&
                   new Date(reminderAt).getTime() < Date.now() && (
-                    <div class="mt-2 flex flex-wrap items-center gap-1.5 px-0.5">
-                      <span class="text-xs text-(--color-warning)">Snooze</span>
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 px-0.5">
+                      <span className="text-xs text-(--color-warning)">Snooze</span>
                       {[
                         { label: "10m", min: 10 },
                         { label: "1h", min: 60 },
@@ -395,7 +395,7 @@ export function DatePicker({
                             onSnooze(s.min);
                             setOpen(false);
                           }}
-                          class="rounded-md bg-surface-2 px-2 py-1 text-xs text-muted transition-colors hover:text-text"
+                          className="rounded-md bg-surface-2 px-2 py-1 text-xs text-muted transition-colors hover:text-text"
                         >
                           {s.label}
                         </button>
@@ -406,18 +406,18 @@ export function DatePicker({
             )}
 
             {onRepeatChange && (
-              <div class="mt-2 border-t border-border pt-2">
-                <div class="mb-1.5 flex items-center gap-1.5 px-0.5 text-xs text-muted">
+              <div className="mt-2 border-t border-border pt-2">
+                <div className="mb-1.5 flex items-center gap-1.5 px-0.5 text-xs text-muted">
                   <RepeatIcon width={13} height={13} />
                   Repeat
                 </div>
-                <div class="flex flex-wrap gap-1 px-0.5">
+                <div className="flex flex-wrap gap-1 px-0.5">
                   {REPEAT_OPTIONS.map((opt) => (
                     <button
                       key={opt.value ?? "none"}
                       type="button"
                       onClick={() => onRepeatChange(opt.value)}
-                      class={`rounded-md px-2 py-1 text-xs transition-colors ${
+                      className={`rounded-md px-2 py-1 text-xs transition-colors ${
                         (repeat ?? null) === opt.value
                           ? "bg-(--color-accent) text-white"
                           : "bg-surface-2 text-muted hover:text-text"
@@ -431,7 +431,7 @@ export function DatePicker({
             )}
 
             {((allowClear && value) || staysOpen) && (
-              <div class="mt-2 flex items-center gap-2 border-t border-border pt-2">
+              <div className="mt-2 flex items-center gap-2 border-t border-border pt-2">
                 {allowClear && value && (
                   <button
                     type="button"
@@ -439,7 +439,7 @@ export function DatePicker({
                       pick(null);
                       setOpen(false);
                     }}
-                    class="rounded-md px-1 text-xs text-faint hover:text-(--color-danger)"
+                    className="rounded-md px-1 text-xs text-faint hover:text-(--color-danger)"
                   >
                     Clear date &amp; time
                   </button>
@@ -448,7 +448,7 @@ export function DatePicker({
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    class="ml-auto rounded-md bg-(--color-accent) px-2.5 py-1 text-xs font-medium text-white"
+                    className="ml-auto rounded-md bg-(--color-accent) px-2.5 py-1 text-xs font-medium text-white"
                   >
                     Done
                   </button>
@@ -494,14 +494,14 @@ function DayGrid({
 
   return (
     <>
-      <div class="grid grid-cols-7 text-center text-[10px] font-medium text-faint">
+      <div className="grid grid-cols-7 text-center text-[10px] font-medium text-faint">
         {weekdayNames("narrow").map((w) => (
-          <span key={w.index} class="py-1">
+          <span key={w.index} className="py-1">
             {w.label}
           </span>
         ))}
       </div>
-      <div class="grid grid-cols-7 gap-0.5">
+      <div className="grid grid-cols-7 gap-0.5">
         {cells.map((date, i) =>
           !date ? (
             <span key={i} />
@@ -510,7 +510,7 @@ function DayGrid({
               key={i}
               type="button"
               onClick={() => onPick(date)}
-              class={cell(date === value, date === today()) + " h-8"}
+              className={cell(date === value, date === today()) + " h-8"}
             >
               {Number(date.slice(-2))}
             </button>

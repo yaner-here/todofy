@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState } from "react";
 import { useStore } from "../store";
 import type { PomodoroPhase, SessionLog } from "../types";
 import { api } from "../lib/api";
@@ -49,20 +49,20 @@ export function FocusView() {
   const overtime = remaining < 0;
 
   return (
-    <main class="redesign-secondary focus-main flex flex-1 flex-col overflow-hidden bg-bg">
-      <header class="app-page-header shrink-0 px-8 pt-8 pb-4">
-        <h2 class="text-2xl font-semibold tracking-tight">Focus</h2>
-        <p class="mt-0.5 text-sm text-muted">
+    <main className="redesign-secondary focus-main flex flex-1 flex-col overflow-hidden bg-bg">
+      <header className="app-page-header shrink-0 px-8 pt-8 pb-4">
+        <h2 className="text-2xl font-semibold tracking-tight">Focus</h2>
+        <p className="mt-0.5 text-sm text-muted">
           Run a Pomodoro, tune its lengths, and review your focus history
         </p>
       </header>
 
-      <div class="secondary-scroll focus-content mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-8">
+      <div className="secondary-scroll focus-content mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-8">
         {p && (
-          <section class="focus-timer-panel mb-6 flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-6 py-8">
-            <div class="focus-panel-topline">
+          <section className="focus-timer-panel mb-6 flex flex-col items-center gap-4 rounded-2xl border border-border bg-surface px-6 py-8">
+            <div className="focus-panel-topline">
               <span
-                class={`focus-phase ${
+                className={`focus-phase ${
                   p.phase === "focus"
                     ? "bg-accent-soft text-(--color-accent)"
                     : "bg-surface-2 text-success"
@@ -77,28 +77,28 @@ export function FocusView() {
             </div>
 
             <span
-              class={`focus-clock ${
+              className={`focus-clock ${
                 overtime ? "text-(--color-warning)" : "text-text"
               }`}
             >
               {clock(remaining)}
             </span>
 
-            <p class="focus-prompt">
+            <p className="focus-prompt">
               Pick one outcome. Everything else can wait until the timer ends.
             </p>
 
-            <div class="focus-controls">
+            <div className="focus-controls">
               <button
                 onClick={pomodoroReset}
                 title="Reset phase"
-                class="grid h-11 w-11 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
+                className="grid h-11 w-11 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
               >
                 <RotateIcon width={18} height={18} />
               </button>
               <button
                 onClick={p.running ? pomodoroPause : pomodoroStart}
-                class="grid h-14 w-14 place-items-center rounded-full bg-(--color-accent) text-white transition-colors hover:bg-accent-hover"
+                className="grid h-14 w-14 place-items-center rounded-full bg-(--color-accent) text-white transition-colors hover:bg-accent-hover"
                 title={p.running ? "Pause" : "Start"}
               >
                 {p.running ? (
@@ -110,13 +110,13 @@ export function FocusView() {
               <button
                 onClick={pomodoroNext}
                 title="Skip to next phase"
-                class="grid h-11 w-11 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
+                className="grid h-11 w-11 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text"
               >
                 <SkipIcon width={18} height={18} />
               </button>
             </div>
 
-            <div class="focus-session-progress">
+            <div className="focus-session-progress">
               <span
                 style={{
                   width: `${Math.min(100, Math.max(4, (elapsed / Math.max(1, p.target)) * 100))}%`,
@@ -127,12 +127,12 @@ export function FocusView() {
         )}
 
         {p && (
-          <aside class="focus-side-panel">
-            <div class="focus-side-heading">
+          <aside className="focus-side-panel">
+            <div className="focus-side-heading">
               <p>Session plan</p>
               <span>Adjust the rhythm to match your energy.</span>
             </div>
-            <div class="focus-length-grid">
+            <div className="focus-length-grid">
               <NumberField
                 label="Focus"
                 value={p.focusMin}
@@ -162,7 +162,7 @@ export function FocusView() {
                 }
               />
             </div>
-            <div class="focus-rhythm-note">
+            <div className="focus-rhythm-note">
               <span>Next</span>
               <strong>
                 {p.phase === "focus" ? "Short recovery" : "Focus session"}
@@ -176,7 +176,7 @@ export function FocusView() {
           </aside>
         )}
 
-        <div class="focus-history-panel">
+        <div className="focus-history-panel">
           <History sessions={history} />
         </div>
       </div>
@@ -206,49 +206,49 @@ function History({ sessions }: { sessions: SessionLog[] }) {
 
   return (
     <section>
-      <h3 class="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
+      <h3 className="mb-2 px-1 text-xs font-semibold uppercase tracking-wider text-faint">
         History
       </h3>
 
-      <div class="mb-3 grid grid-cols-3 gap-3">
+      <div className="mb-3 grid grid-cols-3 gap-3">
         <Stat label="Today" value={formatDuration(todayTotal)} />
         <Stat label="This week" value={formatDuration(weekTotal)} />
         <Stat label="Tracked total" value={formatDuration(allTotal)} />
       </div>
 
       {sessions.length === 0 ? (
-        <div class="rounded-xl border border-border bg-surface px-4 py-8 text-center text-sm text-muted">
+        <div className="rounded-xl border border-border bg-surface px-4 py-8 text-center text-sm text-muted">
           No focus sessions yet. Press play on a task to start tracking.
         </div>
       ) : (
-        <div class="overflow-hidden rounded-xl border border-border bg-surface">
+        <div className="overflow-hidden rounded-xl border border-border bg-surface">
           {groups.map((g) => (
             <div key={g.day}>
-              <div class="flex items-center justify-between border-b border-border bg-surface-2 px-4 py-1.5">
-                <span class="text-[11px] font-semibold uppercase tracking-wider text-faint">
+              <div className="flex items-center justify-between border-b border-border bg-surface-2 px-4 py-1.5">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-faint">
                   {dayLabel(g.day)}
                 </span>
-                <span class="text-[11px] text-faint">
+                <span className="text-[11px] text-faint">
                   {formatDuration(sum(g.items))}
                 </span>
               </div>
               {g.items.map((s) => (
                 <div
                   key={s.id}
-                  class="flex items-center gap-3 border-b border-border px-4 py-2.5 last:border-b-0"
+                  className="flex items-center gap-3 border-b border-border px-4 py-2.5 last:border-b-0"
                 >
                   <TimerIcon
                     width={14}
                     height={14}
-                    class="shrink-0 text-faint"
+                    className="shrink-0 text-faint"
                   />
-                  <span class="min-w-0 flex-1 truncate text-sm text-text">
+                  <span className="min-w-0 flex-1 truncate text-sm text-text">
                     {s.title}
                   </span>
-                  <span class="shrink-0 text-xs text-muted">
+                  <span className="shrink-0 text-xs text-muted">
                     {timeRange(s.startAt, s.endAt)}
                   </span>
-                  <span class="shrink-0 font-mono text-xs tabular-nums text-muted">
+                  <span className="shrink-0 font-mono text-xs tabular-nums text-muted">
                     {formatDuration(s.seconds)}
                   </span>
                 </div>
@@ -263,9 +263,9 @@ function History({ sessions }: { sessions: SessionLog[] }) {
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div class="rounded-xl border border-border bg-surface px-3 py-3 text-center">
-      <p class="text-lg font-semibold tabular-nums text-text">{value}</p>
-      <p class="mt-0.5 text-[11px] uppercase tracking-wider text-faint">
+    <div className="rounded-xl border border-border bg-surface px-3 py-3 text-center">
+      <p className="text-lg font-semibold tabular-nums text-text">{value}</p>
+      <p className="mt-0.5 text-[11px] uppercase tracking-wider text-faint">
         {label}
       </p>
     </div>
@@ -292,8 +292,8 @@ function NumberField({
   };
 
   return (
-    <label class="flex flex-col gap-1">
-      <span class="text-[10px] font-medium uppercase tracking-wider text-faint">
+    <label className="flex flex-col gap-1">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-faint">
         {label}
       </span>
       <input
@@ -303,7 +303,7 @@ function NumberField({
         onInput={(e) => setText(e.currentTarget.value)}
         onBlur={commit}
         onKeyDown={(e) => e.key === "Enter" && e.currentTarget.blur()}
-        class="w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm outline-none transition-colors focus:border-(--color-accent)"
+        className="w-full rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm outline-none transition-colors focus:border-(--color-accent)"
       />
     </label>
   );

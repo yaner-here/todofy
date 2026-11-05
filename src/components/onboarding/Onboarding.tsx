@@ -1,5 +1,5 @@
-import type { FunctionComponent } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import type { FunctionComponent } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ONBOARDING_STEPS, useOnboarding } from "../../lib/onboarding";
 import { ChevronLeftIcon } from "../Icons";
 import {
@@ -101,38 +101,38 @@ export function Onboarding() {
 
   return (
     <div
-      class={`fixed inset-0 z-120 grid place-items-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm ${
+      className={`fixed inset-0 z-120 grid place-items-center overflow-y-auto bg-black/70 p-4 backdrop-blur-sm ${
         leaving ? "onb-curtain-leaving" : "onb-curtain"
       }`}
       role="dialog"
       aria-modal="true"
       aria-label="Welcome to todofy"
     >
-      <div class="onb-card relative my-auto w-full max-w-155` overflow-hidden rounded-3xl border border-border-strong bg-elevated shadow-2xl shadow-black/60">
-        <span class="pointer-events-none absolute inset-x-20 -top-32 h-56 rounded-full bg-(--color-accent) opacity-[0.1] blur-3xl" />
+      <div className="onb-card relative my-auto w-full max-w-155` overflow-hidden rounded-3xl border border-border-strong bg-elevated shadow-2xl shadow-black/60">
+        <span className="pointer-events-none absolute inset-x-20 -top-32 h-56 rounded-full bg-(--color-accent) opacity-[0.1] blur-3xl" />
 
         <button
           type="button"
           onClick={() => void finish({ skipped: true })}
-          class="absolute right-4 top-4 z-10 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-faint transition-colors hover:bg-surface-2 hover:text-text"
+          className="absolute right-4 top-4 z-10 rounded-lg px-2.5 py-1.5 text-[11px] font-medium text-faint transition-colors hover:bg-surface-2 hover:text-text"
         >
           Skip
         </button>
 
-        <div class="relative px-7 pb-5 pt-9 sm:px-10">
+        <div className="relative px-7 pb-5 pt-9 sm:px-10">
           {/* A floor under the stage keeps the card from resizing much as
               slides of different lengths come and go. */}
-          <div class="relative flex min-h-100 items-center">
+          <div className="relative flex min-h-100 items-center">
             <div
               key={step}
-              class={`w-full ${dir === 1 ? "onb-enter-right" : "onb-enter-left"}`}
+              className={`w-full ${dir === 1 ? "onb-enter-right" : "onb-enter-left"}`}
             >
               <Current />
             </div>
             {Outgoing && (
               <div
                 key={`out-${outgoing}`}
-                class={`onb-leaving ${dir === 1 ? "onb-leave-left" : "onb-leave-right"}`}
+                className={`onb-leaving ${dir === 1 ? "onb-leave-left" : "onb-leave-right"}`}
                 aria-hidden="true"
               >
                 <Outgoing />
@@ -141,18 +141,18 @@ export function Onboarding() {
           </div>
         </div>
 
-        <div class="relative flex items-center gap-4 border-t border-border px-7 py-4 sm:px-10">
+        <div className="relative flex items-center gap-4 border-t border-border px-7 py-4 sm:px-10">
           <button
             type="button"
             onClick={back}
             disabled={step === 0}
             aria-label="Previous"
-            class="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:pointer-events-none disabled:opacity-0"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:pointer-events-none disabled:opacity-0"
           >
             <ChevronLeftIcon width={17} height={17} />
           </button>
 
-          <div class="flex flex-1 items-center justify-center gap-1.5">
+          <div className="flex flex-1 items-center justify-center gap-1.5">
             {SLIDES.map((_, index) => (
               <button
                 key={index}
@@ -160,7 +160,7 @@ export function Onboarding() {
                 onClick={() => goTo(index)}
                 aria-label={`Step ${index + 1} of ${ONBOARDING_STEPS}`}
                 aria-current={index === step}
-                class={`h-1.5 rounded-full transition-all duration-300 ${
+                className={`h-1.5 rounded-full transition-all duration-300 ${
                   index === step
                     ? "w-6 bg-(--color-accent)"
                     : index < step
@@ -174,7 +174,7 @@ export function Onboarding() {
           <button
             type="button"
             onClick={next}
-            class="shrink-0 rounded-xl bg-(--color-accent) px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/15 transition-[background-color,transform] hover:bg-accent-hover active:translate-y-px"
+            className="shrink-0 rounded-xl bg-(--color-accent) px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-black/15 transition-[background-color,transform] hover:bg-accent-hover active:translate-y-px"
           >
             {NEXT_LABEL[step]}
           </button>
