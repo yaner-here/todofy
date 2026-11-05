@@ -112,14 +112,6 @@ export function priorityColor(
   return profileFor(priority, profiles).color;
 }
 
-/** The full name, for pickers and filter menus: "Priority 1" or "Urgent". */
-export function priorityName(
-  priority: number,
-  profiles?: PriorityProfile[],
-): string {
-  return displayPriorityName(profileFor(priority, profiles));
-}
-
 export function displayPriorityName(profile: PriorityProfile): string {
   return profile.name === defaultProfile(profile.priority).name
     ? t("common.priority", { priority: profile.priority }) : profile.name;

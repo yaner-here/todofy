@@ -725,18 +725,6 @@ export function activeCount(tasks: Task[], view: ViewId): number {
   return tasksForView(tasks, view).filter((t) => t.status === "active").length;
 }
 
-/**
- * Badge count for sidebar nav items. Completed and Pinboard aren't about
- * "active" tasks, so they get a plain total instead.
- */
-export function navCount(tasks: Task[], view: ViewId): number {
-  if (view.kind === "completed" || view.kind === "pinned") {
-    return tasksForView(tasks, view).length;
-  }
-  if (view.kind === "labels" || view.kind === "board") return 0;
-  return activeCount(tasks, view);
-}
-
 /** Task ids in on-screen order for the active view — drives keyboard nav. */
 export function visibleTaskIds(tasks: Task[], view: ViewId): string[] {
   const { searchQuery, filterLabelIds, filterPriorities, completedPage, boardDefinitions } = useStore.getState();

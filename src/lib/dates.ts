@@ -77,47 +77,6 @@ function relativePast(date: string, days: number): string {
   return absoluteDate(date);
 }
 
-/** Convert a stored ISO/UTC datetime to a value for <input type=datetime-local>. */
-export function toDatetimeLocal(iso: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours(),
-  )}:${pad(d.getMinutes())}`;
-}
-
-/** Convert a datetime-local input value (local wall time) to stored ISO/UTC. */
-export function fromDatetimeLocal(value: string): string | null {
-  if (!value) return null;
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return null;
-  return d.toISOString();
-}
-
-function atTime(d: Date, h: number, m = 0): string {
-  d.setHours(h, m, 0, 0);
-  return d.toISOString();
-}
-
-/** Quick reminder presets for the detail panel. */
-export function reminderPresets(): { label: string; iso: string }[] {
-  const evening = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const nextMon = new Date();
-  // 1..7 days until the next Monday.
-  nextMon.setDate(nextMon.getDate() + ((8 - nextMon.getDay()) % 7 || 7));
-
-  return [
-    { label: t("date.laterToday"), iso: new Date(Date.now() + 3 * 3600_000).toISOString() },
-    { label: t("date.evening"), iso: atTime(evening, 18) },
-    { label: `${t("date.tomorrow")} ${formatTime("09:00")}`, iso: atTime(tomorrow, 9) },
-    { label: t("date.nextWeek"), iso: atTime(nextMon, 9) },
-  ];
-}
-
 /** ISO time `minutes` from now — used for snoozing. */
 export function snoozeFrom(minutes: number): string {
   return new Date(Date.now() + minutes * 60_000).toISOString();
