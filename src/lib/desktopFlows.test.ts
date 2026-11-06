@@ -30,8 +30,10 @@ Object.assign(globalThis, {
 
 const { createRoot } = await import("react-dom/client");
 const { useStore } = await import("../store");
+const { initPreferences } = await import("../store");
 const { useKeyboard } = await import("./useKeyboard");
 const { BoardView } = await import("../components/BoardView");
+const { CalendarView } = await import("../components/CalendarView");
 const { ConfirmDialog } = await import("../components/ConfirmDialog");
 const { TaskDetail } = await import("../components/TaskDetail");
 const { api } = await import("./api");
@@ -49,6 +51,8 @@ const { FocusWidget } = await import("../components/FocusWidget");
 const { i18n } = await import("./i18n");
 const { initLanguage, setLanguage, useLanguageState } = await import("./language");
 const { initUpdater, useUpdater } = await import("./updater");
+const { initWindowTheme } = await import("./theme");
+const { today } = await import("./dates");
 
 const initialState = useStore.getState();
 let root: HTMLDivElement;
@@ -129,6 +133,78 @@ afterEach(async () => {
   useStore.setState(initialState, true);
   clearMocks();
   await i18n.changeLanguage("en");
+});
+
+test("migrated preferences drive the UI and survive a fresh startup without WebView storage", async () => {
+  const db = new TestDatabase();
+  dom.localStorage.setItem("todofy-theme", "light");
+  dom.localStorage.setItem("todofy-celebrate", "off");
+  dom.localStorage.setItem("todofy-board-scope", "week");
+  dom.localStorage.setItem("todofy-calendar-view", "day");
+  mockWindows("main");
+  mockIPC((command, args) => {
+    const { key, value, operations } = args as { key: string; value: string; operations: Operation[] };
+    if (command === "run_crud") return db.run(operations);
+    if (command === "get_setting") return (db.sqlite.query("SELECT value FROM settings WHERE key=?").get(key) as { value: string } | null)?.value ?? null;
+    if (command === "set_setting") {
+      db.sqlite.query("INSERT INTO settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value").run(key, value);
+      return;
+    }
+  }, { shouldMockEvents: true });
+  try {
+    await act(async () => initPreferences());
+    expect(useStore.getState()).toMatchObject({ theme: "light", celebrate: false, boardScope: "week", calendarView: "day" });
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(dom.localStorage.length).toBe(0);
+
+    useStore.setState({ tasks: [task({ id: "today", dueDate: today() }), task({ id: "future", dueDate: "2999-01-01" })] });
+    await act(() => reactRoot.render(h(KeyboardBoard)));
+    const scope = element('[aria-label="Board scope"]');
+    expect(scope.querySelector('[aria-pressed="true"]')?.textContent).toBe("This week");
+    await act(async () => {
+      Array.from(scope.querySelectorAll("button")).find((button) => button.textContent === "Today")!.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(scope.querySelector('[aria-pressed="true"]')?.textContent).toBe("Today");
+    expect(visibleTaskIds(useStore.getState().tasks, { kind: "board" })).toEqual(["today"]);
+
+    await act(() => reactRoot.render(h(CalendarView)));
+    const calendar = element('[aria-label="Calendar view"]');
+    expect(calendar.querySelector('[aria-pressed="true"]')?.textContent).toBe("Day");
+    await act(async () => {
+      Array.from(calendar.querySelectorAll("button")).find((button) => button.textContent === "Week")!.click();
+      useStore.getState().toggleTheme();
+      useStore.getState().toggleCelebrate();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(calendar.querySelector('[aria-pressed="true"]')?.textContent).toBe("Week");
+    expect(useStore.getState()).toMatchObject({ theme: "dark", celebrate: true, boardScope: "today", calendarView: "week" });
+    await act(() => useStore.setState({ theme: "light", celebrate: false, boardScope: "all", calendarView: "month" }));
+    await act(async () => initPreferences());
+    expect(useStore.getState()).toMatchObject({ theme: "dark", celebrate: true, boardScope: "today", calendarView: "week" });
+  } finally { db.sqlite.close(); }
+});
+
+test("secondary windows keep a newer theme event over a delayed SQLite read", async () => {
+  let finish!: (value: string) => void;
+  let started!: () => void;
+  const reading = new Promise<void>((resolve) => { started = resolve; });
+  mockIPC((command) => {
+    if (command === "get_setting") {
+      started();
+      return new Promise<string>((resolve) => { finish = resolve; });
+    }
+  }, { shouldMockEvents: true });
+  const initializing = initWindowTheme();
+  await reading;
+  await emit("theme-changed", "light");
+  finish("dark");
+  const off = await initializing;
+  try {
+    expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    await emit("theme-changed", "dark");
+    expect(document.documentElement.hasAttribute("data-theme")).toBe(false);
+  } finally { off(); }
 });
 
 test("Enter opens a recurring board card without completing or advancing it", async () => {

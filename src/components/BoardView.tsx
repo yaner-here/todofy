@@ -7,10 +7,7 @@ import {
   columnOf,
   DONE_COLUMN,
   inScope,
-  readBoardScope,
   SCOPES,
-  writeBoardScope,
-  type BoardScope,
 } from "../lib/board";
 import { useBoardDrag } from "../lib/useBoardDrag";
 import { formatDue, isPast, today } from "../lib/dates";
@@ -57,14 +54,10 @@ export function BoardView() {
     selectedId,
     select,
     moveTaskToColumn,
+    boardScope: scope,
+    setBoardScope: setScope,
   } = useStore();
   const [management, setManagement] = useState<{ id?: string } | null>(null);
-  const [scope, setScopeState] = useState<BoardScope>(readBoardScope);
-
-  const setScope = (next: BoardScope) => {
-    setScopeState(next);
-    writeBoardScope(next);
-  };
 
   // Re-grouped only when something it reads actually changes: a drag calls
   // `setOver` on every pointermove, and re-filtering plus re-sorting every

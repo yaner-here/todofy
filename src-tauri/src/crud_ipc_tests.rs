@@ -35,6 +35,8 @@ fn ipc_shares_committed_data_and_notifies_main_after_snooze() {
         .manage(Db(Mutex::new(conn)))
         .invoke_handler(tauri::generate_handler![
             crate::crud::run_crud,
+            crate::settings::get_setting,
+            crate::settings::set_setting,
             crate::timezone::timezone_offsets,
         ])
         .build(mock_context(noop_assets()))
@@ -50,6 +52,23 @@ fn ipc_shares_committed_data_and_notifies_main_after_snooze() {
     let profiles = invoke(&quickadd, "run_crud", json!({"operations": [{"statement": "priority.list"}]})).unwrap();
     assert_eq!(profiles[0].as_array().unwrap().len(), 4);
     assert!(invoke(&quickadd, "run_crud", json!({"operations": [{"statement": "priority.update"}]})).is_err());
+
+    // The main window imports old preferences into the same database that the
+    // quick-add and notification windows use for their theme.
+    invoke(&main, "set_setting", json!({"key": "theme", "value": "dark"})).unwrap();
+    let preferences = invoke(&main, "run_crud", json!({"operations": [
+        {"statement": "preference.import", "params": ["theme", "light"]},
+        {"statement": "preference.import", "params": ["board_scope", "week"]},
+        {"statement": "preference.get", "params": ["theme"]},
+        {"statement": "preference.get", "params": ["board_scope"]}
+    ]})).unwrap();
+    assert_eq!(preferences[2][0]["value"], "dark");
+    assert_eq!(preferences[3][0]["value"], "week");
+    assert_eq!(invoke(&quickadd, "get_setting", json!({"key": "theme"})).unwrap(), "dark");
+    assert_eq!(invoke(&notification, "get_setting", json!({"key": "theme"})).unwrap(), "dark");
+    assert!(invoke(&notification, "run_crud", json!({"operations": [
+        {"statement": "preference.import", "params": ["theme", "light"]}
+    ]})).is_err());
 
     invoke(&main, "run_crud", json!({"operations": [
         {"statement": "label.insert", "params": ["label", "Home", "#fff", "now"]}

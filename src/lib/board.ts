@@ -44,18 +44,6 @@ export const SCOPES: { id: BoardScope; label: MessageKey }[] = [
   { id: "week", label: "common.thisWeek" },
 ];
 
-const SCOPE_KEY = "todofy-board-scope";
-
-/** Read outside the view too, so keyboard nav walks exactly what's on screen. */
-export function readBoardScope(): BoardScope {
-  const stored = localStorage.getItem(SCOPE_KEY);
-  return SCOPES.some((s) => s.id === stored) ? (stored as BoardScope) : "all";
-}
-
-export function writeBoardScope(scope: BoardScope): void {
-  localStorage.setItem(SCOPE_KEY, scope);
-}
-
 export interface BoardColumn {
   id: ColumnId;
   title: string;

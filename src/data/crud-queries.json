@@ -1,4 +1,6 @@
 {
+  "preference.import": { "read": false, "sql": "INSERT OR IGNORE INTO settings (key, value) VALUES (?1, ?2)" },
+  "preference.get": { "read": true, "sql": "SELECT value FROM settings WHERE key = ?1" },
   "board.columns": { "read": true, "sql": "SELECT id, name, color, order_index AS orderIndex, wip_limit AS wipLimit, updated_at AS updatedAt, deleted_at AS deletedAt, replacement_id AS replacementId FROM board_columns ORDER BY rowid" },
   "board.tasks": { "read": true, "sql": "SELECT id, stage, board_index AS boardIndex, updated_at AS updatedAt FROM tasks WHERE deleted_at IS NULL ORDER BY rowid" },
   "board.insert": { "read": false, "sql": "INSERT INTO board_columns (id, name, color, order_index, wip_limit, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)" },

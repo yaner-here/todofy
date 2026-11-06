@@ -22,9 +22,10 @@ function sameRows(a: SqlRow[], b: SqlRow[]): boolean {
 }
 
 export class TestDatabase implements Database {
-  readonly sqlite = new SQLite(":memory:");
+  readonly sqlite: SQLite;
 
-  constructor() {
+  constructor(path = ":memory:") {
+    this.sqlite = new SQLite(path);
     // Use the real current schema, including the two columns added by migrate().
     this.sqlite.exec(nativeSchema("db.rs"));
     this.sqlite.exec("ALTER TABLE tasks ADD COLUMN last_notified_at TEXT; ALTER TABLE tasks ADD COLUMN reminder_ack_at TEXT;");

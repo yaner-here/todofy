@@ -24,7 +24,6 @@ const HOURS = Array.from({ length: 24 }, (_, hour) => hour);
 const HOUR_HEIGHT = 64;
 const MINUTE_HEIGHT = HOUR_HEIGHT / 60;
 const MAX_MONTH_ITEMS = 4;
-const VIEW_KEY = "todofy-calendar-view";
 
 interface CalendarEntry {
   id: string;
@@ -48,8 +47,7 @@ interface EditorState {
 }
 
 export function CalendarView() {
-  const { tasks, events, setView } = useStore();
-  const [mode, setModeState] = useState<CalendarViewMode>(readStoredMode);
+  const { tasks, events, setView, calendarView: mode, setCalendarView: setMode } = useStore();
   const [anchor, setAnchor] = useState(() => new Date());
   const [editing, setEditing] = useState<EditorState | null>(null);
   const [now, setNow] = useState(() => new Date());
@@ -81,10 +79,6 @@ export function CalendarView() {
     return () => cancelAnimationFrame(frame);
   }, [mode, anchor.getTime()]);
 
-  const setMode = (next: CalendarViewMode) => {
-    setModeState(next);
-    localStorage.setItem(VIEW_KEY, next);
-  };
   const openNew = (date: string, startTime?: string, allDay = false) =>
     setEditing({ event: null, date, startTime, allDay });
   const openEvent = (event: Event) =>
@@ -571,11 +565,6 @@ function buildEntries(tasks: Task[], events: Event[]): Map<string, CalendarEntry
     );
   }
   return byDate;
-}
-
-function readStoredMode(): CalendarViewMode {
-  const stored = localStorage.getItem(VIEW_KEY);
-  return stored === "week" || stored === "day" ? stored : "month";
 }
 
 function calendarRangeLabel(anchor: Date, mode: CalendarViewMode): string {

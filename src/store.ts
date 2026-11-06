@@ -16,7 +16,7 @@ import {
   DEFAULT_COLUMNS,
   DONE_COLUMN,
   inScope,
-  readBoardScope,
+  type BoardScope,
   type ColumnId,
 } from "./lib/board";
 import {
@@ -24,7 +24,10 @@ import {
   type PriorityProfile,
   type PriorityProfileInput,
 } from "./lib/priority";
-import { applyTheme, initialTheme, type Theme } from "./lib/theme";
+import { applyTheme, type Theme } from "./lib/theme";
+import { loadPreferences, savePreference } from "./lib/preferences";
+import type { CalendarViewMode } from "./lib/calendarLayout";
+import { emit } from "@tauri-apps/api/event";
 import {
   setTimeFormat,
   setWeekStart,
@@ -86,6 +89,10 @@ interface State {
   loadError: string | null;
   reminders: ActiveReminder[];
   theme: Theme;
+  boardScope: BoardScope;
+  calendarView: CalendarViewMode;
+  setBoardScope: (scope: BoardScope) => void;
+  setCalendarView: (mode: CalendarViewMode) => void;
   confirm: ConfirmOptions | null;
   sidebarCollapsed: boolean;
   searchQuery: string;
@@ -208,7 +215,15 @@ export const useStore = create<State>((set, get) => ({
   loading: true,
   loadError: null,
   reminders: [],
-  theme: initialTheme(),
+  theme: "dark",
+  boardScope: "all",
+  calendarView: "month",
+  setBoardScope: (boardScope) => {
+    void savePreference("board_scope", boardScope).then(() => set({ boardScope })).catch(console.error);
+  },
+  setCalendarView: (calendarView) => {
+    void savePreference("calendar_view", calendarView).then(() => set({ calendarView })).catch(console.error);
+  },
   confirm: null,
   sidebarCollapsed: true,
   searchQuery: "",
@@ -235,7 +250,7 @@ export const useStore = create<State>((set, get) => ({
     set({ localeVersion: get().localeVersion + 1 });
   },
   celebrationAt: null,
-  celebrate: localStorage.getItem("todofy-celebrate") !== "off",
+  celebrate: true,
 
   load: async () => {
     set({ loading: true });
@@ -298,8 +313,7 @@ export const useStore = create<State>((set, get) => ({
 
   toggleTheme: () => {
     const theme: Theme = get().theme === "dark" ? "light" : "dark";
-    applyTheme(theme);
-    set({ theme });
+    void savePreference("theme", theme).then(() => set({ theme })).catch(console.error);
   },
 
   toggleSidebar: () => {
@@ -312,8 +326,8 @@ export const useStore = create<State>((set, get) => ({
 
   toggleCelebrate: () => {
     const celebrate = !get().celebrate;
-    localStorage.setItem("todofy-celebrate", celebrate ? "on" : "off");
-    set({ celebrate });
+    void savePreference("celebrate", celebrate ? "on" : "off")
+      .then(() => set({ celebrate })).catch(console.error);
   },
 
   pushReminder: (r) =>
@@ -727,7 +741,7 @@ export function activeCount(tasks: Task[], view: ViewId): number {
 
 /** Task ids in on-screen order for the active view — drives keyboard nav. */
 export function visibleTaskIds(tasks: Task[], view: ViewId): string[] {
-  const { searchQuery, filterLabelIds, filterPriorities, completedPage, boardDefinitions } = useStore.getState();
+  const { searchQuery, filterLabelIds, filterPriorities, completedPage, boardDefinitions, boardScope } = useStore.getState();
   const inView = applySearchAndFilters(
     tasksForView(tasks, view),
     searchQuery,
@@ -739,7 +753,7 @@ export function visibleTaskIds(tasks: Task[], view: ViewId): string[] {
   }
   // The board keeps Done and walks column by column, so j/k follows the screen.
   if (view.kind === "board") {
-    return boardColumns(inView.filter((t) => inScope(t, readBoardScope())), boardDefinitions)
+    return boardColumns(inView.filter((t) => inScope(t, boardScope)), boardDefinitions)
       .flatMap((column) => column.tasks)
       .map((t) => t.id);
   }
@@ -750,4 +764,12 @@ export function visibleTaskIds(tasks: Task[], view: ViewId): string[] {
   return sectionsForView(relevant, view)
     .filter((s) => s.tasks.length > 0)
     .flatMap((s) => s.tasks.map((t) => t.id));
+}
+
+/** Resolve shared preferences before the first main-window render. */
+export async function initPreferences(): Promise<void> {
+  const preferences = await loadPreferences();
+  useStore.setState(preferences);
+  applyTheme(preferences.theme);
+  await emit("theme-changed", preferences.theme).catch(console.error);
 }
