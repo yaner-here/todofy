@@ -2,6 +2,7 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { create } from "zustand";
 import { api } from "./api";
 import { i18n } from "./i18n";
+import { isLanguagePreference, resolveLanguage } from "./language-rules";
 import type { LanguagePreference, LanguageSnapshot } from "../types";
 
 export const useLanguageState = create<LanguageSnapshot & { error: string | null }>(() => ({
@@ -33,7 +34,19 @@ export async function initLanguage(): Promise<UnlistenFn> {
   }
   try {
     const snapshot = await api.getLanguage();
-    if (active) await applyLanguage(snapshot);
+    if (active && snapshot.revision > useLanguageState.getState().revision) {
+      const preference = isLanguagePreference(snapshot.preference) ? snapshot.preference : "auto";
+      const language = preference === "auto"
+        ? resolveLanguage(preference, await api.languageSources())
+        : preference;
+      const current = preference === snapshot.preference && language === snapshot.language
+        ? snapshot
+        : await api.syncLanguage(snapshot.revision, preference, language);
+      if (active) {
+        await applyLanguage(current);
+        await api.languageReady();
+      }
+    }
   } catch (error) {
     reportError(error);
   }
@@ -42,5 +55,9 @@ export async function initLanguage(): Promise<UnlistenFn> {
 }
 
 export async function setLanguage(preference: LanguagePreference): Promise<void> {
-  await applyLanguage(await api.setLanguage(preference));
+  if (!isLanguagePreference(preference)) throw new Error(i18n.t("language.invalidPreference"));
+  const language = preference === "auto"
+    ? resolveLanguage(preference, await api.languageSources())
+    : preference;
+  await applyLanguage(await api.setLanguage(preference, language));
 }

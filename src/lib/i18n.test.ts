@@ -21,7 +21,7 @@ function messageContracts(catalog: Map<string, string>): Map<string, string[]> {
   for (const [key, text] of catalog) {
     const base = key.replace(/_(?:zero|one|two|few|many|other)$/, "");
     const parameters = contracts.get(base) ?? new Set<string>();
-    for (const match of text.matchAll(/{{\s*([\w.]+)(?:,[^}]*)?\s*}}/g)) parameters.add(match[1]);
+    for (const match of text.matchAll(/%{\s*([\w.]+)(?:,[^}]*)?\s*}/g)) parameters.add(match[1]);
     contracts.set(base, parameters);
   }
   return new Map([...contracts].map(([key, parameters]) => [key, [...parameters].sort()]));
@@ -32,6 +32,7 @@ afterEach(async () => { await i18n.changeLanguage("en"); });
 test("English and Chinese catalogs cover the same messages and interpolation parameters", () => {
   const english = messages(en);
   const chinese = messages(zh);
+  expect([...english.values(), ...chinese.values()].filter((text) => /{{[^}]*}}/.test(text))).toEqual([]);
   const englishContracts = messageContracts(english);
   const chineseContracts = messageContracts(chinese);
   expect([...chineseContracts.keys()].sort()).toEqual([...englishContracts.keys()].sort());
@@ -42,6 +43,20 @@ test("English and Chinese catalogs cover the same messages and interpolation par
       expect(chinese.has(`${key}_other`)).toBe(true);
     }
   }
+});
+
+test("shared tray and notification messages interpolate in both languages", async () => {
+  expect(i18n.t("tray.taskTooltip", { state: "Tracking", title: "Task <>&", time: "01:30" }))
+    .toBe("Tracking: Task <>& (01:30)");
+  expect(i18n.t("tray.taskTooltip", { state: "Tracking", title: "Task %{time}", time: "01:30" }))
+    .toBe("Tracking: Task %{time} (01:30)");
+  expect(i18n.t("notifications.testTitle")).toBe("todofy test notification");
+  expect(i18n.t("common.priority", { priority: 3 })).toBe("Priority 3");
+  await i18n.changeLanguage("zh-CN");
+  expect(i18n.t("tray.taskTooltip", { state: "正在计时", title: "任务 <>&", time: "01:30" }))
+    .toBe("正在计时：任务 <>&（01:30）");
+  expect(i18n.t("notifications.testTitle")).toBe("todofy测试通知");
+  expect(i18n.t("common.priority", { priority: 3 })).toBe("优先级 3");
 });
 
 test("default names localize even after color edits while custom names and stored defaults remain intact", async () => {

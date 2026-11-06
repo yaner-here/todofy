@@ -1,4 +1,4 @@
-type DateParts = { year: number; month: number; day: number };
+export type DateParts = { year: number; month: number; day: number };
 type Instant = { seconds: number; nanoseconds: number };
 
 // Chrono's NaiveDate bounds, used by existing databases and recurrence rules.
@@ -51,7 +51,7 @@ function nextDate(date: DateParts, rule: string): DateParts | null {
   return validDate(next.year, next.month, next.day) ? next : null;
 }
 
-function formatDate(date: DateParts): string {
+export function formatDate(date: DateParts): string {
   const year = date.year < 0 ? `-${pad(-date.year, 4)}` : date.year > 9999 ? `+${date.year}` : pad(date.year, 4);
   return `${year}-${pad(date.month)}-${pad(date.day)}`;
 }

@@ -1,26 +1,22 @@
 import type { BoardColumnDefinition, Task } from "../types";
 import { t, type MessageKey } from "./i18n";
 import { toLocalDate, today } from "./dates";
+import { DONE_COLUMN, resolveStage, TODO_COLUMN } from "../data/board-rules";
+import defaults from "../data/defaults.json";
 
-export const TODO_COLUMN = "todo";
-export const DONE_COLUMN = "done";
+export { DONE_COLUMN, TODO_COLUMN };
 export type ColumnId = string;
 
 export const STAGES = [
-  { slug: TODO_COLUMN, title: "To do", hint: "board.hint.todo" },
-  { slug: "doing", title: "In progress", hint: "board.hint.doing" },
-  { slug: "blocked", title: "Blocked", hint: "board.hint.blocked" },
+  { slug: TODO_COLUMN, title: defaults.board[0].name, hint: "board.hint.todo" },
+  { slug: "doing", title: defaults.board[1].name, hint: "board.hint.doing" },
+  { slug: "blocked", title: defaults.board[2].name, hint: "board.hint.blocked" },
 ] as const;
 
-export const DEFAULT_COLUMNS: BoardColumnDefinition[] = [
-  ...STAGES.map(({ slug, title }, index) => ({
-    id: slug, name: title, color: ["#6c7cff", "#38bdf8", "#f2b155"][index],
-    orderIndex: index, wipLimit: null, updatedAt: "1970-01-01T00:00:01Z",
-    deletedAt: null, replacementId: null,
-  })),
-  { id: DONE_COLUMN, name: "Done", color: "#4fd18b", orderIndex: 3,
-    wipLimit: null, updatedAt: "1970-01-01T00:00:01Z", deletedAt: null, replacementId: null },
-];
+export const DEFAULT_COLUMNS: BoardColumnDefinition[] = defaults.board.map((column, index) => ({
+  ...column, orderIndex: index, wipLimit: null, updatedAt: defaults.seedTime,
+  deletedAt: null, replacementId: null,
+}));
 
 const DEFAULT_NAME_KEYS: Record<string, MessageKey> = {
   todo: "board.todo", doing: "board.doing", blocked: "board.blocked", done: "board.done",
@@ -73,16 +69,7 @@ export interface BoardColumn {
 
 /** Resolve deleted IDs through their replacement chain; unknown IDs stay visible. */
 export function stageOf(task: Task, definitions = DEFAULT_COLUMNS): ColumnId {
-  let id = task.stage ?? TODO_COLUMN;
-  const seen = new Set<string>();
-  while (!seen.has(id)) {
-    seen.add(id);
-    const column = definitions.find((item) => item.id === id && item.id !== DONE_COLUMN);
-    if (!column) return TODO_COLUMN;
-    if (!column.deletedAt) return column.id;
-    id = column.replacementId ?? TODO_COLUMN;
-  }
-  return TODO_COLUMN;
+  return resolveStage(task.stage, definitions);
 }
 
 export function columnOf(task: Task, definitions = DEFAULT_COLUMNS): ColumnId {

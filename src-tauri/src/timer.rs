@@ -11,12 +11,30 @@
 //!   the same way if left running past `MAX_SESSION_SECS`.
 
 use crate::db::{new_uuid, Db};
-use crate::models::{ActiveTimer, Pomodoro, SessionLog};
 use chrono::DateTime;
 #[cfg(not(test))]
 use chrono::Local;
 use rusqlite::{params, Connection, OptionalExtension};
 use tauri::{AppHandle, Emitter, Manager, State};
+
+// Private snapshots used by the native scheduler and tray. The public timer
+// models are assembled from database rows by the TypeScript data layer.
+struct NativeTaskTimer {
+    title: String,
+    resumed_at: Option<String>,
+    accumulated: i64,
+    estimate_minutes: Option<i64>,
+}
+
+struct NativePomodoro {
+    phase: String,
+    running: bool,
+    start_at: Option<String>,
+    accumulated: i64,
+    completed_focus: i64,
+    target: i64,
+    long_every: i64,
+}
 
 /// Every timestamp in this module is read through here. Elapsed time is a
 /// difference of two whole-second reads, so a test that seeds "10 minutes ago"
@@ -110,23 +128,20 @@ fn close_stale_sessions(conn: &Connection) -> rusqlite::Result<()> {
     Ok(())
 }
 
-fn read_active(conn: &Connection) -> rusqlite::Result<Option<ActiveTimer>> {
+fn read_active(conn: &Connection) -> rusqlite::Result<Option<NativeTaskTimer>> {
     close_stale_sessions(conn)?;
     conn.query_row(
-        "SELECT s.task_id, t.title, s.start_at, s.resumed_at, s.accumulated,
-                t.estimate_minutes
+        "SELECT t.title, s.resumed_at, s.accumulated, t.estimate_minutes
          FROM time_sessions s JOIN tasks t ON t.id = s.task_id
          WHERE s.end_at IS NULL AND s.deleted_at IS NULL AND t.deleted_at IS NULL
          ORDER BY s.start_at DESC LIMIT 1",
         [],
         |r| {
-            Ok(ActiveTimer {
-                task_id: r.get(0)?,
-                title: r.get(1)?,
-                start_at: r.get(2)?,
-                resumed_at: r.get(3)?,
-                accumulated: r.get(4)?,
-                estimate_minutes: r.get(5)?,
+            Ok(NativeTaskTimer {
+                title: r.get(0)?,
+                resumed_at: r.get(1)?,
+                accumulated: r.get(2)?,
+                estimate_minutes: r.get(3)?,
             })
         },
     )
@@ -229,36 +244,36 @@ pub fn start_timer(
     app: AppHandle,
     db: State<Db>,
     id: String,
-) -> Result<Option<ActiveTimer>, String> {
-    let active = {
+) -> Result<(), String> {
+    {
         let conn = db.conn();
         start_tracking(&conn, &id).map_err(|e| e.to_string())?;
-        read_active(&conn).map_err(|e| e.to_string())?
-    };
+        read_active(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(active)
+    Ok(())
 }
 
 #[tauri::command]
-pub fn pause_timer(app: AppHandle, db: State<Db>) -> Result<Option<ActiveTimer>, String> {
-    let active = {
+pub fn pause_timer(app: AppHandle, db: State<Db>) -> Result<(), String> {
+    {
         let conn = db.conn();
         pause_tracking(&conn).map_err(|e| e.to_string())?;
-        read_active(&conn).map_err(|e| e.to_string())?
-    };
+        read_active(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(active)
+    Ok(())
 }
 
 #[tauri::command]
-pub fn resume_timer(app: AppHandle, db: State<Db>) -> Result<Option<ActiveTimer>, String> {
-    let active = {
+pub fn resume_timer(app: AppHandle, db: State<Db>) -> Result<(), String> {
+    {
         let conn = db.conn();
         resume_tracking(&conn).map_err(|e| e.to_string())?;
-        read_active(&conn).map_err(|e| e.to_string())?
-    };
+        read_active(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(active)
+    Ok(())
 }
 
 #[tauri::command]
@@ -272,38 +287,8 @@ pub fn stop_timer(app: AppHandle, db: State<Db>) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn active_timer(db: State<Db>) -> Result<Option<ActiveTimer>, String> {
-    read_active(&db.conn()).map_err(|e| e.to_string())
-}
-
-/// Recent completed focus sessions, newest first, for the history view.
-#[tauri::command]
-pub fn focus_history(db: State<Db>, limit: i64) -> Result<Vec<SessionLog>, String> {
-    let conn = db.conn();
-    let lim = if limit <= 0 { 200 } else { limit };
-    let mut stmt = conn
-        .prepare(
-            "SELECT s.id, s.task_id, t.title, s.start_at, s.end_at, s.seconds
-             FROM time_sessions s JOIN tasks t ON t.id = s.task_id
-             WHERE s.end_at IS NOT NULL AND s.deleted_at IS NULL AND t.deleted_at IS NULL
-             ORDER BY s.start_at DESC LIMIT ?1",
-        )
-        .map_err(|e| e.to_string())?;
-    let rows = stmt
-        .query_map([lim], |r| {
-            Ok(SessionLog {
-                id: r.get(0)?,
-                task_id: r.get(1)?,
-                title: r.get(2)?,
-                start_at: r.get(3)?,
-                end_at: r.get(4)?,
-                seconds: r.get::<_, Option<i64>>(5)?.unwrap_or(0),
-            })
-        })
-        .map_err(|e| e.to_string())?
-        .collect::<rusqlite::Result<Vec<_>>>()
-        .map_err(|e| e.to_string())?;
-    Ok(rows)
+pub fn active_timer(db: State<Db>) -> Result<(), String> {
+    read_active(&db.conn()).map(|_| ()).map_err(|e| e.to_string())
 }
 
 // ---------------------------------------------------------------- pomodoro
@@ -340,7 +325,7 @@ fn close_stale_pomodoro(conn: &Connection) -> rusqlite::Result<()> {
     Ok(())
 }
 
-fn read_pomodoro(conn: &Connection) -> rusqlite::Result<Pomodoro> {
+fn read_pomodoro(conn: &Connection) -> rusqlite::Result<NativePomodoro> {
     close_stale_pomodoro(conn)?;
     conn.query_row(
         "SELECT phase, running, start_at, accumulated, completed_focus,
@@ -352,16 +337,13 @@ fn read_pomodoro(conn: &Connection) -> rusqlite::Result<Pomodoro> {
             let focus: i64 = r.get(5)?;
             let short: i64 = r.get(6)?;
             let long: i64 = r.get(7)?;
-            Ok(Pomodoro {
+            Ok(NativePomodoro {
                 target: phase_target(&phase, focus, short, long),
                 phase,
                 running: r.get::<_, i64>(1)? != 0,
                 start_at: r.get(2)?,
                 accumulated: r.get(3)?,
                 completed_focus: r.get(4)?,
-                focus_min: focus,
-                short_min: short,
-                long_min: long,
                 long_every: r.get(8)?,
             })
         },
@@ -369,8 +351,8 @@ fn read_pomodoro(conn: &Connection) -> rusqlite::Result<Pomodoro> {
 }
 
 #[tauri::command]
-pub fn get_pomodoro(db: State<Db>) -> Result<Pomodoro, String> {
-    read_pomodoro(&db.conn()).map_err(|e| e.to_string())
+pub fn get_pomodoro(db: State<Db>) -> Result<(), String> {
+    read_pomodoro(&db.conn()).map(|_| ()).map_err(|e| e.to_string())
 }
 
 /// Start or resume the current phase.
@@ -396,47 +378,47 @@ fn pause_pomodoro_segment(conn: &Connection) -> rusqlite::Result<()> {
 }
 
 #[tauri::command]
-pub fn pomodoro_start(app: AppHandle, db: State<Db>) -> Result<Pomodoro, String> {
-    let p = {
+pub fn pomodoro_start(app: AppHandle, db: State<Db>) -> Result<(), String> {
+    {
         let conn = db.conn();
         resume_pomodoro_segment(&conn).map_err(|e| e.to_string())?;
-        read_pomodoro(&conn).map_err(|e| e.to_string())?
-    };
+        read_pomodoro(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(p)
+    Ok(())
 }
 
 #[tauri::command]
-pub fn pomodoro_pause(app: AppHandle, db: State<Db>) -> Result<Pomodoro, String> {
-    let p = {
+pub fn pomodoro_pause(app: AppHandle, db: State<Db>) -> Result<(), String> {
+    {
         let conn = db.conn();
         pause_pomodoro_segment(&conn).map_err(|e| e.to_string())?;
-        read_pomodoro(&conn).map_err(|e| e.to_string())?
-    };
+        read_pomodoro(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(p)
+    Ok(())
 }
 
 /// Reset the current phase's clock (keeps the phase and set progress).
 #[tauri::command]
-pub fn pomodoro_reset(app: AppHandle, db: State<Db>) -> Result<Pomodoro, String> {
-    let p = {
+pub fn pomodoro_reset(app: AppHandle, db: State<Db>) -> Result<(), String> {
+    {
         let conn = db.conn();
         conn.execute(
             "UPDATE pomodoro SET running = 0, start_at = NULL, accumulated = 0, notified = 0 WHERE id = 1",
             [],
         )
         .map_err(|e| e.to_string())?;
-        read_pomodoro(&conn).map_err(|e| e.to_string())?
-    };
+        read_pomodoro(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(p)
+    Ok(())
 }
 
 /// Advance to the next phase (focus -> short/long break -> focus) and start it.
 #[tauri::command]
-pub fn pomodoro_next(app: AppHandle, db: State<Db>) -> Result<Pomodoro, String> {
-    let next = {
+pub fn pomodoro_next(app: AppHandle, db: State<Db>) -> Result<(), String> {
+    {
         let conn = db.conn();
         let p = read_pomodoro(&conn).map_err(|e| e.to_string())?;
         let (next_phase, completed) = if p.phase == "focus" {
@@ -452,10 +434,10 @@ pub fn pomodoro_next(app: AppHandle, db: State<Db>) -> Result<Pomodoro, String> 
             params![next_phase, completed, now_iso()],
         )
         .map_err(|e| e.to_string())?;
-        read_pomodoro(&conn).map_err(|e| e.to_string())?
-    };
+        read_pomodoro(&conn).map_err(|e| e.to_string())?;
+    }
     crate::tray::refresh(&app);
-    Ok(next)
+    Ok(())
 }
 
 #[tauri::command]
@@ -465,7 +447,7 @@ pub fn set_pomodoro_config(
     short_min: i64,
     long_min: i64,
     long_every: i64,
-) -> Result<Pomodoro, String> {
+) -> Result<(), String> {
     let conn = db.conn();
     conn.execute(
         "UPDATE pomodoro SET focus_min = ?1, short_min = ?2, long_min = ?3, long_every = ?4 WHERE id = 1",
@@ -477,7 +459,7 @@ pub fn set_pomodoro_config(
         ],
     )
     .map_err(|e| e.to_string())?;
-    read_pomodoro(&conn).map_err(|e| e.to_string())
+    read_pomodoro(&conn).map(|_| ()).map_err(|e| e.to_string())
 }
 
 // ----------------------------------------------------------------- polling

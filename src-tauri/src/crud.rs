@@ -41,7 +41,7 @@ fn query_definitions() -> &'static HashMap<String, QueryDefinition> {
 fn allowed(window: &str, name: &str) -> bool {
     match window {
         "main" => true,
-        "quickadd" => matches!(name, "label.list" | "task.insert" | "task.upsertLabel" | "task.get"),
+        "quickadd" => matches!(name, "label.list" | "priority.list" | "task.insert" | "task.upsertLabel" | "task.get"),
         "notification" => matches!(name, "task.due" | "task.remind" | "task.touch" | "task.get"),
         _ => false,
     }
@@ -161,6 +161,8 @@ mod tests {
         assert_eq!(count, 0);
         assert!(run_operations(&mut conn, "notification", &[op("label.list", vec![])]).is_err());
         assert!(run_operations(&mut conn, "quickadd", &[op("label.delete", vec![json!("now"), json!("l1")])]).is_err());
+        assert_eq!(run_operations(&mut conn, "quickadd", &[op("priority.list", vec![])]).unwrap()[0].len(), 4);
+        assert!(run_operations(&mut conn, "quickadd", &[op("priority.update", vec![])]).is_err());
     }
 
     #[test]

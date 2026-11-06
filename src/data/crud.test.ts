@@ -2,7 +2,7 @@ import { afterEach, expect, test } from "bun:test";
 import { clearMocks, mockIPC } from "@tauri-apps/api/mocks";
 import { Window } from "happy-dom";
 import type { Database, Operation } from "./database";
-import { advanceReminder, type LocalTime } from "./local-time";
+import { advanceReminder, webviewTimezone, type LocalTime } from "./local-time";
 import { advanceDue, localTimestamp } from "./recurrence";
 import { createTauriCrud } from "./tauri-crud";
 import { localTimeForTests, TestDatabase } from "../../tests/crud-fixture";
@@ -73,11 +73,7 @@ test("the Tauri adapter sends named batches through IPC and reads their results"
   Object.defineProperty(globalThis, "window", { configurable: true, value: new Window({ url: "http://localhost" }) });
   try {
     mockIPC((command, args) => {
-      if (command === "local_reminder_parts") return localTimeForTests.parts((args as { timestamp: string }).timestamp);
-      if (command === "local_reminder_timestamp") {
-        const { date, time } = args as { date: string; time: string };
-        return localTimeForTests.timestamp(date, time);
-      }
+      if (command === "timezone_offsets") return webviewTimezone.offsets((args as { seconds: number[] }).seconds);
       if (command !== "run_crud") throw new Error(`Unexpected IPC command: ${command}`);
       const operations = (args as { operations: Operation[] }).operations;
       return db.run(operations);
@@ -133,6 +129,21 @@ test("an event update retries when another window changes the range", async () =
   } };
   await expect(createTauriCrud(concurrent).updateEvent({ id: event.id, startAt: "2026-11-06T11:00:00Z" })).rejects.toThrow("later than");
   expect((await repository.listEvents())[0]).toMatchObject({ startAt: "2026-11-06T09:00:00Z", endAt: "2026-11-06T10:30:00Z" });
+});
+
+test("event and task lists retain their former SQLite ordering in TypeScript", async () => {
+  const { db, repository } = setup();
+  for (const [id, start] of [["later", "2026-12-01"], ["missing", null], ["first", "2026-01-01"], ["tie", "2026-01-01"], ["emoji", "😀"], ["private", "\uE000"]] as const) {
+    db.sqlite.query("INSERT INTO events(id,title,start_at,created_at,updated_at) VALUES (?1,?1,?2,'now','now')").run(id, start);
+  }
+  const sqliteOrder = db.sqlite.query("SELECT id FROM events ORDER BY start_at").all() as { id: string }[];
+  expect((await repository.listEvents()).map((event) => event.id)).toEqual(sqliteOrder.map((row) => row.id));
+  db.sqlite.exec(`INSERT INTO tasks(id,title,status,order_index,created_at,updated_at) VALUES
+    ('done','Done','done',0,'2026-01-01','now'),
+    ('later','Later','active',2,'2026-01-01','now'),
+    ('newer','Newer','active',1,'2026-02-01','now'),
+    ('older','Older','active',1,'2026-01-01','now');`);
+  expect((await repository.listTasks()).map((task) => task.id)).toEqual(["older", "newer", "later", "done"]);
 });
 
 test("recurring completion retries if another window reschedules the task", async () => {

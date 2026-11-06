@@ -35,8 +35,7 @@ fn ipc_shares_committed_data_and_notifies_main_after_snooze() {
         .manage(Db(Mutex::new(conn)))
         .invoke_handler(tauri::generate_handler![
             crate::crud::run_crud,
-            crate::local_time::local_reminder_parts,
-            crate::local_time::local_reminder_timestamp,
+            crate::timezone::timezone_offsets,
         ])
         .build(mock_context(noop_assets()))
         .unwrap();
@@ -45,6 +44,12 @@ fn ipc_shares_committed_data_and_notifies_main_after_snooze() {
     let notification = WebviewWindowBuilder::new(&app, "notification", Default::default()).build().unwrap();
     let (events, received) = mpsc::channel();
     app.listen("tasks-changed", move |_| { events.send(()).unwrap(); });
+
+    let offsets = invoke(&main, "timezone_offsets", json!({"seconds": [0, 1793961600]})).unwrap();
+    assert_eq!(offsets, json!(crate::timezone::timezone_offsets(vec![0, 1793961600]).unwrap()));
+    let profiles = invoke(&quickadd, "run_crud", json!({"operations": [{"statement": "priority.list"}]})).unwrap();
+    assert_eq!(profiles[0].as_array().unwrap().len(), 4);
+    assert!(invoke(&quickadd, "run_crud", json!({"operations": [{"statement": "priority.update"}]})).is_err());
 
     invoke(&main, "run_crud", json!({"operations": [
         {"statement": "label.insert", "params": ["label", "Home", "#fff", "now"]}
@@ -82,23 +87,4 @@ fn ipc_shares_committed_data_and_notifies_main_after_snooze() {
     assert!(invoke(&quickadd, "run_crud", json!({"operations": [
         {"statement": "label.delete", "params": ["now", "label"]}
     ]})).is_err());
-}
-
-#[test]
-fn ipc_round_trips_local_reminder_time() {
-    let app = mock_builder()
-        .invoke_handler(tauri::generate_handler![
-            crate::local_time::local_reminder_parts,
-            crate::local_time::local_reminder_timestamp,
-        ])
-        .build(mock_context(noop_assets()))
-        .unwrap();
-    let main = WebviewWindowBuilder::new(&app, "main", Default::default()).build().unwrap();
-    let original = "2026-11-06T09:00:00.123456789Z";
-    let parts = invoke(&main, "local_reminder_parts", json!({"timestamp": original})).unwrap();
-    let result = invoke(&main, "local_reminder_timestamp", parts).unwrap();
-    assert_eq!(
-        chrono::DateTime::parse_from_rfc3339(result.as_str().unwrap()).unwrap(),
-        chrono::DateTime::parse_from_rfc3339(original).unwrap()
-    );
 }

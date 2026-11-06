@@ -7,19 +7,10 @@ import type { CrudRepository } from "./crud";
 import { op, tauriDatabase, type Database, type Operation, type SqlRow, type SqlValue } from "./database";
 import { advanceReminder, tauriLocalTime, type LocalTime } from "./local-time";
 import { advanceDue, localTimestamp, parseInstant } from "./recurrence";
+import { check, compareText, newId, retry, trimWhitespace } from "./operations";
+import { resolveStage } from "./board-rules";
 
-const CONFLICT = "todofy:crud-conflict";
 const now = () => localTimestamp(new Date());
-const trimWhitespace = (text: string) => text.replace(/^\p{White_Space}+|\p{White_Space}+$/gu, "");
-
-function newId(): string {
-  // getRandomValues is available even in webviews without a secure context.
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  bytes[6] = (bytes[6] & 0x0f) | 0x40;
-  bytes[8] = (bytes[8] & 0x3f) | 0x80;
-  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-}
 
 function only(rows: SqlRow[]): SqlRow {
   if (rows.length !== 1) throw new Error("Query returned no rows");
@@ -55,22 +46,6 @@ function eventFromRow(row: SqlRow): Event {
   return { ...row as unknown as Event, allDay: row.allDay !== 0 };
 }
 
-async function retry<T>(work: () => Promise<T>): Promise<T> {
-  for (let attempt = 0; attempt < 10; attempt++) {
-    try {
-      return await work();
-    } catch (error) {
-      const conflict = error === CONFLICT || (error instanceof Error && error.message === CONFLICT);
-      if (!conflict || attempt === 9) throw error;
-    }
-  }
-  throw new Error(CONFLICT);
-}
-
-function check(statement: Operation["statement"], expected: SqlRow[], ...params: SqlValue[]): Operation {
-  return { statement, params, expected };
-}
-
 function validateEvent(allDay: boolean, start: string | null, end: string | null): void {
   if (allDay || start === null || end === null) return;
   const from = parseInstant(start);
@@ -94,23 +69,9 @@ function crowded(values: number[]): boolean {
   });
 }
 
-const compareText = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 type OrderRow = { id: string; status: string; orderIndex: number; createdAt: string; deletedAt: string | null; rowId: number };
 type BoardRow = { id: string; status: string; stage: string | null; boardIndex: number; createdAt: string; deletedAt: string | null; rowId: number };
 type ColumnRow = { id: string; deletedAt: string | null; replacementId: string | null };
-
-function resolvedStage(stage: string | null, columns: ColumnRow[]): string {
-  let id = stage ?? "todo";
-  const seen = new Set<string>();
-  while (!seen.has(id)) {
-    seen.add(id);
-    const column = columns.find((item) => item.id === id && item.id !== "done");
-    if (!column) return "todo";
-    if (column.deletedAt === null) return column.id;
-    id = column.replacementId ?? "todo";
-  }
-  return "todo";
-}
 
 function createTaskCrud(db: Database, localTime: LocalTime) {
   async function taskAfter(operations: Operation[], id: string): Promise<Task> {
@@ -126,7 +87,9 @@ function createTaskCrud(db: Database, localTime: LocalTime) {
   return {
     async listTasks() {
       const [rows] = await db.run([op("task.list")]);
-      return rows.map(taskFromRow);
+      return rows.map(taskFromRow).sort((a, b) =>
+        Number(a.status === "done") - Number(b.status === "done") ||
+        a.orderIndex - b.orderIndex || compareText(a.createdAt, b.createdAt));
     },
     async createTask(task: NewTask) {
       const id = newId();
@@ -186,7 +149,7 @@ function createTaskCrud(db: Database, localTime: LocalTime) {
         if (!all.some((row) => row.id === id)) throw new Error("Query returned no rows");
         const rows = all.filter((row) => row.deletedAt === null)
           .map((row) => row.id === id ? { ...row, stage, boardIndex, status: "active" } : row)
-          .filter((row) => row.status !== "done" && resolvedStage(row.stage, columns) === target)
+          .filter((row) => row.status !== "done" && resolveStage(row.stage, columns) === target)
           .sort((a, b) => a.boardIndex - b.boardIndex || compareText(a.createdAt, b.createdAt) || compareText(a.id, b.id));
         const renumber = crowded(rows.map((row) => row.boardIndex));
         const timestamp = now();
@@ -284,7 +247,9 @@ function createEventCrud(db: Database) {
   return {
     async listEvents() {
       const [rows] = await db.run([op("event.list")]);
-      return rows.map(eventFromRow);
+      return rows.map(eventFromRow).sort((a, b) =>
+        a.startAt === null ? (b.startAt === null ? 0 : -1)
+          : b.startAt === null ? 1 : compareText(a.startAt, b.startAt));
     },
     async createEvent(event: NewEvent) {
       validateEvent(event.allDay ?? false, event.startAt ?? null, event.endAt ?? null);

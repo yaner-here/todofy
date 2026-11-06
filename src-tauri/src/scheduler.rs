@@ -38,11 +38,14 @@ struct ReminderSound {
 /// Spawn a background thread that periodically checks for tasks whose
 /// `remind_at` has passed and fires a native desktop notification once.
 pub fn spawn(app: AppHandle) {
-    std::thread::spawn(move || loop {
-        if let Err(e) = tick(&app) {
-            eprintln!("[scheduler] error: {e}");
+    std::thread::spawn(move || {
+        app.state::<crate::i18n::LanguageState>().wait_ready();
+        loop {
+            if let Err(e) = tick(&app) {
+                eprintln!("[scheduler] error: {e}");
+            }
+            std::thread::sleep(std::time::Duration::from_secs(POLL_SECONDS));
         }
-        std::thread::sleep(std::time::Duration::from_secs(POLL_SECONDS));
     });
 }
 

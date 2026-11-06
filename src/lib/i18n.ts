@@ -7,6 +7,8 @@ declare module "i18next" {
   interface CustomTypeOptions {
     defaultNS: "translation";
     resources: { translation: typeof en };
+    interpolationPrefix: "%{";
+    interpolationSuffix: "}";
   }
 }
 
@@ -20,7 +22,7 @@ void i18n.use(initReactI18next).init({
   fallbackLng: "en",
   supportedLngs: ["en", "zh-CN"],
   resources: { en: { translation: en }, "zh-CN": { translation: zhCN } },
-  interpolation: { escapeValue: false },
+  interpolation: { prefix: "%{", suffix: "}", escapeValue: false },
 });
 
 export const t = i18n.t.bind(i18n);

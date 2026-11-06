@@ -1,0 +1,15 @@
+{
+  "seedTime": "1970-01-01T00:00:01Z",
+  "board": [
+    { "id": "todo", "name": "To do", "color": "#6c7cff" },
+    { "id": "doing", "name": "In progress", "color": "#38bdf8" },
+    { "id": "blocked", "name": "Blocked", "color": "#f2b155" },
+    { "id": "done", "name": "Done", "color": "#4fd18b" }
+  ],
+  "priorities": [
+    { "priority": 1, "name": "Priority 1", "color": "#f2555a" },
+    { "priority": 2, "name": "Priority 2", "color": "#f2b155" },
+    { "priority": 3, "name": "Priority 3", "color": "#6c7cff" },
+    { "priority": 4, "name": "Priority 4", "color": "#6b7885" }
+  ]
+}

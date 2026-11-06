@@ -46,7 +46,6 @@ const { JournalView } = await import("../components/JournalView");
 const { NotificationPopup } = await import("../components/NotificationPopup");
 const { SettingsView } = await import("../components/SettingsView");
 const { FocusWidget } = await import("../components/FocusWidget");
-const { DEFAULT_PROFILES } = await import("./priority");
 const { i18n } = await import("./i18n");
 const { initLanguage, setLanguage, useLanguageState } = await import("./language");
 const { initUpdater, useUpdater } = await import("./updater");
@@ -482,7 +481,6 @@ test("quick add creates a task and clears the draft", async () => {
 test("journal drafts save with the keyboard shortcut", async () => {
   const db = new TestDatabase();
   mockIPC((command, args) => {
-    if (command === "focus_history") return [];
     if (command === "run_crud") return db.run((args as { operations: Operation[] }).operations);
     throw new Error(`Unexpected IPC command: ${command}`);
   });
@@ -509,7 +507,6 @@ test("quick capture submits the controlled draft to the native backend and clear
   mockIPC((command, args) => {
     switch (command) {
       case "run_crud": return db.run((args as { operations: Operation[] }).operations);
-      case "list_priority_profiles": return DEFAULT_PROFILES;
       case "plugin:window|hide": hidden = true; return;
       default: throw new Error(`Unexpected IPC command: ${command}`);
     }
@@ -590,10 +587,38 @@ test("a newer language event wins over a delayed startup read", async () => {
   off();
 });
 
+test("a newer language choice also wins while system locale resolution is pending", async () => {
+  let resolveSources!: (value: { linux: boolean; environment: Record<string, string>; locales: string[]; configuration: string[] }) => void;
+  let sourcesStarted!: () => void;
+  const reading = new Promise<void>((resolve) => { sourcesStarted = resolve; });
+  const newer = { preference: "zh-CN", language: "zh-CN", revision: 1 } as const;
+  mockIPC((command, args) => {
+    if (command === "get_language") return { preference: "auto", language: "en", revision: 0 };
+    if (command === "language_sources") {
+      sourcesStarted();
+      return new Promise((resolve) => { resolveSources = resolve; });
+    }
+    if (command === "sync_language") {
+      expect((args as { revision: number }).revision).toBe(0);
+      return newer;
+    }
+  }, { shouldMockEvents: true });
+  const initializing = initLanguage();
+  await reading;
+  await emit("language-changed", newer);
+  resolveSources({ linux: false, environment: {}, locales: ["en-US"], configuration: [] });
+  const off = await initializing;
+  try {
+    expect(useLanguageState.getState()).toMatchObject(newer);
+    expect(i18n.resolvedLanguage).toBe("zh-CN");
+  } finally { off(); }
+});
+
 test("late windows restore the saved language and changing auto to the same language still saves the preference", async () => {
   let saved: LanguageSnapshot = { preference: "auto", language: "zh-CN", revision: 0 };
   mockIPC((command, args) => {
     if (command === "get_language") return saved;
+    if (command === "language_sources") return { linux: false, environment: {}, locales: ["zh-CN"], configuration: [] };
     if (command === "set_language") {
       saved = { ...saved, preference: (args as { preference: LanguageSnapshot["preference"] }).preference, revision: saved.revision + 1 };
       return saved;
@@ -701,23 +726,24 @@ test("an active notification translates controls without replacing its content, 
 });
 
 test("changing only a default column color in Chinese preserves its stored English name", async () => {
+  const db = new TestDatabase();
   mockIPC((command, args) => {
-    if (command === "update_board_column") {
-      const { id, input } = args as { id: string; input: { name: string; color: string; wipLimit: number | null } };
-      return DEFAULT_COLUMNS.map((column) => column.id === id ? { ...column, ...input } : column);
-    }
+    if (command === "run_crud") return db.run((args as { operations: Operation[] }).operations);
+    throw new Error(`Unexpected IPC command: ${command}`);
   });
-  await act(async () => i18n.changeLanguage("zh-CN"));
-  await act(() => reactRoot.render(h(KeyboardBoard)));
-  await act(() => element<HTMLButtonElement>('[aria-label="编辑“进行中”列"]').click());
-  const fields = root.querySelectorAll<HTMLInputElement>(".column-editor input");
-  expect(fields[0].value).toBe("In progress");
-  await act(() => input(fields[1], "#123456"));
-  await act(async () => element<HTMLButtonElement>('.column-editor button[type="submit"]').click());
-  const saved = useStore.getState().boardDefinitions.find((column) => column.id === "doing")!;
-  expect(saved.name).toBe("In progress");
-  expect(saved.color).toBe("#123456");
-  expect(root.querySelector('[aria-label="进行中"]')).not.toBeNull();
+  try {
+    await act(async () => i18n.changeLanguage("zh-CN"));
+    await act(() => reactRoot.render(h(KeyboardBoard)));
+    await act(() => element<HTMLButtonElement>('[aria-label="编辑“进行中”列"]').click());
+    const fields = root.querySelectorAll<HTMLInputElement>(".column-editor input");
+    expect(fields[0].value).toBe("In progress");
+    await act(() => input(fields[1], "#123456"));
+    await act(async () => element<HTMLButtonElement>('.column-editor button[type="submit"]').click());
+    const saved = useStore.getState().boardDefinitions.find((column) => column.id === "doing")!;
+    expect(saved.name).toBe("In progress");
+    expect(saved.color).toBe("#123456");
+    expect(root.querySelector('[aria-label="进行中"]')).not.toBeNull();
+  } finally { db.sqlite.close(); }
 });
 
 test("UI language changes date words while keeping the clock and week-start preferences", async () => {
@@ -726,7 +752,7 @@ test("UI language changes date words while keeping the clock and week-start pref
   const settings = new Map([["time_format", "24"], ["week_start", "1"]]);
   mockIPC((command, args) => {
     const setting = args as { key: string; value: string };
-    if (command === "system_locale") return "en-US";
+    if (command === "language_sources") return { linux: true, environment: { LANG: "en_US.UTF-8" }, locales: [], configuration: [] };
     if (command === "get_setting") return settings.get(setting.key) ?? null;
     if (command === "set_setting") settings.set(setting.key, setting.value);
   });

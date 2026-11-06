@@ -13,6 +13,7 @@
 
 import type { SoundId } from "./sound";
 import { t } from "./i18n";
+import defaults from "../data/defaults.json";
 
 export type PriorityValue = 1 | 2 | 3 | 4;
 
@@ -50,21 +51,16 @@ export function inputOf(profile: PriorityProfile): PriorityProfileInput {
  * fallbacks for rules that can't read a profile (and as the generic red/amber
  * the board's WIP badges borrow).
  */
-export const DEFAULT_PRIORITY_COLORS = [
-  "#f2555a",
-  "#f2b155",
-  "#6c7cff",
-  "#6b7885",
-] as const;
+export const DEFAULT_PRIORITY_COLORS = defaults.priorities.map((profile) => profile.color);
 
 /** Matches the revision used for the board's seeded columns. */
-export const PRIORITY_SEED_TIME = "1970-01-01T00:00:01Z";
+export const PRIORITY_SEED_TIME = defaults.seedTime;
 
-export const DEFAULT_PROFILES: PriorityProfile[] = PRIORITY_VALUES.map(
-  (priority) => ({
-    priority,
-    name: `Priority ${priority}`,
-    color: DEFAULT_PRIORITY_COLORS[priority - 1],
+export const DEFAULT_PROFILES: PriorityProfile[] = defaults.priorities.map(
+  (profile) => ({
+    priority: profile.priority as PriorityValue,
+    name: profile.name,
+    color: profile.color,
     sound: null,
     volume: null,
     ramp: null,

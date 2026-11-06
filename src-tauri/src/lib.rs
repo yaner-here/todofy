@@ -3,8 +3,6 @@ mod commands;
 mod crud;
 mod db;
 mod i18n;
-mod local_time;
-mod models;
 mod notify;
 mod popup;
 #[cfg(target_os = "windows")]
@@ -12,15 +10,17 @@ mod portable;
 mod priority;
 mod quickwin;
 mod scheduler;
+mod seeds;
 mod settings;
 mod timer;
+mod timezone;
 mod tray;
 mod update;
 
 #[cfg(test)]
 mod crud_ipc_tests;
 
-rust_i18n::i18n!("locales", fallback = "en");
+rust_i18n::i18n!("../src/locales", fallback = "en");
 
 use db::Db;
 use rusqlite::Connection;
@@ -166,24 +166,17 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             i18n::get_language,
+            i18n::language_ready,
+            i18n::language_sources,
+            i18n::sync_language,
             i18n::set_language,
-            board::list_board_columns,
-            board::create_board_column,
-            board::update_board_column,
-            board::reorder_board_columns,
-            board::delete_board_column,
-            priority::list_priority_profiles,
-            priority::update_priority_profile,
-            priority::reset_priority_profile,
             crud::run_crud,
-            local_time::local_reminder_parts,
-            local_time::local_reminder_timestamp,
+            timezone::timezone_offsets,
             notify::send_test_notification,
             popup::notify_popup_dismiss,
             popup::notify_popup_open,
             popup::notify_popup_pending,
             popup::notify_popup_ack,
-            settings::system_locale,
             settings::get_setting,
             settings::set_setting,
             settings::get_autostart,
@@ -194,7 +187,6 @@ pub fn run() {
             timer::resume_timer,
             timer::stop_timer,
             timer::active_timer,
-            timer::focus_history,
             timer::get_pomodoro,
             timer::pomodoro_start,
             timer::pomodoro_pause,
