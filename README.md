@@ -133,16 +133,33 @@ get past Gatekeeper:
 todofy_1.15.0_universal.dmg  # Intel and Apple Silicon
 ```
 
-**Windows** — run the installer:
+**Windows** — run the executable from a writable folder. Keep
+`WebView2Loader.dll` with it if your build produces that file; the Microsoft
+WebView2 Runtime must also be installed. Installer bundles are available too:
 
 ```
 todofy_1.15.0_x64-setup.exe   # NSIS installer
 todofy_1.15.0_x64_en-US.msi   # or the MSI
 ```
 
-> Your tasks live in the app's data directory — `~/.local/share/com.unifybrowse.todofy/`
-> on Linux, `~/Library/Application Support/com.unifybrowse.todofy/` on macOS, and
-> `%APPDATA%\com.unifybrowse.todofy\` on Windows.
+> On Linux and macOS, tasks live in the app's data directory —
+> `~/.local/share/com.unifybrowse.todofy/` and
+> `~/Library/Application Support/com.unifybrowse.todofy/`, respectively.
+
+On Windows, `todofy.db` and the `todofy-webview/` folder are created beside
+the executable. The database contains tasks and the WebView folder contains
+browser data such as the theme. Copy the executable, any accompanying DLLs,
+the database and the WebView folder together to move a portable copy. Fully
+quit from the tray before copying: SQLite can also have `todofy.db-wal` and
+`todofy.db-shm` files while it is running. The executable's folder must be
+writable; a protected location such as `Program Files` may not work.
+
+Data from older Windows builds under `%APPDATA%\com.unifybrowse.todofy\` is not
+imported automatically. To bring it across, fully quit the old app and copy its
+database and any remaining `-wal` and `-shm` files to the new folder before the
+first launch; do not overwrite a database you want to keep. Enabling
+launch-on-login still registers the current path with Windows, so update that
+setting after moving the folder.
 
 ### Staying up to date
 
@@ -161,10 +178,10 @@ until the window is back on screen. Downloads show their progress as a ring in
 the top bar, from any view.
 
 Every bundle is cryptographically signed at release time and verified before it
-is installed, so an unofficial or tampered build is refused. The AppImage,
-macOS and Windows builds update in place; **`.deb` and `.rpm` installs are owned
-by your package manager**, so todofy points those at the release page instead of
-replacing files behind your package database's back.
+is installed, so an unofficial or tampered build is refused. The AppImage and
+macOS builds update in place. Windows portable copies and **`.deb` and `.rpm`
+installs** open the release page instead; update a portable copy manually while
+keeping its data files and using another build with portable storage support.
 
 ## ⌨️ Keyboard shortcuts
 

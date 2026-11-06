@@ -7,6 +7,8 @@ mod local_time;
 mod models;
 mod notify;
 mod popup;
+#[cfg(target_os = "windows")]
+mod portable;
 mod priority;
 mod quickwin;
 mod scheduler;
@@ -33,6 +35,25 @@ const AUTOSTART_FLAG: &str = "--autostart";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    #[allow(unused_mut)]
+    let mut context = tauri::generate_context!();
+
+    // On Windows, create the configured windows ourselves so their WebView2
+    // profiles can live beside the executable along with the database.
+    #[cfg(target_os = "windows")]
+    let startup_windows: Vec<_> = context
+        .config_mut()
+        .app
+        .windows
+        .iter_mut()
+        .filter(|window| window.create)
+        .map(|window| {
+            let config = window.clone();
+            window.create = false;
+            config
+        })
+        .collect();
+
     tauri::Builder::default()
         // Must be the FIRST plugin: if todofy is already running, a second
         // launch focuses the existing window instead of starting a new one.
@@ -68,17 +89,37 @@ pub fn run() {
                 })
                 .build(),
         )
-        .setup(|app| {
-            // Open (or create) the SQLite database in the app data dir.
+        .setup(move |app| {
+            #[cfg(target_os = "windows")]
+            let portable = portable::PortablePaths::current()?;
+            #[cfg(target_os = "windows")]
+            let database_path = &portable.database;
+
+            #[cfg(not(target_os = "windows"))]
             let dir = app
                 .path()
-                .app_data_dir()
-                .expect("failed to resolve app data dir");
-            std::fs::create_dir_all(&dir).ok();
-            let conn = Connection::open(dir.join("todofy.db")).expect("failed to open database");
+                .app_data_dir()?;
+            #[cfg(not(target_os = "windows"))]
+            std::fs::create_dir_all(&dir)?;
+            #[cfg(not(target_os = "windows"))]
+            let database_path = dir.join("todofy.db");
+
+            let conn = Connection::open(&database_path).map_err(|error| {
+                std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("failed to open database {}: {error}", database_path.display()),
+                )
+            })?;
             db::init(&conn).expect("failed to initialize schema");
             app.manage(i18n::initialize(&conn));
             app.manage(Db(Mutex::new(conn)));
+
+            #[cfg(target_os = "windows")]
+            for config in &startup_windows {
+                tauri::WebviewWindowBuilder::from_config(app.handle(), config)?
+                    .data_directory(portable.webview_data.clone())
+                    .build()?;
+            }
             i18n::update_window_titles(app.handle());
 
             // The main window starts hidden (visible:false in tauri.conf.json)
@@ -164,7 +205,7 @@ pub fn run() {
             update::notify_update,
             popup::notify_popup_open_update,
         ])
-        .build(tauri::generate_context!())
+        .build(context)
         .expect("error while running tauri application")
         .run(|app, event| {
             if let RunEvent::Exit = event {

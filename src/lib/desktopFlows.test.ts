@@ -49,11 +49,32 @@ const { FocusWidget } = await import("../components/FocusWidget");
 const { DEFAULT_PROFILES } = await import("./priority");
 const { i18n } = await import("./i18n");
 const { initLanguage, setLanguage, useLanguageState } = await import("./language");
+const { initUpdater, useUpdater } = await import("./updater");
 
 const initialState = useStore.getState();
 let root: HTMLDivElement;
 let reactRoot: Root;
 const toggleTask = mock(async () => {});
+
+test("an unavailable updater capability never enables automatic installation", async () => {
+  const previous = useUpdater.getState();
+  mockIPC((command, args) => {
+    if (command === "can_self_update") throw new Error("capability unavailable");
+    if (command === "get_setting") {
+      return (args as { key: string }).key === "update_auto_check" ? "false" : null;
+    }
+    throw new Error(`Unexpected IPC command: ${command}`);
+  });
+  try {
+    useUpdater.setState({ canSelfUpdate: true, autoCheck: true });
+    initUpdater();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(useUpdater.getState().canSelfUpdate).toBe(false);
+    expect(useUpdater.getState().autoCheck).toBe(false);
+  } finally {
+    useUpdater.setState(previous, true);
+  }
+});
 
 function task(overrides: Partial<Task> = {}): Task {
   return {

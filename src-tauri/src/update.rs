@@ -16,10 +16,13 @@ use tauri::{AppHandle, Manager};
 /// letting the updater loose on it would either fail or leave the package
 /// database describing a version that is no longer on disk. Those installs are
 /// pointed at the release page instead. Every other platform installs through
-/// its own bundle, which the updater can always replace.
+/// its own bundle. Windows runs as a portable executable, for which the
+/// published installer cannot safely replace the running copy.
 #[tauri::command]
 pub fn can_self_update() -> bool {
-    if cfg!(target_os = "linux") {
+    if cfg!(target_os = "windows") {
+        false
+    } else if cfg!(target_os = "linux") {
         // Set by the AppImage runtime to the path of the mounted image.
         std::env::var_os("APPIMAGE").is_some()
     } else {

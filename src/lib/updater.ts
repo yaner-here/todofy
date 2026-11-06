@@ -37,9 +37,8 @@ interface UpdaterState {
   downloaded: number;
   total: number;
   /**
-   * False on a `.deb`/`.rpm` install, where the package manager owns the
-   * files and the updater can't replace them. Such installs are sent to the
-   * release page instead of downloading anything.
+   * False for Windows portable copies and `.deb`/`.rpm` installs, where the
+   * updater cannot replace the running copy. Opens the release page instead.
    */
   canSelfUpdate: boolean;
   autoCheck: boolean;
@@ -78,7 +77,7 @@ export const useUpdater = create<UpdaterState>((set, get) => ({
   error: null,
   downloaded: 0,
   total: 0,
-  canSelfUpdate: true,
+  canSelfUpdate: false,
   autoCheck: true,
   // Off unless asked for: an existing install must not start prompting to
   // update because this feature shipped.
@@ -226,7 +225,7 @@ async function announce(version: string, canInstall: boolean): Promise<void> {
 export function initUpdater(): void {
   void (async () => {
     const [canSelfUpdate, auto, install, last] = await Promise.all([
-      invoke<boolean>("can_self_update").catch(() => true),
+      invoke<boolean>("can_self_update").catch(() => false),
       api.getSetting(AUTO_CHECK_KEY).catch(() => null),
       api.getSetting(AUTO_INSTALL_KEY).catch(() => null),
       api.getSetting(LAST_CHECK_KEY).catch(() => null),
