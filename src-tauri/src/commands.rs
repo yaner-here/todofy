@@ -117,9 +117,7 @@ fn too_close(before: f64, after: f64) -> bool {
 /// fifty of them the midpoint is no longer representable and the two rows
 /// collide — the sort then falls through to `created_at` and the card appears
 /// to snap back. Renumbering restores the headroom without changing the order
-/// anyone can see. `updated_at` is bumped on every row it touches so the new
-/// positions reach the user's other devices; this runs rarely enough that the
-/// extra sync traffic does not matter.
+/// anyone can see. `updated_at` is bumped on every row it touches.
 fn renumber_if_crowded(
     conn: &Connection,
     column: &str,
@@ -181,8 +179,7 @@ fn board_order(conn: &Connection, stage: Option<&str>) -> rusqlite::Result<Vec<(
 fn set_labels(conn: &Connection, task_id: &str, label_ids: &[String]) -> rusqlite::Result<()> {
     let now = now_iso();
     // Tombstone every current association, then re-assert the desired ones. The
-    // removed ones stay tombstoned (so the removal syncs); the kept ones are
-    // revived in the same pass with a fresh timestamp.
+    // removed ones stay tombstoned; the kept ones are revived with a fresh timestamp.
     conn.execute(
         "UPDATE task_labels SET deleted_at = ?1, updated_at = ?1
          WHERE task_id = ?2 AND deleted_at IS NULL",
@@ -535,9 +532,7 @@ pub fn delete_task(db: State<Db>, id: String) -> CmdResult<()> {
 
 fn delete_task_inner(conn: &mut Connection, id: &str, now: &str) -> rusqlite::Result<()> {
     let tx = conn.transaction()?;
-    // Tombstone dependants in the same transaction as their task. Leaving a
-    // live child behind makes the next cloud push violate its foreign key when
-    // the deleted parent is represented only by a sync tombstone.
+    // Tombstone dependants in the same transaction as their task.
     tx.execute(
         "UPDATE task_labels SET deleted_at = ?1, updated_at = ?1
          WHERE task_id = ?2 AND deleted_at IS NULL",
@@ -1150,7 +1145,7 @@ mod command_tests {
     }
 
     #[test]
-    fn deleting_parents_tombstones_sync_children_atomically() {
+    fn deleting_parents_tombstones_children_atomically() {
         let mut conn = Connection::open_in_memory().unwrap();
         db::init(&conn).unwrap();
         conn.execute_batch(

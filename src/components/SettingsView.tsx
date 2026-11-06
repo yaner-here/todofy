@@ -39,8 +39,6 @@ import { useStore } from "../store";
 import { useOnboarding } from "../lib/onboarding";
 import { RELEASES_URL, useUpdater } from "../lib/updater";
 import type { TaskTimerMode } from "../types";
-import { AccountSection } from "./AccountSection";
-import { CalendarSection } from "./CalendarSection";
 import { PriorityProfilesSection } from "./PriorityProfilesSection";
 import {
   BellIcon,
@@ -411,8 +409,6 @@ export function SettingsView() {
       </header>
 
       <div className="secondary-scroll settings-content mx-auto w-full max-w-2xl flex-1 overflow-y-auto px-8 pt-2 pb-8">
-        <AccountSection />
-        <CalendarSection />
         <LanguageSection />
 
         {/* Startup */}
@@ -953,7 +949,7 @@ function UpdateRow({ version }: { version: string }) {
               className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:bg-surface-2 hover:text-text disabled:opacity-50"
             >
               {state === "checking"
-                ? t("billing.checking")
+                ? t("settings.checking")
                 : state === "downloading"
                   ? t("settings.downloading")
                   : state === "error"

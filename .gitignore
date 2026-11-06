@@ -27,10 +27,9 @@ dist-ssr
 # Claude Code local config
 .claude/
 
-# Local environment (Supabase URL/keys); see .env.example
+# Local environment
 .env
 .env.*
-!.env.example
 
 # Agent / MCP tooling (local, not part of the app)
 .agents/

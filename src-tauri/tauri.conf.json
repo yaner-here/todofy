@@ -50,15 +50,10 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost https://*.supabase.co wss://*.supabase.co https://apitodofy.unifybrowse.com https://oauth2.googleapis.com https://www.googleapis.com; font-src 'self'"
+      "csp": "default-src 'self'; img-src 'self' data: asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost; font-src 'self'"
     }
   },
   "plugins": {
-    "deep-link": {
-      "desktop": {
-        "schemes": ["todofy"]
-      }
-    },
     "updater": {
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc4QkNERDhFNkM4QzA4MDAKUldRQUNJeHNqdDI4ZUEyak1xWnQ0bWtCd1VoVDVlKzg4OUE5MURtRDF0YUhZZFVkbEdiRE5LQS8K",
       "endpoints": [

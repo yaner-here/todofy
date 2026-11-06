@@ -9,25 +9,14 @@
       "identifier": "opener:allow-open-url",
       "allow": [
         { "url": "https://unifybrowse.com/*" },
-        { "url": "https://github.com/salarzeidanlou/todofy*" },
-        { "url": "https://lemonsqueezy.com/*" },
-        { "url": "https://*.lemonsqueezy.com/*" }
+        { "url": "https://github.com/salarzeidanlou/todofy*" }
       ]
     },
     "notification:default",
-    "deep-link:default",
     "updater:default",
     "process:allow-restart",
     "autostart:allow-enable",
     "autostart:allow-disable",
-    "autostart:allow-is-enabled",
-    {
-      "identifier": "http:default",
-      "allow": [
-        { "url": "https://*.supabase.co/*" },
-        { "url": "http://localhost:*/*" },
-        { "url": "http://127.0.0.1:*/*" }
-      ]
-    }
+    "autostart:allow-is-enabled"
   ]
 }

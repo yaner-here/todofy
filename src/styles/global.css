@@ -3074,9 +3074,7 @@ body {
   background: currentColor;
 }
 
-/* Narrowest width that still fits the brand rail, every labelled item and its
-   padding, with .top-actions at its widest — update marker shown and Cloud Sync
-   not yet bought. Below it the top bar is icons-only. */
+/* Switch to icon-only navigation when the top bar gets narrow. */
 @media (max-width: 1599px) {
   .top-nav-item span {
     display: none;

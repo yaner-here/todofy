@@ -57,11 +57,7 @@ export const DEFAULT_PRIORITY_COLORS = [
   "#6b7885",
 ] as const;
 
-/**
- * The same ancient revision the board's seeded columns carry, so a fresh
- * install can never win a last-write-wins race against profiles customized on
- * another device (see `board::SEED_TIME`).
- */
+/** Matches the revision used for the board's seeded columns. */
 export const PRIORITY_SEED_TIME = "1970-01-01T00:00:01Z";
 
 export const DEFAULT_PROFILES: PriorityProfile[] = PRIORITY_VALUES.map(

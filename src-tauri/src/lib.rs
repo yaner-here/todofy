@@ -1,9 +1,6 @@
-mod auth_oauth;
 mod board;
-mod calendar;
 mod commands;
 mod db;
-mod google_calendar;
 mod i18n;
 mod models;
 mod notify;
@@ -12,9 +9,7 @@ mod priority;
 mod quickwin;
 mod recur;
 mod scheduler;
-mod secret;
 mod settings;
-mod sync;
 mod timer;
 mod tray;
 mod update;
@@ -24,13 +19,9 @@ rust_i18n::i18n!("locales", fallback = "en");
 use db::Db;
 use rusqlite::Connection;
 use std::sync::Mutex;
-use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri::{Manager, RunEvent, WindowEvent};
 use tauri_plugin_autostart::MacosLauncher;
-use tauri_plugin_deep_link::DeepLinkExt;
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
-
-const DEEP_LINK_SCHEME: &str = "todofy://";
-const DEEP_LINK_EVENT: &str = "deep-link";
 
 /// Flag added to the launch-on-login command so the app can tell a login
 /// launch apart from the user opening it by hand.
@@ -39,23 +30,15 @@ const AUTOSTART_FLAG: &str = "--autostart";
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .manage(auth_oauth::SupabaseOAuthState::default())
         // Must be the FIRST plugin: if todofy is already running, a second
         // launch focuses the existing window instead of starting a new one.
-        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             if let Some(win) = app.get_webview_window("main") {
                 let _ = win.show();
                 let _ = win.unminimize();
                 let _ = win.set_focus();
             }
-            // On Linux/Windows a deep link into the running app arrives as a
-            // CLI arg to this second launch; forward it to the frontend.
-            if let Some(url) = args.iter().find(|a| a.starts_with(DEEP_LINK_SCHEME)) {
-                let _ = app.emit(DEEP_LINK_EVENT, url.clone());
-            }
         }))
-        .plugin(tauri_plugin_deep_link::init())
-        .plugin(tauri_plugin_http::init())
         // Signed self-update, checked from the frontend. `process` is what
         // restarts the app into the version that was just installed.
         .plugin(tauri_plugin_updater::Builder::new().build())
@@ -117,23 +100,8 @@ pub fn run() {
                 eprintln!("todofy: could not register Ctrl+Alt+A global shortcut: {e}");
             }
 
-            // Forward deep links delivered at runtime to the frontend.
-            let handle = app.handle().clone();
-            app.deep_link().on_open_url(move |event| {
-                if let Some(url) = event.urls().into_iter().next() {
-                    let _ = handle.emit(DEEP_LINK_EVENT, url.to_string());
-                }
-            });
-            // No installer wires the scheme in dev/Linux, so register at runtime.
-            #[cfg(any(target_os = "linux", debug_assertions))]
-            {
-                let _ = app.deep_link().register_all();
-            }
             // Start the reminder scheduler.
             scheduler::spawn(app.handle().clone());
-
-            // Nudge the frontend to push tasks to Google Calendar when they drift.
-            calendar::spawn(app.handle().clone());
 
             // System-tray icon with focus controls + live timer status.
             tray::init(app)?;
@@ -205,28 +173,6 @@ pub fn run() {
             timer::pomodoro_reset,
             timer::pomodoro_next,
             timer::set_pomodoro_config,
-            sync::sync_changes_since,
-            sync::sync_apply,
-            sync::sync_get_watermark,
-            sync::sync_set_watermark,
-            sync::sync_reset,
-            sync::sync_get_owner,
-            sync::sync_has_local_data,
-            sync::sync_claim_owner,
-            sync::sync_use_account_data,
-            sync::sync_copy_local_data,
-            sync::wipe_local_data,
-            sync::sync_purge_tombstones,
-            secret::secret_get,
-            secret::secret_set,
-            secret::secret_delete,
-            google_calendar::google_oauth_flow,
-            auth_oauth::supabase_oauth_flow,
-            auth_oauth::supabase_oauth_finish,
-            calendar::calendar_pending,
-            calendar::calendar_link_set,
-            calendar::calendar_link_remove,
-            calendar::calendar_clear_links,
             update::can_self_update,
             update::notify_update,
             popup::notify_popup_open_update,

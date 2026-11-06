@@ -64,11 +64,7 @@ test("a silent priority stays silent whatever the global sound is", () => {
   );
 });
 
-/**
- * A profile that chose a custom sound on another device arrives here with no
- * bytes to play — those never leave the device they were loaded on. Silence
- * would be indistinguishable from a reminder that never fired.
- */
+/** A missing custom sound falls back to the global sound instead of silence. */
 test("a custom sound with no bytes on this device falls back to the global", () => {
   const resolved = resolveSoundSettings(
     profile({ sound: "custom", volume: 90 }),
@@ -154,11 +150,7 @@ test("the editor sends every override field, nulls included", () => {
   expect(input).not.toHaveProperty("updatedAt");
 });
 
-/**
- * Last-write-wins means a fresh install's untouched profiles must lose to the
- * ones customized on another device. They can only do that by carrying a
- * revision older than any real edit — the same one the board's seeds use.
- */
+/** Unedited profiles use the baseline revision until their first edit. */
 test("untouched profiles carry the ancient seed revision", () => {
   expect(PRIORITY_SEED_TIME).toBe("1970-01-01T00:00:01Z");
   for (const built of DEFAULT_PROFILES) {

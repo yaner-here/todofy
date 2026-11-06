@@ -14,9 +14,8 @@
 
   <description>
     <p>
-      Todofy is a local-first to-do app. Everything lives in a database on your own
-      machine and stays usable offline; signing in to sync an account across devices
-      is optional.
+      Todofy is a local to-do app. Everything lives in a database on your own
+      machine and stays usable offline.
     </p>
     <p>Todofy offers:</p>
     <ul>

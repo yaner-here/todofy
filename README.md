@@ -6,7 +6,7 @@
 
 **A modern, fast, and private task and calendar app for Linux, macOS, and Windows.**
 
-Plan your work as a list, a board, or a calendar. Stay focused with timers and reminders, optionally sync across devices, and push dated tasks one‑way to Google Calendar — even when todofy is tucked away in your tray.
+Plan your work as a list, a board, or a calendar. Stay focused with timers and reminders, even when todofy is tucked away in your tray.
 
 ![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-1a2029?style=flat-square&logo=linux&logoColor=white)
 ![Tauri](https://img.shields.io/badge/Tauri-2.x-24C8DB?style=flat-square&logo=tauri&logoColor=white)
@@ -27,7 +27,7 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
 
 - 🗓️ **Smart views** — _Today_ (with overdue rollup), _Upcoming_ (grouped by date), and _Inbox_
 - 📋 **Kanban board** — see your work as cards across _To do_, _In progress_, _Blocked_ and _Done_. Drag a card down its column to reorder it or across to change its stage; dropping into _Done_ completes the task properly, so a repeating task still rolls forward to its next occurrence and dragging it back out re‑opens it. Cards carry the same detail as list rows — priority, due date, labels, checklist progress, estimate, and live tracked time — and clicking one opens the full task in a dialog. Narrow the board to _Today_ or _This week_, search and filter as you would anywhere else, or move the selected card with **H** / **L**. The board keeps its own arrangement, so rearranging cards never disturbs your list order
-- 🎨 **Custom board columns** — create, rename, recolor, and reorder workflow columns, with optional WIP limits that count all active tasks and warn without blocking moves. Column settings sync with your account; deleting a column safely moves its tasks to a destination you choose. To do stays the default destination and Done keeps its completion behavior.
+- 🎨 **Custom board columns** — create, rename, recolor, and reorder workflow columns, with optional WIP limits that count all active tasks and warn without blocking moves. Deleting a column safely moves its tasks to a destination you choose. To do stays the default destination and Done keeps its completion behavior.
 - ⚡ **Global quick‑add** — hit **Ctrl+Alt+A** anywhere (even with todofy tucked in the tray) for a floating capture bar; type, press Enter, and you're back to what you were doing
 - ✍️ **Natural‑language quick‑add** — type _"pay rent friday 5pm #home p1"_ and the date, time, priority, and label are parsed out live and shown as chips
 - 🔁 **Recurring tasks** — repeat _daily, every weekday, weekly, monthly,_ or _yearly_; completing one rolls it forward to the next occurrence instead of finishing it (also from natural language — _"water plants every week"_)
@@ -44,7 +44,7 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
 - 🏷️ **Labels** — create, rename, recolor (with a full custom color picker), and delete; a searchable Labels page plus per-label filtering
 - 📆 **Beautiful date & time picker** — click the month or year to jump anywhere in seconds, then set the date, the time, and the recurrence in a single pass without the picker closing on you. The time goes into a themed **HH:MM** field that follows your locale, and the one‑tap quick times are yours to edit
 - ⏰ **Reminders that reach you** — desktop notifications fire **even when hidden in the tray**, as either a system notification or todofy's own popup card pinned to a screen corner, with one‑tap **snooze**. Optionally repeat until you actually answer, with a **sound** (built‑in or your own file), a volume, and a ramp that gets louder each time
-- 🚩 **Priority profiles** — P1–P4 with color‑coded flags, each one yours to rename and recolor. Give a priority its own reminder too: a sound (built‑in or your own file), a volume, a ramp, a system‑or‑popup notification style, and its own repeat interval. Every one of those is optional and defaults to following **Settings → Notifications**, so the common case stays configured in one place, and names and colors sync with your account while a custom sound file stays on the device you loaded it on. P4 keeps meaning _"no priority"_ and stays out of your way until you name it
+- 🚩 **Priority profiles** — P1–P4 with color‑coded flags, each one yours to rename and recolor. Give a priority its own reminder too: a sound (built‑in or your own file), a volume, a ramp, a system‑or‑popup notification style, and its own repeat interval. Every one of those is optional and defaults to following **Settings → Notifications**, so the common case stays configured in one place. P4 keeps meaning _"no priority"_ and stays out of your way until you name it
 - ⬇️ **Signed self‑updates** — todofy checks for a new version quietly once a day and can install it for you. Turn on **Install automatically** and it offers the update as soon as it finds one, shows you what's new, and handles the rest — but it never downloads without asking and never restarts on its own, and a question that arrives while todofy is in the tray waits until you're back at the window. Progress follows you around the app as a ring in the top bar. Every bundle is cryptographically signed and verified before install, so a tampered build is refused; `.deb` and `.rpm` installs are pointed at the release page rather than replaced behind your package manager's back
 - ⚙️ **Settings & run‑on‑startup** — launch todofy at login, opening the window or starting quietly in the tray
 - 🌍 **Follows your system** — 12‑ or 24‑hour clock and the day your week starts on are taken from your desktop's regional settings, with an explicit override if you'd rather choose
@@ -52,13 +52,14 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
 - ⌨️ **Keyboard‑first** — add, navigate, complete, and edit without touching the mouse
 - 🪟 **System tray** — closes to tray and keeps running so reminders never miss; start/pause the Pomodoro, pause or stop the task timer, and watch the live countdown right from the tray
 - 🧭 **Date-oriented navigation** — move between smart views from the top navigation bar and use the day rail to jump through your schedule
-- ☁️ **Optional account sync** — official Todofy Cloud Sync is a Pro feature at **€3.99/month or €39/year**; local use stays free, and the source-available self-hosting setup remains documented below. Buy securely in Lemon Squeezy before or after creating an account, then return to Todofy, sign in, and activate the emailed license for that account. Sign in with email/password or **Continue with Google** to sync tasks, board column settings, priority profiles, labels, focus history, and journal across devices (backed by Supabase, with row‑level security). Sessions are kept in your OS secret store. If you switch accounts on one installation, Todofy pauses before syncing and lets you load the new account's cloud data or safely copy the current device data into it with new record IDs
-- 🗓️ **Local calendar** — plan in month, week, or day views, with tasks on their due dates and standalone all-day or timed events you can create and edit. Standalone events stay on this device and are not included in account sync or pushed to Google
-- 📅 **Google Calendar sync** — push your dated tasks to a dedicated **todofy** calendar (one‑way) so they sit right beside your meetings: all‑day for date‑only tasks, timed for tasks with a reminder. Recurring tasks move as they roll, completed and deleted tasks tidy themselves up, and you can keep finished tasks or limit the push to timed tasks only. Opt‑in, gated behind account sign‑in
-- 🗑️ **Delete your account** — cancel any linked recurring Todofy subscription first, then remove your current account and all of its cloud data; optionally wipe the copy on this device too. If cancellation cannot be confirmed, deletion stops safely so you can retry. You can register a fresh account later with the same email address
-- 💾 **Local‑first** — everything is stored in a local SQLite database and works fully offline; sync is additive, and with no account there's no cloud and no tracking
+- 🗓️ **Local calendar** — plan in month, week, or day views, with tasks on their due dates and standalone all-day or timed events you can create and edit. Standalone events stay on this device
+- 💾 **Local storage** — tasks, journal entries, calendar events, and settings are stored on this device and work offline.
+
+> Upgrading from an earlier version: data already stored on this device stays local. Data that exists only in a former cloud account is not downloaded. Removing the integration does not cancel existing subscriptions or delete remote data.
 
 ## 📸 Screenshots
+
+These screenshots show an earlier release and may include controls that have since been removed.
 
 <table>
   <tr>
@@ -100,25 +101,6 @@ Plan your work as a list, a board, or a calendar. Stay focused with timers and r
     </td>
   </tr>
 </table>
-
-## ☁️ Todofy Pro
-
-Todofy stays fully useful offline without an account. **Todofy Pro** adds official
-Cloud Sync for **€3.99/month or €39/year**, covering tasks, labels, board and
-priority settings, focus history, and journal entries across your signed-in
-devices.
-
-Open **Pro** inside Todofy to choose a plan, complete checkout securely in your
-browser, then return to the app and activate the license from your receipt. An
-existing Lemon Squeezy license can be activated after signing in. Subscription
-status is verified by Todofy's billing service and enforced again by the hosted
-database; cancelling keeps access only through the paid-through date. Account
-deletion first cancels a linked recurring subscription and stops safely if that
-cancellation cannot be confirmed.
-
-Cancel anytime, with a full refund within 14 days of any charge. See the
-[Terms of Service](https://unifybrowse.com/products/todofy/terms) and
-[Privacy Policy](https://unifybrowse.com/products/todofy/privacy).
 
 ## 📦 Install
 
@@ -215,8 +197,7 @@ replacing files behind your package database's back.
 # Debian / Ubuntu
 sudo apt update
 sudo apt install libwebkit2gtk-4.1-dev build-essential curl wget file \
-  libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev \
-  libasound2-dev
+  libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
 ```
 
 ### Develop
@@ -243,83 +224,6 @@ export TAURI_SIGNING_PRIVATE_KEY_PASSWORD=""
 
 Official releases are signed in CI from the `TAURI_SIGNING_PRIVATE_KEY` repository secret. To build unsigned bundles for yourself, generate your own keypair with `bunx tauri signer generate -w ~/.tauri/todofy-updater.key` and put the matching public key in `plugins.updater.pubkey` — the in-app updater only installs bundles signed by the key it was built with, so an unofficial build cannot be updated from the official releases.
 
-### Optional: self‑host account sync
-
-Sync is **off by default** — todofy is local‑first and works fully offline without it. To run your own sync backend so your tasks, labels, focus history, and journal follow you across devices (with nothing going through anyone else's server):
-
-1. **Create a Supabase project** — the free tier is plenty — at [supabase.com](https://supabase.com), or use any Postgres you control. Make sure **Email** auth is enabled (it is by default).
-2. **Apply the schema.** Open the project's **SQL Editor** and run every file in [`supabase/migrations/`](supabase/migrations) in filename order:
-
-   | #   | Migration                                                                                      | Adds                                                         |
-   | --- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-   | 1   | [`20260826120000_sync_schema.sql`](supabase/migrations/20260826120000_sync_schema.sql)         | The per‑user content tables, indexes, and row‑level security |
-   | 2   | [`20260902000000_journal.sql`](supabase/migrations/20260902000000_journal.sql)                 | Journal entries                                              |
-   | 3   | [`20260902133603_sync_tombstones.sql`](supabase/migrations/20260902133603_sync_tombstones.sql) | The content‑free deletion log                                |
-   | 4   | [`20260909120000_task_estimate.sql`](supabase/migrations/20260909120000_task_estimate.sql)     | `tasks.estimate_minutes`                                     |
-   | 5   | [`20260914120000_sync_pull.sql`](supabase/migrations/20260914120000_sync_pull.sql)             | The `sync_pull` function, one request per poll               |
-   | 6   | [`20260918120000_task_board.sql`](supabase/migrations/20260918120000_task_board.sql)           | `tasks.stage` and `tasks.board_index` for the board          |
-   | 7   | [`20261014100423_custom_board_columns.sql`](supabase/migrations/20261014100423_custom_board_columns.sql) | `board_columns` and the `sync_board_columns` function   |
-   | 8   | [`20261031120000_priority_profiles.sql`](supabase/migrations/20261031120000_priority_profiles.sql) | `priority_profiles` and the `sync_priority_profiles` function |
-
-   Every migration is additive, and an older client keeps working against a newer schema — so you can apply new ones as you update. Apply each file **once**, in order: most of the earlier ones create tables and policies unconditionally and will error on a second run rather than quietly doing nothing. Applying them all matters: the desktop app writes every column it knows about, so a missing one fails the whole sync rather than just its own feature.
-
-   Or use the [Supabase CLI](https://supabase.com/docs/guides/cli):
-
-   ```bash
-   supabase link --project-ref <your-project-ref>
-   supabase db push
-   ```
-
-   Everything lands in the default `public` schema: five per‑user content tables, two account-metadata tables for the board's columns and the priority profiles, plus the content-free `sync_tombstones` deletion log. All of them use row-level security, so signed-in users can only access their own rows. Deleted content is physically removed after its marker is safely recorded, allowing other devices to learn the deletion without retaining task or journal text.
-
-3. **Point todofy at your project.** Copy the env template and fill in your project's URL and publishable key — both are safe to ship in a client; row‑level security is what actually protects the data:
-
-   ```bash
-   cp .env.example .env
-   # VITE_SUPABASE_URL=https://<your-project-ref>.supabase.co
-   # VITE_SUPABASE_PUBLISHABLE_KEY=<your-publishable-key>
-   ```
-
-   Supabase requests go through Tauri's native HTTP transport, which only reaches
-   hosts listed in [`capabilities/default.json`](src-tauri/capabilities/default.json).
-   A hosted `*.supabase.co` project and a local `supabase start` stack both work as
-   shipped. If you run Supabase on **your own domain**, add it to the `http:default`
-   allow list before building, or every request is denied and sync silently stops:
-
-   ```jsonc
-   {
-     "identifier": "http:default",
-     "allow": [
-       { "url": "https://*.supabase.co/*" },
-       { "url": "https://supabase.example.com/*" }, // ← your host
-     ],
-   }
-   ```
-
-4. **Deploy the account-deletion function.** So users can delete their own account (which can't be done with the client key), deploy the [`delete-account`](supabase/functions/delete-account/index.ts) edge function. It verifies the caller and deletes their auth user; the schema's `on delete cascade` removes all their data:
-
-   ```bash
-   supabase functions deploy delete-account
-   supabase secrets set TODOFY_BILLING_REQUIRED=false
-   ```
-
-   The edge runtime provides the service-role key automatically. The explicit
-   `TODOFY_BILLING_REQUIRED=false` setting declares that this self-hosted project
-   has no Todofy recurring billing to cancel.
-
-5. **(Optional) Enable Google sign-in.** In the [Google Cloud Console](https://console.cloud.google.com), create an OAuth client of type **Web application** and add your Supabase callback (`https://<your-project-ref>.supabase.co/auth/v1/callback`) as an authorized redirect URI. Paste the client ID and secret into **Supabase → Authentication → Providers → Google**, then add the exact URL `http://127.0.0.1:3369/auth-callback` under **Supabase → Authentication → URL Configuration → Redirect URLs**. Do not add this loopback URL to the Google Cloud OAuth client; Google redirects to Supabase, and Supabase redirects back to Todofy. Todofy starts the local listener before opening the system browser, completes the PKCE code exchange, and then shows a success or error page with a **Back to Todofy** button. Port `3369` must be available while sign-in is running.
-
-6. **(Optional) Enable Google Calendar sync.** In the [Google Cloud Console](https://console.cloud.google.com), enable the **Google Calendar API** and create a second OAuth client of type **Desktop app**. Add its client ID and secret to your `.env`:
-
-   ```bash
-   # VITE_GOOGLE_CLIENT_ID=<your-desktop-client-id>
-   # VITE_GOOGLE_CLIENT_SECRET=<your-desktop-client-secret>
-   ```
-
-   The desktop flow returns through a loopback redirect (`http://127.0.0.1`) with PKCE — no deep link needed here. todofy writes only to a dedicated **todofy** calendar it creates, using the narrow `calendar.app.created` scope, so it never touches your other calendars. The client secret is embedded per Google's installed‑app flow and is not treated as confidential. Connect it from **Settings → Calendar** (requires a signed‑in account).
-
-7. **Build** as above, then open **Settings → Account** in the app and sign up — sync turns on from there.
-
 ### Regenerate the app icon
 
 ```bash
@@ -335,14 +239,15 @@ bunx tauri icon app-icon.svg
 | Styling | [Tailwind CSS 4](https://tailwindcss.com) with a custom design system |
 | State   | [Zustand](https://github.com/pmndrs/zustand)                          |
 | Storage | SQLite via [rusqlite](https://github.com/rusqlite/rusqlite)           |
-| Sync    | [Supabase](https://supabase.com) (Postgres + Auth), optional          |
 | Build   | [Vite](https://vite.dev) + [Bun](https://bun.sh)                      |
+
+The [PWA migration research](docs/pwa-migration-research.md) describes a possible browser version.
 
 ## 📁 Project structure
 
 ```
 todofy/
-├── src/                    # Preact frontend
+├── src/                    # React frontend
 │   ├── components/         # UI (Sidebar, TaskList, TaskDetail, DatePicker,
 │   │                       #     BoardView, BoardColumnsDialog, CalendarView, FocusView,
 │   │                       #     JournalView, SettingsView, …)
@@ -365,11 +270,6 @@ todofy/
 │       ├── notify.rs       # notification delivery (portal / native)
 │       ├── popup.rs        # custom corner notification window
 │       ├── tray.rs         # system tray + live timer controls
-│       ├── sync.rs         # account-sync merge (push/pull, last-write-wins)
-│       ├── auth_oauth.rs    # Supabase Google sign-in loopback callback (PKCE)
-│       ├── google_calendar.rs # Google OAuth loopback listener (desktop PKCE)
-│       ├── calendar.rs     # one-way Google Calendar task-push diff + poll thread
-│       ├── secret.rs       # OS keychain access for the session
 │       └── lib.rs          # app setup
 └── app-icon.svg            # source for the app icon
 ```
@@ -383,18 +283,16 @@ todofy/
 - [x] Run on startup
 - [x] Subtasks & checklists
 - [x] Search & filters
-- [x] Optional account sync across devices
 - [x] Journal with mood, Markdown, and day summaries
 - [x] Local calendar with month, week, and day views
-- [x] Google Calendar sync (one‑way push)
 - [x] Task estimates with elapsed-vs-estimate tracking
 - [x] System clock and calendar conventions (12/24h, week start)
 - [x] Repeating reminders with sound, volume, and ramp-up
 - [x] Signed app updates with optional automatic installation
 - [x] Kanban board with drag between columns
-- [x] Custom board columns (create, rename, recolor, reorder, safely delete, and sync) — v1.14.0
+- [x] Custom board columns (create, rename, recolor, reorder, safely delete) — v1.14.0
 - [x] Optional WIP limits with total active-task counts and warnings — v1.14.0
-- [x] Priority profiles (per-priority names, colors, sounds, notification styles, and sync) — v1.15.0
+- [x] Priority profiles (per-priority names, colors, sounds, notification styles) — v1.15.0
 
 ## 🤝 Contributing
 

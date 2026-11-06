@@ -45,26 +45,6 @@
     "open": "点击查看更新方法。",
     "available": "todofy %{version}已发布"
   },
-  "oauth": {
-    "invalidUrl": "Supabase返回的Google授权地址无效。",
-    "busy": "已有一个Google登录正在进行中。",
-    "expired": "此次Google登录已失效。",
-    "completed": "Google登录完成。你可以返回Todofy。",
-    "timeoutApp": "等待Google跳转回Todofy超时。",
-    "timeout": "等待Google跳转超时。",
-    "noCode": "Google登录未返回授权码。",
-    "signedIn": "登录成功",
-    "signInFailed": "登录失败",
-    "stateMismatch": "OAuth状态不匹配，已安全终止连接。",
-    "calendarConnected": "todofy已连接Google日历。你可以关闭此标签页并返回应用。",
-    "calendarFailed": "无法连接Google日历。你可以关闭此标签页并返回应用。",
-    "allSet": "连接成功",
-    "somethingWrong": "连接失败",
-    "failed": "Google登录失败：%{error}",
-    "callbackFailed": "无法在%{address}启动Google登录回调：%{error}",
-    "pageTitle": "Todofy登录",
-    "backToApp": "返回Todofy"
-  },
   "validation": {
     "columnName": "列名称必须包含 1–60 个字符",
     "color": "请选择有效的六位十六进制颜色",
@@ -74,26 +54,16 @@
     "columnOrder": "排序须包含全部列且不重复，已完成列须位于最后",
     "protectedColumns": "待办列和已完成列无法删除",
     "columnDestination": "请选择现有的活跃列作为目标",
-    "columnId": "列标识无效",
-    "syncedColumn": "同步的列无效",
-    "columnRevision": "列版本无效",
-    "localColumnRevision": "本地列版本无效",
     "priorityName": "优先级名称必须包含 1–40 个字符",
     "sound": "未知的提醒声音",
     "volume": "音量须为 0–100",
     "style": "未知的通知样式",
     "repeat": "重复间隔须为 0–1440 分钟",
     "priority": "优先级须为 1–4",
-    "priorityRevision": "优先级版本无效",
-    "localPriorityRevision": "本地优先级版本无效",
     "eventStart": "定时日程的开始时间须为有效的ISO日期时间",
     "eventEnd": "定时日程的结束时间须为有效的ISO日期时间",
     "eventOrder": "日程结束时间须晚于开始时间",
-    "boardPosition": "看板位置无效",
-    "userId": "user_id须为UUID"
-  },
-  "account": {
-    "anotherAccount": "本地数据属于另一个账号"
+    "boardPosition": "看板位置无效"
   },
   "common": {
     "priority": "优先级 %{priority}"

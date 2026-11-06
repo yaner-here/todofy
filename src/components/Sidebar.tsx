@@ -6,7 +6,6 @@ import { useStore } from "../store";
 import type { ViewId } from "../types";
 import { toLocalDate, today } from "../lib/dates";
 import { appLocale, formatDateRange, weekdayOffset } from "../lib/locale";
-import { billingConfigured, useBilling } from "../lib/billing";
 import { useUpdater } from "../lib/updater";
 import {
   BoardIcon,
@@ -21,7 +20,6 @@ import {
   Logo,
   MenuIcon,
   PinIcon,
-  CrownIcon,
   RotateIcon,
   SettingsIcon,
   TimerIcon,
@@ -52,8 +50,6 @@ export function sameView(a: ViewId, b: ViewId): boolean {
 export function Sidebar() {
   const { t } = useTranslation();
   const { view, setView, sidebarCollapsed, toggleSidebar } = useStore();
-  const billingAllowed = useBilling((state) => state.allowed);
-  const openPro = useBilling((state) => state.openGate);
   const updateState = useUpdater((state) => state.state);
   const updateVersion = useUpdater((state) => state.version);
   const updateDismissed = useUpdater((state) => state.dismissedVersion);
@@ -156,18 +152,6 @@ export function Sidebar() {
             ) : (
               <DownloadIcon width={20} height={20} />
             )}
-          </button>
-        )}
-        {billingConfigured && (
-          <button
-            type="button"
-            onClick={() => openPro(billingAllowed ? "upgrade" : "cloud_sync")}
-            className={`top-nav-item top-pro ${billingAllowed ? "is-active" : ""}`}
-            aria-label={billingAllowed ? t("navigation.todofyProStatus") : t("navigation.unlockCloudSync")}
-            title={billingAllowed ? "Todofy Pro" : t("billing.cloudSync")}
-          >
-            <CrownIcon width={20} height={20} />
-            <span>{billingAllowed ? "Pro" : t("billing.cloudSync")}</span>
           </button>
         )}
         <button

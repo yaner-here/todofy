@@ -166,7 +166,7 @@ function blur(field: HTMLInputElement) {
   field.dispatchEvent(new Event("focusout", { bubbles: true }));
 }
 
-test("synced title and notes refresh untouched fields without writing stale text back", async () => {
+test("external title and notes changes refresh untouched fields without writing stale text back", async () => {
   const patchTask = mock(async (_patch: TaskPatch) => {});
   useStore.setState({ patchTask });
   await act(async () => reactRoot.render(h(TaskDetail, { taskId: "task" })));
@@ -179,7 +179,7 @@ test("synced title and notes refresh untouched fields without writing stale text
   expect(patchTask).not.toHaveBeenCalled();
 });
 
-test("sync preserves an unsaved title while refreshing untouched notes", async () => {
+test("an external change preserves an unsaved title while refreshing untouched notes", async () => {
   const patchTask = mock(async (_patch: TaskPatch) => {});
   useStore.setState({ patchTask });
   await act(async () => reactRoot.render(h(TaskDetail, { taskId: "task" })));

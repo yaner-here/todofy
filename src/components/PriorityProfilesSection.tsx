@@ -399,7 +399,7 @@ function PriorityEditor({
       )}
       {draft.sound === "custom" && (
         <p className="mt-1.5 text-xs text-faint">
-          {t("priorities.theAudioStaysOnThisDeviceOtherDevicesSharingYour")}
+          {t("priorities.customSoundStoredLocally")}
         </p>
       )}
 

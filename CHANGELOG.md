@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Removed account sign-in, subscriptions, cloud sync, and Google Calendar integration. Existing local data remains on this device.
+
 ## v1.15.0 — 2026-11-01
 
 ### Added
@@ -8,7 +12,7 @@
 - **A reminder per priority.** Each one can carry its own sound (built-in or your own file), volume, volume ramp, notification style, and repeat interval. Every field is optional, and left unset it follows **Settings → Notifications**, so a priority you have never touched behaves exactly as before and the common case stays configured in one place rather than four. A notification only wears a priority's name and color once you have made that priority your own; otherwise it reads "Reminder", as it always did. A repeat of zero means _"tell me once"_, which is a choice rather than an absence, and survives a global setting that says to keep nagging.
 - **Priority profiles are included in Cloud Sync.** Names, colors, and reminder overrides travel between your signed-in devices, merged last-write-wins like everything else. A freshly installed device cannot reset profiles customized elsewhere: untouched ones carry an ancient revision, and the server keeps only the newer row. A custom sound **file** stays on the device that loaded it — base64 audio in a synced row would push up to a megabyte on every profile edit — so only the choice of "custom" travels, and a priority whose bytes are missing on this device falls back to the global sound rather than to silence, which would be indistinguishable from a reminder that never fired. Switching accounts on one installation re-seeds the profiles and forgets that device's custom sounds; copying this device's data into another account brings the profiles along.
 
-  Self-hosted Cloud Sync needs the new [`20261031120000_priority_profiles.sql`](supabase/migrations/20261031120000_priority_profiles.sql) migration applied before updating the app. As with every migration, a missing one fails the whole sync rather than just its own feature — the error names the file to apply, and pulling still works, but nothing is pushed until it is applied.
+  Self-hosted Cloud Sync needs the new `20261031120000_priority_profiles.sql` migration applied before updating the app. As with every migration, a missing one fails the whole sync rather than just its own feature — the error names the file to apply, and pulling still works, but nothing is pushed until it is applied.
 
 ### Fixed
 

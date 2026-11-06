@@ -62,11 +62,7 @@ export function parseSoundSettings(stored: {
   };
 }
 
-/**
- * Per-priority custom sound bytes. The audio itself stays on this device:
- * base64 in a synced row would push up to a megabyte on every profile edit,
- * so only the *choice* of "custom" travels between devices.
- */
+/** Settings keys for a priority's custom sound. */
 export function customKeysFor(priority: number): {
   data: string;
   name: string;
@@ -80,10 +76,7 @@ export function customKeysFor(priority: number): {
 /**
  * Fold a priority's sound overrides over the global settings.
  *
- * A profile that chose a custom sound on another device arrives here with no
- * bytes to play, since those never leave the device they were loaded on. That
- * falls back to the global sound rather than to silence: a reminder that makes
- * no noise is indistinguishable from one that never fired.
+ * A missing custom sound falls back to the global sound rather than to silence.
  */
 export function resolveSoundSettings(
   profile: {

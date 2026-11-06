@@ -47,7 +47,7 @@ export function useKeyboard() {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       const s = useStore.getState();
-      // Confirmation and account dialogs must not edit the task behind them.
+      // Dialogs must not edit the task behind them.
       // The board's task dialog still supports task shortcuts and Escape.
       if (
         s.confirm ||

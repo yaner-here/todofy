@@ -45,26 +45,6 @@
     "open": "Click to see how to update.",
     "available": "todofy %{version} is available"
   },
-  "oauth": {
-    "invalidUrl": "Supabase returned an invalid Google authorization URL.",
-    "busy": "A Google sign-in is already in progress.",
-    "expired": "The Google sign-in attempt is no longer active.",
-    "completed": "Google sign-in completed. You can return to Todofy.",
-    "timeoutApp": "Timed out waiting for Google to redirect back to Todofy.",
-    "timeout": "Timed out waiting for Google to redirect back.",
-    "noCode": "Google sign-in returned without an authorization code.",
-    "signedIn": "You're signed in",
-    "signInFailed": "Sign-in failed",
-    "stateMismatch": "OAuth state did not match — aborting for safety.",
-    "calendarConnected": "todofy is connected to Google Calendar. You can close this tab and return to the app.",
-    "calendarFailed": "Couldn't connect to Google Calendar. You can close this tab and return to the app.",
-    "allSet": "You're all set",
-    "somethingWrong": "Something went wrong",
-    "failed": "Google sign-in failed: %{error}",
-    "callbackFailed": "Could not start the Google sign-in callback on %{address}: %{error}",
-    "pageTitle": "Todofy sign-in",
-    "backToApp": "Back to Todofy"
-  },
   "validation": {
     "columnName": "Column name must contain 1–60 characters",
     "color": "Choose a valid six-digit hex color",
@@ -74,26 +54,16 @@
     "columnOrder": "Order must include every column once, with Done last",
     "protectedColumns": "To do and Done cannot be deleted",
     "columnDestination": "Choose an existing active column as the destination",
-    "columnId": "Invalid column identifier",
-    "syncedColumn": "Invalid synced column",
-    "columnRevision": "Invalid column revision",
-    "localColumnRevision": "Invalid local column revision",
     "priorityName": "Priority name must contain 1–40 characters",
     "sound": "Unknown reminder sound",
     "volume": "Volume must be between 0 and 100",
     "style": "Unknown notification style",
     "repeat": "Repeat interval must be between 0 and 1440 minutes",
     "priority": "A priority is one of 1 to 4",
-    "priorityRevision": "Invalid priority revision",
-    "localPriorityRevision": "Invalid local priority revision",
     "eventStart": "Timed event start must be a valid ISO datetime",
     "eventEnd": "Timed event end must be a valid ISO datetime",
     "eventOrder": "Event end time must be later than its start time",
-    "boardPosition": "Invalid board position",
-    "userId": "user_id must be a UUID"
-  },
-  "account": {
-    "anotherAccount": "Local data belongs to another account"
+    "boardPosition": "Invalid board position"
   },
   "common": {
     "priority": "Priority %{priority}"

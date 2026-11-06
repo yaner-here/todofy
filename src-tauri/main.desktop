@@ -5,7 +5,7 @@ GenericName=To-Do List
 {{#if comment}}
 Comment={{comment}}
 {{/if}}
-Exec={{exec}} %u
+Exec={{exec}}
 StartupWMClass={{exec}}
 Icon={{icon}}
 Terminal=false

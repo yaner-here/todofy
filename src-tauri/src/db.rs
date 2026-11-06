@@ -2,9 +2,7 @@ use rusqlite::{params, Connection};
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard};
 
-/// A fresh v4 UUID as a lowercase hyphenated string — the on-device id for a
-/// syncable row (task, label, focus session). Matches Postgres `uuid` text
-/// form so the same value round-trips to the cloud database unchanged.
+/// A fresh v4 UUID as a lowercase hyphenated string for a local record.
 pub fn new_uuid() -> String {
     uuid::Uuid::new_v4().to_string()
 }
@@ -138,21 +136,7 @@ pub fn init(conn: &Connection) -> rusqlite::Result<()> {
         );
         CREATE INDEX IF NOT EXISTS idx_journal_date ON journal_entries(entry_date);
 
-        -- Google Calendar push links: one row per task that has an event on the
-        -- dedicated todofy calendar. Device-local, never synced to Supabase.
-        -- `pushed_updated_at` is the task's updated_at at the last successful
-        -- push; `deleted_at` marks a link whose remote event still needs
-        -- removing (task un-dated, completed, or deleted).
-        CREATE TABLE IF NOT EXISTS calendar_links (
-            task_id              TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
-            external_event_id    TEXT NOT NULL,
-            external_calendar_id TEXT NOT NULL,
-            pushed_updated_at    TEXT NOT NULL,
-            deleted_at           TEXT
-        );
-
-        -- Standalone local calendar events, shown alongside tasks. These remain
-        -- device-local and are not part of Supabase or Google Calendar sync.
+        -- Standalone local calendar events, shown alongside tasks.
         CREATE TABLE IF NOT EXISTS events (
             id                 TEXT PRIMARY KEY,   -- UUID, generated on-device
             title              TEXT NOT NULL,
@@ -229,20 +213,14 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
         conn.execute("ALTER TABLE tasks ADD COLUMN subtasks TEXT", [])?;
     }
 
-    // Integer -> UUID primary keys, so records created offline on separate
-    // devices merge into a shared cloud database without id collisions. Runs
-    // once on databases still using the old AUTOINCREMENT integer ids; a no-op
-    // afterwards and on fresh installs (which are created with TEXT ids above).
+    // Convert old AUTOINCREMENT integer ids to UUIDs once; fresh installs use TEXT ids.
     // Must come after the column-adding blocks so it can carry every column.
     migrate_ids_to_uuid(conn)?;
 
-    // Sync bookkeeping: `updated_at` for last-write-wins ordering and
-    // `deleted_at` tombstones so deletions propagate instead of vanishing.
-    // Runs after the UUID conversion so it only ever touches TEXT-keyed tables.
-    add_sync_columns(conn)?;
+    // Local queries and deletes still depend on these columns.
+    ensure_record_columns(conn)?;
 
-    // Journal: free-form entries with a per-day grouping key. Born with sync
-    // columns, so it runs after the conversions above.
+    // Journal: free-form entries with a per-day grouping key.
     if !table_exists(conn, "journal_entries") {
         conn.execute_batch(
             "
@@ -261,23 +239,7 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
         )?;
     }
 
-    // Google Calendar push links (one-way task -> event). Device-local, never
-    // synced; runs after the tasks table exists so the foreign key is valid.
-    if !table_exists(conn, "calendar_links") {
-        conn.execute(
-            "CREATE TABLE calendar_links (
-                task_id              TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
-                external_event_id    TEXT NOT NULL,
-                external_calendar_id TEXT NOT NULL,
-                pushed_updated_at    TEXT NOT NULL,
-                deleted_at           TEXT
-            )",
-            [],
-        )?;
-    }
-
-    // Standalone calendar events. They stay on this device and are deliberately
-    // separate from both account sync and one-way task-to-Google push.
+    // Standalone calendar events.
     if !table_exists(conn, "events") {
         conn.execute_batch(
             "
@@ -295,10 +257,6 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
             CREATE INDEX idx_events_start ON events(start_at);
             ",
         )?;
-    } else if column_exists(conn, "events", "source") {
-        // Remove mirrors created by development builds of the deferred two-way
-        // Google event sync. v1.9 ships standalone local events only.
-        conn.execute("DELETE FROM events WHERE source = 'google'", [])?;
     }
 
     // Added after the UUID conversion, which rebuilds `tasks` from an explicit
@@ -327,7 +285,7 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
 
     // Repeating reminders. `tasks.notified` becomes a count of nudges rather
     // than a flag (0 still means "not yet"); `last_notified_at` paces the
-    // repeats and `reminder_ack_at` stops them. Device-local, never synced.
+    // repeats and `reminder_ack_at` stops them.
     // Ordered after the UUID conversion for the same reason as the estimate.
     if !column_exists(conn, "tasks", "last_notified_at") {
         conn.execute("ALTER TABLE tasks ADD COLUMN last_notified_at TEXT", [])?;
@@ -343,9 +301,7 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
         )?;
     }
 
-    // Repair rows left by older builds that soft-deleted a parent without
-    // tombstoning its children. Stamp them now so the next sync sends deletion
-    // markers instead of trying to insert children whose cloud parent is gone.
+    // Repair child rows left live by older builds after a parent was deleted.
     conn.execute_batch(
         "
         UPDATE task_labels
@@ -388,19 +344,16 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
     Ok(())
 }
 
-/// Baseline `updated_at` for pre-sync rows: one tick past the epoch, so it's the
-/// oldest possible yet still clears the epoch-seeded sync watermark.
-const PRE_SYNC_BASELINE: &str = "'1970-01-01T00:00:01+00:00'";
+/// Baseline `updated_at` for older rows without a creation timestamp.
+const LEGACY_RECORD_BASELINE: &str = "'1970-01-01T00:00:01+00:00'";
 
-/// Add `updated_at` / `deleted_at` to a syncable table, backfilling
-/// `updated_at` from an existing timestamp column so pre-sync rows get a sane
-/// baseline. Idempotent via the column guards.
-fn add_sync_columns(conn: &Connection) -> rusqlite::Result<()> {
+/// Add columns required by local queries to older databases.
+fn ensure_record_columns(conn: &Connection) -> rusqlite::Result<()> {
     for (table, backfill) in [
         ("tasks", "created_at"),
-        ("labels", PRE_SYNC_BASELINE),
+        ("labels", LEGACY_RECORD_BASELINE),
         ("time_sessions", "start_at"),
-        ("task_labels", PRE_SYNC_BASELINE),
+        ("task_labels", LEGACY_RECORD_BASELINE),
     ] {
         if !column_exists(conn, table, "updated_at") {
             conn.execute(
@@ -462,15 +415,14 @@ struct SessionRow {
     notified: i64,
 }
 
-/// Convert the syncable tables (`labels`, `tasks`, `task_labels`,
+/// Convert the record tables (`labels`, `tasks`, `task_labels`,
 /// `time_sessions`) from integer AUTOINCREMENT ids to on-device UUIDs.
 ///
 /// Everything is read into memory first so old integer ids can be remapped to
 /// their new UUIDs consistently across foreign keys, then the tables are
 /// dropped and recreated with TEXT keys and the remapped rows re-inserted. The
 /// recreate DDL mirrors the `CREATE TABLE` statements in [`init`] — keep the
-/// two in sync if the schema changes. `pomodoro` and `settings` are untouched
-/// (singleton / device-local, never synced).
+/// two in agreement if the schema changes. `pomodoro` and `settings` are untouched.
 fn migrate_ids_to_uuid(conn: &Connection) -> rusqlite::Result<()> {
     if !ids_are_integer(conn) {
         return Ok(());
@@ -879,7 +831,7 @@ mod tests {
     }
 
     #[test]
-    fn adds_sync_columns_and_backfills() {
+    fn adds_record_columns_and_backfills() {
         let conn = Connection::open_in_memory().unwrap();
         seed_legacy(&conn);
         init(&conn).unwrap();
@@ -923,6 +875,69 @@ mod tests {
             .query_row("SELECT COUNT(*) FROM journal_entries", [], |r| r.get(0))
             .unwrap();
         assert_eq!(n, 1);
+    }
+
+    #[test]
+    fn standalone_upgrade_preserves_existing_local_data() {
+        let conn = Connection::open_in_memory().unwrap();
+        init(&conn).unwrap();
+        assert!(!table_exists(&conn, "calendar_links"));
+        conn.execute_batch(
+            "CREATE TABLE calendar_links (
+                 task_id TEXT PRIMARY KEY REFERENCES tasks(id) ON DELETE CASCADE,
+                 external_event_id TEXT NOT NULL,
+                 external_calendar_id TEXT NOT NULL,
+                 pushed_updated_at TEXT NOT NULL,
+                 deleted_at TEXT
+             );
+             INSERT INTO tasks (id, title, created_at, updated_at)
+                 VALUES ('t1', 'Task', '2026-01-01', '2026-01-01');
+             INSERT INTO calendar_links (task_id, external_event_id, external_calendar_id, pushed_updated_at)
+                 VALUES ('t1', 'old-event', 'old-calendar', '2026-01-01');
+             INSERT INTO labels (id, name, updated_at) VALUES ('l1', 'Label', '2026-01-01');
+             INSERT INTO task_labels (task_id, label_id, updated_at)
+                 VALUES ('t1', 'l1', '2026-01-01');
+             INSERT INTO time_sessions (id, task_id, start_at, updated_at)
+                 VALUES ('s1', 't1', '2026-01-01', '2026-01-01');
+             INSERT INTO journal_entries (id, body, entry_date, created_at, updated_at)
+                 VALUES ('j1', 'Journal', '2026-01-01', '2026-01-01', '2026-01-01');
+             ALTER TABLE events ADD COLUMN source TEXT;
+             INSERT INTO events (id, title, created_at, updated_at, source)
+                 VALUES ('e1', 'Calendar event', '2026-01-01', '2026-01-01', 'google');
+             UPDATE priority_profiles SET name = 'Important' WHERE priority = 1;
+             INSERT INTO settings (key, value) VALUES ('reminder_sound_data_p1', 'sound-bytes');",
+        )
+        .unwrap();
+
+        init(&conn).unwrap();
+
+        for table in [
+            "tasks", "labels", "task_labels", "time_sessions", "journal_entries", "events",
+        ] {
+            let count: i64 = conn
+                .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| {
+                    row.get(0)
+                })
+                .unwrap();
+            assert_eq!(count, 1, "{table} should retain its local record");
+        }
+        let preserved: (String, String, String, String, String, String) = conn
+            .query_row(
+                "SELECT t.title, l.name, j.body, e.title, p.name, s.value
+                 FROM tasks t JOIN task_labels tl ON tl.task_id = t.id
+                 JOIN labels l ON l.id = tl.label_id
+                 JOIN time_sessions ts ON ts.task_id = t.id
+                 CROSS JOIN journal_entries j CROSS JOIN events e
+                 CROSS JOIN priority_profiles p CROSS JOIN settings s
+                 WHERE p.priority = 1 AND s.key = 'reminder_sound_data_p1'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?, row.get(5)?)),
+            )
+            .unwrap();
+        assert_eq!(preserved, (
+            "Task".into(), "Label".into(), "Journal".into(), "Calendar event".into(),
+            "Important".into(), "sound-bytes".into(),
+        ));
     }
 
     #[test]

@@ -8,7 +8,6 @@ import {
 } from "@tauri-apps/plugin-notification";
 import { useStore } from "../../store";
 import { api } from "../../lib/api";
-import { billingConfigured, useBilling } from "../../lib/billing";
 import { formatDue, formatTime } from "../../lib/dates";
 import { parseQuickAdd } from "../../lib/nlp";
 import { useOnboarding } from "../../lib/onboarding";
@@ -20,7 +19,6 @@ import {
   CalendarIcon,
   CheckIcon,
   CloudIcon,
-  DevicesIcon,
   FlagIcon,
   JournalIcon,
   LabelIcon,
@@ -715,8 +713,6 @@ const SHORTCUTS: [string, MessageKey][] = [
 export function FinishSlide() {
   const { t } = useTranslation();
   const draft = useOnboarding((s) => s.draftText.trim());
-  const finish = useOnboarding((s) => s.finish);
-  const openGate = useBilling((s) => s.openGate);
 
   return (
     <div className="onb-stagger text-center">
@@ -746,23 +742,6 @@ export function FinishSlide() {
           </div>
         ))}
       </div>
-
-      {billingConfigured && (
-        <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[11px] text-faint">
-          <DevicesIcon width={13} height={13} />
-          {t("onboarding.onMoreThanOneMachineTodofyProSyncsThem")}
-          <button
-            type="button"
-            onClick={() => {
-              void finish();
-              openGate("upgrade");
-            }}
-            className="font-medium text-muted underline underline-offset-2 transition-colors hover:text-text"
-          >
-            {t("onboarding.takeALook")}
-          </button>
-        </p>
-      )}
 
       <p className="mt-2 text-[10px] text-faint">
         {t("onboarding.youCanReplayThisTourAnytimeFromSettingsAbout")}

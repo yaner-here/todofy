@@ -14,10 +14,6 @@ import {
   resolveSoundSettings,
   SOUND_KEYS,
 } from "./lib/sound";
-import { useAuth } from "./lib/auth";
-import { initSync } from "./lib/sync";
-import { initCalendar } from "./lib/googleCalendar";
-import { initBilling } from "./lib/billing";
 import { applyTheme } from "./lib/theme";
 import { useKeyboard } from "./lib/useKeyboard";
 import type { ActiveReminder } from "./types";
@@ -30,9 +26,6 @@ import { FocusWidget } from "./components/FocusWidget";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay";
 import { UpdateDialog } from "./components/UpdateDialog";
 import { Celebration } from "./components/Celebration";
-import { SyncAccountDialog } from "./components/SyncAccountDialog";
-import { ProPaywall } from "./components/ProPaywall";
-import { AuthDialog } from "./components/AuthDialog";
 import { Onboarding } from "./components/onboarding/Onboarding";
 import { initOnboarding } from "./lib/onboarding";
 import { initUpdater } from "./lib/updater";
@@ -87,14 +80,6 @@ export function App() {
     // data, so it waits for the first load to land.
     load().then(initOnboarding);
     loadTimers();
-    // Restore any saved Supabase session and watch for auth changes.
-    useAuth.getState().init();
-    // Load authoritative Cloud Sync access before the sync scheduler starts.
-    initBilling();
-    // Wire account sync (runs on sign-in, then periodically + after edits).
-    initSync();
-    // Wire Google Calendar push (pushes dated tasks while connected).
-    initCalendar();
     // Look for a new version in the background, a while after startup.
     initUpdater();
     // Ask for desktop notification permission once, up front.
@@ -211,9 +196,6 @@ export function App() {
       <FocusWidget />
       <ReminderToasts />
       <ConfirmDialog />
-      <SyncAccountDialog />
-      <ProPaywall />
-      <AuthDialog />
       <ShortcutsOverlay />
       <UpdateDialog />
       <Celebration />

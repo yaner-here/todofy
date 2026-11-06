@@ -15,8 +15,7 @@ const LAST_CHECK_KEY = "update_last_check";
  *  keeps finding the same release only announces it once. */
 const NOTIFIED_KEY = "update_notified_version";
 
-/** How long a silent check waits before running, so it never competes with
- *  the first paint or the initial sync. */
+/** How long a silent check waits before running, so it does not compete with first paint. */
 const STARTUP_DELAY_MS = 8_000;
 /** Silent checks are rate-limited to this; a manual check always runs. */
 const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;

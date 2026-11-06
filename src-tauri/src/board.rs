@@ -1,6 +1,6 @@
 //! Persistent board definitions. Column identity is independent of its name
-//! and display order. Deleted definitions retain their replacement forever so
-//! late/offline task edits can still be displayed safely.
+//! and display order. Deleted definitions retain their replacement so tasks
+//! that still reference them can be displayed safely.
 use crate::db::{new_uuid, Db};
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,6 @@ use tauri::State;
 pub const TODO: &str = "todo";
 pub const DONE: &str = "done";
 pub const SEED_TIME: &str = "1970-01-01T00:00:01Z";
-pub const SYNC_READY_KEY: &str = "board_columns_synced";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -364,63 +363,4 @@ mod tests {
         .is_err());
         assert!(update(&c, DONE, &input()).is_err());
     }
-}
-
-/// Apply account metadata before tasks. Seeds have an ancient revision, so a
-/// fresh installation cannot replace remotely customized built-in columns.
-/// A deletion is terminal even if an offline client later renames that ID.
-pub fn apply_remote(conn: &Connection, incoming: &BoardColumn) -> rusqlite::Result<()> {
-    validate(&ColumnInput {
-        name: incoming.name.clone(),
-        color: incoming.color.clone(),
-        wip_limit: incoming.wip_limit,
-    })?;
-    if ![TODO, "doing", "blocked", DONE].contains(&incoming.id.as_str())
-        && uuid::Uuid::parse_str(&incoming.id).is_err()
-    {
-        return Err(invalid("Invalid column identifier"));
-    }
-    if !incoming.order_index.is_finite()
-        || (incoming.id == DONE && incoming.wip_limit.is_some())
-        || ([TODO, DONE].contains(&incoming.id.as_str()) && incoming.deleted_at.is_some())
-        || (incoming.deleted_at.is_some()
-            && (incoming.replacement_id.is_none()
-                || incoming.replacement_id.as_deref() == Some(&incoming.id)
-                || incoming.replacement_id.as_deref() == Some(DONE)))
-    {
-        return Err(invalid("Invalid synced column"));
-    }
-    use rusqlite::OptionalExtension;
-    let current: Option<(String, Option<String>)> = conn
-        .query_row(
-            "SELECT updated_at, deleted_at FROM board_columns WHERE id = ?1",
-            [&incoming.id],
-            |r| Ok((r.get(0)?, r.get(1)?)),
-        )
-        .optional()?;
-    let revision = chrono::DateTime::parse_from_rfc3339(&incoming.updated_at)
-        .map_err(|_| invalid("Invalid column revision"))?;
-    if let Some((updated, deleted)) = current {
-        if deleted.is_some() && incoming.deleted_at.is_none() {
-            return Ok(());
-        }
-        let old = chrono::DateTime::parse_from_rfc3339(&updated)
-            .map_err(|_| invalid("Invalid local column revision"))?;
-        if incoming.deleted_at.is_none() && revision <= old {
-            return Ok(());
-        }
-        if deleted.is_some() && revision <= old {
-            return Ok(());
-        }
-    }
-    conn.execute(
-        "INSERT INTO board_columns(id,name,color,order_index,wip_limit,updated_at,deleted_at,replacement_id)
-         VALUES(?1,?2,?3,?4,?5,?6,?7,?8)
-         ON CONFLICT(id) DO UPDATE SET name=excluded.name,color=excluded.color,
-         order_index=excluded.order_index,wip_limit=excluded.wip_limit,
-         updated_at=excluded.updated_at,deleted_at=excluded.deleted_at,replacement_id=excluded.replacement_id",
-        params![incoming.id,incoming.name,incoming.color,incoming.order_index,incoming.wip_limit,
-            incoming.updated_at,incoming.deleted_at,incoming.replacement_id],
-    )?;
-    Ok(())
 }
