@@ -202,7 +202,7 @@ fn migrate(conn: &Connection) -> rusqlite::Result<()> {
     )?;
 
     // Recurring tasks: completing one rolls its due date / reminder forward to
-    // the next occurrence instead of marking it done (see `recur.rs`).
+    // the next occurrence instead of marking it done (see `src/data/recurrence.ts`).
     if !column_exists(conn, "tasks", "repeat") {
         conn.execute("ALTER TABLE tasks ADD COLUMN repeat TEXT", [])?;
     }

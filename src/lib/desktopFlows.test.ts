@@ -4,7 +4,9 @@ import { act, createElement as h, Fragment, useState } from "react";
 import type { Root } from "react-dom/client";
 import { clearMocks, mockIPC, mockWindows } from "@tauri-apps/api/mocks";
 import { emit } from "@tauri-apps/api/event";
-import type { LanguageSnapshot, NewJournalEntry, NewTask, Task, TaskPatch } from "../types";
+import type { LanguageSnapshot, Task, TaskPatch } from "../types";
+import type { Operation } from "../data/database";
+import { TestDatabase } from "../../tests/crud-fixture";
 
 const dom = new Window({ url: "http://localhost" });
 Object.defineProperty(globalThis, "navigator", { configurable: true, value: dom.navigator });
@@ -44,7 +46,7 @@ const { JournalView } = await import("../components/JournalView");
 const { NotificationPopup } = await import("../components/NotificationPopup");
 const { SettingsView } = await import("../components/SettingsView");
 const { FocusWidget } = await import("../components/FocusWidget");
-const { DEFAULT_PROFILES, clampPriority } = await import("./priority");
+const { DEFAULT_PROFILES } = await import("./priority");
 const { i18n } = await import("./i18n");
 const { initLanguage, setLanguage, useLanguageState } = await import("./language");
 
@@ -438,85 +440,94 @@ test("context-menu paste updates the controlled task title and saves the pasted 
 });
 
 test("quick add creates a task and clears the draft", async () => {
+  const db = new TestDatabase();
   mockIPC((command, args) => {
-    if (command === "create_task") {
-      const draft = (args as { task: NewTask }).task;
-      return task({ id: "new", title: draft.title, priority: clampPriority(draft.priority ?? 4) });
-    }
+    if (command === "run_crud") return db.run((args as { operations: Operation[] }).operations);
     throw new Error(`Unexpected IPC command: ${command}`);
   });
-  useStore.setState({ view: { kind: "inbox" }, labels: [], tasks: [] });
-  await act(async () => reactRoot.render(h(QuickAdd)));
-  const title = element<HTMLInputElement>("#quick-add-input");
-  await act(async () => input(title, "Write report p1"));
-  await act(async () => { element("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
-  expect(useStore.getState().tasks[0]).toMatchObject({ title: "Write report", priority: 1 });
-  expect(title.value).toBe("");
+  try {
+    useStore.setState({ view: { kind: "inbox" }, labels: [], tasks: [] });
+    await act(async () => reactRoot.render(h(QuickAdd)));
+    const title = element<HTMLInputElement>("#quick-add-input");
+    await act(async () => input(title, "Write report p1"));
+    await act(async () => { element("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+    expect(useStore.getState().tasks[0]).toMatchObject({ title: "Write report", priority: 1 });
+    expect(title.value).toBe("");
+    expect(db.sqlite.query("SELECT title, priority FROM tasks WHERE deleted_at IS NULL").get())
+      .toEqual({ title: "Write report", priority: 1 });
+  } finally { db.sqlite.close(); }
 });
 
 test("journal drafts save with the keyboard shortcut", async () => {
+  const db = new TestDatabase();
   mockIPC((command, args) => {
     if (command === "focus_history") return [];
-    if (command === "create_journal") {
-      const draft = (args as { entry: NewJournalEntry }).entry;
-      return { ...draft, id: "entry", createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z" };
-    }
+    if (command === "run_crud") return db.run((args as { operations: Operation[] }).operations);
     throw new Error(`Unexpected IPC command: ${command}`);
   });
-  useStore.setState({ journal: [] });
-  await act(async () => reactRoot.render(h(JournalView)));
-  const title = element<HTMLInputElement>(".journal-composer-title");
-  const body = element<HTMLTextAreaElement>(".journal-composer-body");
-  await act(async () => { input(title, "  Notes  "); input(body, "  Draft text  "); });
-  await act(async () => body.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
-  expect(root.querySelector(".journal-entry")?.textContent).toContain("Notes");
-  expect(root.querySelector(".journal-entry")?.textContent).toContain("Draft text");
-  expect(title.value).toBe("");
-  expect(body.value).toBe("");
+  try {
+    useStore.setState({ journal: [] });
+    await act(async () => reactRoot.render(h(JournalView)));
+    const title = element<HTMLInputElement>(".journal-composer-title");
+    const body = element<HTMLTextAreaElement>(".journal-composer-body");
+    await act(async () => { input(title, "  Notes  "); input(body, "  Draft text  "); });
+    await act(async () => body.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", ctrlKey: true, bubbles: true })));
+    expect(root.querySelector(".journal-entry")?.textContent).toContain("Notes");
+    expect(root.querySelector(".journal-entry")?.textContent).toContain("Draft text");
+    expect(title.value).toBe("");
+    expect(body.value).toBe("");
+    expect(db.sqlite.query("SELECT title, body FROM journal_entries WHERE deleted_at IS NULL").get())
+      .toEqual({ title: "Notes", body: "Draft text" });
+  } finally { db.sqlite.close(); }
 });
 
 test("quick capture submits the controlled draft to the native backend and clears it", async () => {
-  const created: NewTask[] = [];
+  const db = new TestDatabase();
   let hidden = false;
   mockWindows("quickadd");
   mockIPC((command, args) => {
     switch (command) {
-      case "list_labels": return [];
+      case "run_crud": return db.run((args as { operations: Operation[] }).operations);
       case "list_priority_profiles": return DEFAULT_PROFILES;
-      case "create_task": {
-        created.push((args as { task: NewTask }).task);
-        return task({ title: created[0].title, priority: 1 });
-      }
       case "plugin:window|hide": hidden = true; return;
       default: throw new Error(`Unexpected IPC command: ${command}`);
     }
   }, { shouldMockEvents: true });
-  await act(async () => reactRoot.render(h(QuickCapture)));
-  const title = element<HTMLInputElement>("input");
-  await act(async () => input(title, "Capture draft p1"));
-  await act(async () => { element("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
-  expect(created).toEqual([{ title: "Capture draft", priority: 1 }]);
-  expect(title.value).toBe("");
-  expect(hidden).toBe(true);
+  try {
+    await act(async () => reactRoot.render(h(QuickCapture)));
+    const title = element<HTMLInputElement>("input");
+    await act(async () => input(title, "Capture draft p1"));
+    await act(async () => { element("form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })); });
+    expect(db.sqlite.query("SELECT title, priority FROM tasks WHERE deleted_at IS NULL").get())
+      .toEqual({ title: "Capture draft", priority: 1 });
+    expect(title.value).toBe("");
+    expect(hidden).toBe(true);
+  } finally { db.sqlite.close(); }
 });
 
 test("a pending reminder renders and snoozing does not open the task", async () => {
   const commands: string[] = [];
+  const db = new TestDatabase();
+  db.sqlite.exec("INSERT INTO tasks (id, title, created_at, updated_at) VALUES ('task', 'Review report', 'now', 'now')");
   mockWindows("notification");
-  mockIPC((command) => {
+  mockIPC((command, args) => {
     commands.push(command);
+    if (command === "run_crud") return db.run((args as { operations: Operation[] }).operations);
     if (command === "notify_popup_pending") return {
       nonce: 1, kind: "reminder", title: "Review report", body: "Due now",
       accent: "#f2555a", task_id: "task",
     };
   }, { shouldMockEvents: true });
-  await act(async () => reactRoot.render(h(NotificationPopup)));
-  expect(element(".notification-title").textContent).toBe("Review report");
-  expect(element(".notification-card").style.color).toBe("#f2555a");
-  await act(async () => element<HTMLButtonElement>(".notification-actions button").click());
-  expect(commands).toContain("snooze_task");
-  expect(commands).not.toContain("notify_popup_open");
-  expect(root.querySelector(".notification-card")).toBeNull();
+  try {
+    await act(async () => reactRoot.render(h(NotificationPopup)));
+    expect(element(".notification-title").textContent).toBe("Review report");
+    expect(element(".notification-card").style.color).toBe("#f2555a");
+    await act(async () => element<HTMLButtonElement>(".notification-actions button").click());
+    expect(db.sqlite.query("SELECT remind_at, due_date FROM tasks WHERE id='task'").get())
+      .toMatchObject({ remind_at: expect.any(String), due_date: expect.any(String) });
+    expect(commands).not.toContain("notify_popup_open");
+    expect(root.querySelector(".notification-card")).toBeNull();
+  } finally { db.sqlite.close(); }
 });
 
 test("the volume slider previews each step but persists only the committed value", async () => {
@@ -615,7 +626,7 @@ test("language switching preserves an unsaved task draft, user text, and the mou
     expect(element<HTMLInputElement>('[aria-label="任务备注"]').value).toBe("用户原文 <b>notes</b>");
     expect(root.querySelector("script")).toBeNull();
     expect(document.title).toBe("todofy (3)");
-    expect(commands).not.toContain("update_task");
+    expect(commands).not.toContain("run_crud");
   } finally { off(); }
 });
 

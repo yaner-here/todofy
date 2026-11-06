@@ -37,6 +37,9 @@ zbus = "5"
 # UUID primary keys for locally created records.
 uuid = { version = "1", features = ["v4"] }
 
+[dev-dependencies]
+tauri = { version = "2", features = ["test"] }
+
 # Desktop-only: mobile has no self-update path (the stores handle it).
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 # Signed in-app updates, served as a static latest.json from GitHub Releases.

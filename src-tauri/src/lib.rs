@@ -1,18 +1,22 @@
 mod board;
 mod commands;
+mod crud;
 mod db;
 mod i18n;
+mod local_time;
 mod models;
 mod notify;
 mod popup;
 mod priority;
 mod quickwin;
-mod recur;
 mod scheduler;
 mod settings;
 mod timer;
 mod tray;
 mod update;
+
+#[cfg(test)]
+mod crud_ipc_tests;
 
 rust_i18n::i18n!("locales", fallback = "en");
 
@@ -130,26 +134,9 @@ pub fn run() {
             priority::list_priority_profiles,
             priority::update_priority_profile,
             priority::reset_priority_profile,
-            commands::list_tasks,
-            commands::create_task,
-            commands::update_task,
-            commands::reorder_task,
-            commands::move_task_to_stage,
-            commands::toggle_task,
-            commands::snooze_task,
-            commands::delete_task,
-            commands::list_labels,
-            commands::create_label,
-            commands::update_label,
-            commands::delete_label,
-            commands::list_journal,
-            commands::create_journal,
-            commands::update_journal,
-            commands::delete_journal,
-            commands::list_events,
-            commands::create_event,
-            commands::update_event,
-            commands::delete_event,
+            crud::run_crud,
+            local_time::local_reminder_parts,
+            local_time::local_reminder_timestamp,
             notify::send_test_notification,
             popup::notify_popup_dismiss,
             popup::notify_popup_open,

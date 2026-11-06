@@ -643,6 +643,12 @@
     "playbackBlocked": "The system blocked audio playback.",
     "customMissing": "No custom sound is loaded."
   },
+  "validation": {
+    "eventStart": "Timed event start must be a valid ISO datetime",
+    "eventEnd": "Timed event end must be a valid ISO datetime",
+    "eventOrder": "Event end time must be later than its start time",
+    "boardPosition": "Invalid board position"
+  },
   "menu": {
     "cut": "Cut",
     "copy": "Copy",

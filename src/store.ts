@@ -621,7 +621,7 @@ export const useStore = create<State>((set, get) => ({
 /**
  * Keep the task array in the same order the backend returns: active before
  * done, then by manual `orderIndex`, then by creation time. Grouping and
- * keyboard navigation both read this order, so it must match `list_tasks`.
+ * keyboard navigation both read this order, so it must match the task repository.
  */
 function sortTasks(tasks: Task[]): Task[] {
   return [...tasks].sort(
@@ -639,7 +639,7 @@ function mergeTasks(tasks: Task[], updated: Task[]): Task[] {
   return sortTasks(tasks.map((t) => byId.get(t.id) ?? t));
 }
 
-/** Newest first: by entry date, then creation time. Mirrors `list_journal`. */
+/** Newest first: by entry date, then creation time. Mirrors the journal repository. */
 function sortJournal(entries: JournalEntry[]): JournalEntry[] {
   return [...entries].sort(
     (a, b) =>

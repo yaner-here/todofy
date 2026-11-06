@@ -642,6 +642,12 @@
     "playbackBlocked": "系统阻止了音频播放。",
     "customMissing": "尚未加载自定义声音。"
   },
+  "validation": {
+    "eventStart": "定时日程的开始时间须为有效的ISO日期时间",
+    "eventEnd": "定时日程的结束时间须为有效的ISO日期时间",
+    "eventOrder": "日程结束时间须晚于开始时间",
+    "boardPosition": "看板位置无效"
+  },
   "menu": {
     "cut": "剪切",
     "copy": "复制",

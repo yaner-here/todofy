@@ -1,26 +1,18 @@
 import { invoke } from "@tauri-apps/api/core";
+import { createTauriCrud } from "../data/tauri-crud";
 import type { PriorityProfile, PriorityProfileInput } from "./priority";
 import type {
   ActiveTimer,
   BoardColumnDefinition,
   BoardColumnInput,
-  Event,
-  EventPatch,
-  JournalEntry,
-  JournalPatch,
-  Label,
   LanguagePreference,
   LanguageSnapshot,
-  NewEvent,
-  NewJournalEntry,
-  NewTask,
   Pomodoro,
   SessionLog,
-  Task,
-  TaskPatch,
 } from "../types";
 
 export const api = {
+  ...createTauriCrud(),
   listBoardColumns: () => invoke<BoardColumnDefinition[]>("list_board_columns"),
   createBoardColumn: (input: BoardColumnInput) => invoke<BoardColumnDefinition[]>("create_board_column", { input }),
   updateBoardColumn: (id: string, input: BoardColumnInput) => invoke<BoardColumnDefinition[]>("update_board_column", { id, input }),
@@ -33,38 +25,6 @@ export const api = {
     invoke<PriorityProfile[]>("update_priority_profile", { priority, input }),
   resetPriorityProfile: (priority: number) =>
     invoke<PriorityProfile[]>("reset_priority_profile", { priority }),
-
-  listTasks: () => invoke<Task[]>("list_tasks"),
-  createTask: (task: NewTask) => invoke<Task>("create_task", { task }),
-  updateTask: (patch: TaskPatch) => invoke<Task>("update_task", { patch }),
-  // Both resolve to every task the move repositioned — just the dropped one,
-  // unless the fractional indices had to be renumbered (see `reorder_task`).
-  reorderTask: (id: string, orderIndex: number) =>
-    invoke<Task[]>("reorder_task", { id, orderIndex }),
-  moveTaskToStage: (id: string, stage: string | null, boardIndex: number) =>
-    invoke<Task[]>("move_task_to_stage", { id, stage, boardIndex }),
-  toggleTask: (id: string, done: boolean) =>
-    invoke<Task>("toggle_task", { id, done }),
-  deleteTask: (id: string) => invoke<void>("delete_task", { id }),
-
-  listLabels: () => invoke<Label[]>("list_labels"),
-  createLabel: (name: string, color: string) =>
-    invoke<Label>("create_label", { name, color }),
-  updateLabel: (id: string, name: string, color: string) =>
-    invoke<Label>("update_label", { id, name, color }),
-  deleteLabel: (id: string) => invoke<void>("delete_label", { id }),
-
-  listJournal: () => invoke<JournalEntry[]>("list_journal"),
-  createJournal: (entry: NewJournalEntry) =>
-    invoke<JournalEntry>("create_journal", { entry }),
-  updateJournal: (patch: JournalPatch) =>
-    invoke<JournalEntry>("update_journal", { patch }),
-  deleteJournal: (id: string) => invoke<void>("delete_journal", { id }),
-
-  listEvents: () => invoke<Event[]>("list_events"),
-  createEvent: (event: NewEvent) => invoke<Event>("create_event", { event }),
-  updateEvent: (patch: EventPatch) => invoke<Event>("update_event", { patch }),
-  deleteEvent: (id: string) => invoke<void>("delete_event", { id }),
 
   systemLocale: () => invoke<string | null>("system_locale"),
   getLanguage: () => invoke<LanguageSnapshot>("get_language"),

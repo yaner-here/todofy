@@ -3,6 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 import { BellIcon, CloseIcon, DownloadIcon } from "./Icons";
+import { api } from "../lib/api";
+import { snoozeFrom, toLocalDate } from "../lib/dates";
 import { formatMinutes } from "../lib/duration";
 
 interface NotifyPayload {
@@ -99,9 +101,10 @@ export function NotificationPopup() {
   const snooze = (minutes: number) => {
     const id = note?.task_id;
     if (!id) return;
-    // Snoozing re-arms the reminder; the backend clears the acknowledgement
-    // itself, so asking for one here would race it.
-    invoke("snooze_task", { id, minutes }).catch(() => {});
+    // Updating the reminder re-arms it, so do not acknowledge it here.
+    const remindAt = snoozeFrom(minutes);
+    api.updateTask({ id, remindAt, dueDate: toLocalDate(new Date(remindAt)) })
+      .catch(() => {});
     dismiss();
   };
 
