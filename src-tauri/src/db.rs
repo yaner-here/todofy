@@ -37,127 +37,15 @@ pub fn checkpoint(conn: &Connection) {
 /// Create the schema if it does not yet exist, then bring older
 /// databases up to date via `migrate`.
 pub fn init(conn: &Connection) -> rusqlite::Result<()> {
-    conn.execute_batch(
-        "
-        PRAGMA journal_mode = WAL;
-        PRAGMA foreign_keys = ON;
-
-        CREATE TABLE IF NOT EXISTS labels (
-            id         TEXT PRIMARY KEY,   -- UUID, generated on-device
-            name       TEXT NOT NULL,
-            color      TEXT NOT NULL DEFAULT '#6c7cff',
-            updated_at TEXT NOT NULL,      -- RFC3339, bumped on every write
-            deleted_at TEXT                -- soft-delete tombstone; NULL while live
-        );
-
-        CREATE TABLE IF NOT EXISTS tasks (
-            id           TEXT PRIMARY KEY,   -- UUID, generated on-device
-            title        TEXT NOT NULL,
-            notes        TEXT,
-            due_date     TEXT,               -- ISO date  (YYYY-MM-DD)
-            remind_at    TEXT,               -- ISO datetime (local)
-            status       TEXT NOT NULL DEFAULT 'active',  -- active | done
-            priority     INTEGER NOT NULL DEFAULT 4,      -- 1 (high) .. 4 (none)
-            created_at   TEXT NOT NULL,
-            completed_at TEXT,
-            order_index  REAL NOT NULL DEFAULT 0,
-            notified     INTEGER NOT NULL DEFAULT 0,
-            pinned       INTEGER NOT NULL DEFAULT 0,
-            repeat       TEXT,               -- daily|weekdays|weekly|monthly|yearly
-            subtasks     TEXT,               -- JSON array of {id,text,done}
-            estimate_minutes INTEGER,        -- expected effort; NULL = no estimate
-            stage        TEXT,               -- board column slug; NULL = first column
-            board_index  REAL NOT NULL DEFAULT 0,  -- manual order within a board column
-            updated_at   TEXT NOT NULL,      -- RFC3339, bumped on every write
-            deleted_at   TEXT                -- soft-delete tombstone; NULL while live
-        );
-
-        CREATE TABLE IF NOT EXISTS task_labels (
-            task_id    TEXT NOT NULL REFERENCES tasks(id)  ON DELETE CASCADE,
-            label_id   TEXT NOT NULL REFERENCES labels(id) ON DELETE CASCADE,
-            updated_at TEXT NOT NULL,   -- RFC3339, bumped on every write
-            deleted_at TEXT,            -- soft-delete tombstone; NULL while live
-            PRIMARY KEY (task_id, label_id)
-        );
-
-        -- Simple key/value app settings (e.g. startup_mode). Read by the
-        -- backend at launch and by the Settings screen at runtime.
-        CREATE TABLE IF NOT EXISTS settings (
-            key   TEXT PRIMARY KEY,
-            value TEXT NOT NULL
-        );
-
-        -- Per-task focus stopwatch sessions. A row with a NULL end_at is the
-        -- open one (at most one at a time); it is running while `resumed_at` is
-        -- set and paused while it is NULL. `seconds` is filled in on stop;
-        -- `notified` counts the 'still tracking' nudges already sent.
-        CREATE TABLE IF NOT EXISTS time_sessions (
-            id          TEXT PRIMARY KEY,   -- UUID, generated on-device
-            task_id     TEXT NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
-            start_at    TEXT NOT NULL,   -- RFC3339, when the session began
-            end_at      TEXT,            -- NULL until stopped
-            seconds     INTEGER,         -- duration, set on stop
-            accumulated INTEGER NOT NULL DEFAULT 0,  -- secs banked before this segment
-            resumed_at  TEXT,            -- start of the running segment; NULL while paused
-            notified    INTEGER NOT NULL DEFAULT 0,
-            updated_at  TEXT NOT NULL,   -- RFC3339, bumped on every write
-            deleted_at  TEXT             -- soft-delete tombstone; NULL while live
-        );
-        CREATE INDEX IF NOT EXISTS idx_sessions_task ON time_sessions(task_id);
-
-        -- Standalone Pomodoro timer state (single row, id = 1). Persisted so
-        -- the timer survives restarts and keeps ticking while in the tray.
-        CREATE TABLE IF NOT EXISTS pomodoro (
-            id             INTEGER PRIMARY KEY CHECK (id = 1),
-            phase          TEXT NOT NULL DEFAULT 'focus',  -- focus|short|long
-            running        INTEGER NOT NULL DEFAULT 0,
-            start_at       TEXT,                            -- when the running segment began
-            accumulated    INTEGER NOT NULL DEFAULT 0,      -- secs elapsed before this segment
-            completed_focus INTEGER NOT NULL DEFAULT 0,     -- focus phases done in the set
-            notified       INTEGER NOT NULL DEFAULT 0,      -- phase-complete nudge sent?
-            focus_min      INTEGER NOT NULL DEFAULT 25,
-            short_min      INTEGER NOT NULL DEFAULT 5,
-            long_min       INTEGER NOT NULL DEFAULT 15,
-            long_every     INTEGER NOT NULL DEFAULT 4
-        );
-        INSERT OR IGNORE INTO pomodoro (id) VALUES (1);
-
-        -- Free-form journal entries. Multiple per day; `entry_date` groups them
-        -- for the calendar rail and the day summary.
-        CREATE TABLE IF NOT EXISTS journal_entries (
-            id         TEXT PRIMARY KEY,   -- UUID, generated on-device
-            title      TEXT,
-            body       TEXT NOT NULL DEFAULT '',
-            mood       INTEGER,            -- 1..5, optional
-            entry_date TEXT NOT NULL,      -- ISO date (YYYY-MM-DD)
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL,      -- RFC3339, bumped on every write
-            deleted_at TEXT                -- soft-delete tombstone; NULL while live
-        );
-        CREATE INDEX IF NOT EXISTS idx_journal_date ON journal_entries(entry_date);
-
-        -- Standalone local calendar events, shown alongside tasks.
-        CREATE TABLE IF NOT EXISTS events (
-            id                 TEXT PRIMARY KEY,   -- UUID, generated on-device
-            title              TEXT NOT NULL,
-            description        TEXT,
-            start_at           TEXT,               -- ISO datetime, or YYYY-MM-DD when all_day
-            end_at             TEXT,
-            all_day            INTEGER NOT NULL DEFAULT 0,
-            created_at         TEXT NOT NULL,
-            updated_at         TEXT NOT NULL,       -- RFC3339, bumped on every write
-            deleted_at         TEXT                 -- soft-delete tombstone; NULL while live
-        );
-        CREATE INDEX IF NOT EXISTS idx_events_start ON events(start_at);
-
-        CREATE INDEX IF NOT EXISTS idx_tasks_status   ON tasks(status);
-        CREATE INDEX IF NOT EXISTS idx_tasks_due      ON tasks(due_date);
-        CREATE INDEX IF NOT EXISTS idx_tasks_remind   ON tasks(remind_at);
-        ",
-    )?;
+    if table_exists(conn, "tasks") && !column_exists(conn, "tasks", "pinned") {
+        // Configure and add the old column before schema.sql creates its index.
+        conn.execute_batch("PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;")?;
+        conn.execute("ALTER TABLE tasks ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0", [])?;
+    }
+    conn.execute_batch(include_str!("../sql/schema.sql"))?;
     migrate(conn)?;
-    crate::board::init(conn)?;
-    crate::priority::init(conn)?;
+    crate::board::seed(conn)?;
+    crate::priority::seed(conn)?;
     Ok(())
 }
 
@@ -182,25 +70,11 @@ fn column_exists(conn: &Connection, table: &str, column: &str) -> bool {
 }
 
 /// Additive schema changes for databases created before a given feature
-/// shipped. `CREATE TABLE IF NOT EXISTS` above only covers fresh installs;
+/// shipped. The shared `CREATE TABLE IF NOT EXISTS` statements cover fresh installs;
 /// each block here brings an existing database up to date. Keep every
 /// block idempotent (guarded by a column/index check) and append new
 /// ones at the bottom as the schema grows — never edit an old block.
 fn migrate(conn: &Connection) -> rusqlite::Result<()> {
-    // Task pinning (Pinboard view). Column may already exist on a fresh
-    // install (it's in the CREATE TABLE above), so it's guarded on its
-    // own; the index is unconditional since it's needed either way.
-    if !column_exists(conn, "tasks", "pinned") {
-        conn.execute(
-            "ALTER TABLE tasks ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0",
-            [],
-        )?;
-    }
-    conn.execute(
-        "CREATE INDEX IF NOT EXISTS idx_tasks_pinned ON tasks(pinned)",
-        [],
-    )?;
-
     // Recurring tasks: completing one rolls its due date / reminder forward to
     // the next occurrence instead of marking it done (see `src/data/recurrence.ts`).
     if !column_exists(conn, "tasks", "repeat") {
@@ -421,8 +295,8 @@ struct SessionRow {
 /// Everything is read into memory first so old integer ids can be remapped to
 /// their new UUIDs consistently across foreign keys, then the tables are
 /// dropped and recreated with TEXT keys and the remapped rows re-inserted. The
-/// recreate DDL mirrors the `CREATE TABLE` statements in [`init`] — keep the
-/// two in agreement if the schema changes. `pomodoro` and `settings` are untouched.
+/// recreate DDL is the historical schema; later migrations add newer columns.
+/// `pomodoro` and `settings` are untouched.
 fn migrate_ids_to_uuid(conn: &Connection) -> rusqlite::Result<()> {
     if !ids_are_integer(conn) {
         return Ok(());
@@ -648,6 +522,60 @@ fn migrate_ids_to_uuid(conn: &Connection) -> rusqlite::Result<()> {
 mod tests {
     use super::*;
 
+    #[test]
+    fn shared_fixture_schema_matches_a_fresh_native_database() {
+        let native = Connection::open_in_memory().unwrap();
+        init(&native).unwrap();
+
+        let fixture = Connection::open_in_memory().unwrap();
+        fixture.execute_batch(include_str!("../sql/schema.sql")).unwrap();
+
+        let schema = |conn: &Connection| -> Vec<(String, String, String, Option<String>)> {
+            conn.prepare(
+                "SELECT type, name, tbl_name, sql FROM sqlite_master
+                 WHERE name NOT LIKE 'sqlite_%' ORDER BY type, name",
+            )
+            .unwrap()
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)))
+            .unwrap()
+            .collect::<rusqlite::Result<_>>()
+            .unwrap()
+        };
+        assert_eq!(schema(&fixture), schema(&native));
+        let foreign_keys = |conn: &Connection| -> i64 {
+            conn.query_row("PRAGMA foreign_keys", [], |row| row.get(0)).unwrap()
+        };
+        assert_eq!((foreign_keys(&fixture), foreign_keys(&native)), (1, 1));
+
+        let defaults = crate::seeds::data();
+        let time = defaults["seedTime"].as_str().unwrap();
+        let board = defaults["board"].as_array().unwrap();
+        let priorities = defaults["priorities"].as_array().unwrap();
+        let count = |table: &str| -> i64 {
+            native.query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |row| row.get(0)).unwrap()
+        };
+        assert_eq!(count("board_columns"), board.len() as i64);
+        assert_eq!(count("priority_profiles"), priorities.len() as i64);
+        for (position, column) in board.iter().enumerate() {
+            let actual: (String, String, f64, String) = native.query_row(
+                "SELECT name, color, order_index, updated_at FROM board_columns WHERE id = ?1",
+                [column["id"].as_str().unwrap()],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
+            ).unwrap();
+            assert_eq!((actual.0.as_str(), actual.1.as_str(), actual.2, actual.3.as_str()),
+                (column["name"].as_str().unwrap(), column["color"].as_str().unwrap(), position as f64, time));
+        }
+        for profile in priorities {
+            let actual: (String, String, String) = native.query_row(
+                "SELECT name, color, updated_at FROM priority_profiles WHERE priority = ?1",
+                [profile["priority"].as_i64().unwrap()],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+            ).unwrap();
+            assert_eq!((actual.0.as_str(), actual.1.as_str(), actual.2.as_str()),
+                (profile["name"].as_str().unwrap(), profile["color"].as_str().unwrap(), time));
+        }
+    }
+
     /// Build a database on the pre-UUID schema (integer AUTOINCREMENT ids) with
     /// a few interlinked rows, exactly as an older install would have on disk.
     fn seed_legacy(conn: &Connection) {
@@ -700,6 +628,127 @@ mod tests {
             ",
         )
         .unwrap();
+    }
+
+    #[test]
+    fn integer_id_upgrade_preserves_reminders_and_running_sessions() {
+        let dir = std::env::temp_dir().join(format!("todofy-legacy-schema-{}", new_uuid()));
+        std::fs::create_dir(&dir).unwrap();
+        let path = dir.join("todofy.db");
+        {
+            let old = Connection::open(&path).unwrap();
+            seed_legacy(&old);
+            old.execute_batch(
+                "ALTER TABLE tasks DROP COLUMN pinned;
+                 ALTER TABLE tasks DROP COLUMN repeat;
+                 ALTER TABLE tasks DROP COLUMN subtasks;",
+            ).unwrap();
+            old.execute("UPDATE tasks SET notified = 1 WHERE id = 11", []).unwrap();
+            old.execute("UPDATE time_sessions SET end_at = NULL, seconds = NULL WHERE id = 100", []).unwrap();
+        }
+
+        let conn = Connection::open(&path).unwrap();
+        init(&conn).unwrap();
+        let (id, board_index, notified, last_notified, acknowledged):
+            (String, f64, i64, Option<String>, Option<String>) = conn.query_row(
+                "SELECT id, board_index, notified, last_notified_at, reminder_ack_at
+                 FROM tasks WHERE title = 'ship it'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+            ).unwrap();
+        assert_eq!(id.len(), 36);
+        assert_eq!((board_index, notified, last_notified), (2.0, 1, None));
+        assert!(acknowledged.is_some(), "previously fired reminders must stay acknowledged");
+        let (task_id, started, resumed): (String, String, Option<String>) = conn.query_row(
+            "SELECT task_id, start_at, resumed_at FROM time_sessions WHERE end_at IS NULL",
+            [], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        ).unwrap();
+        assert_eq!(task_id, id);
+        assert_eq!(resumed.as_deref(), Some(started.as_str()));
+        let labels: i64 = conn.query_row("SELECT COUNT(*) FROM task_labels WHERE task_id = ?1", [&id], |row| row.get(0)).unwrap();
+        assert_eq!(labels, 2);
+        let violations: i64 = conn.query_row("SELECT COUNT(*) FROM pragma_foreign_key_check", [], |row| row.get(0)).unwrap();
+        assert_eq!(violations, 0);
+        let pinned_index: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM pragma_index_list('tasks') WHERE name = 'idx_tasks_pinned'",
+            [], |row| row.get(0),
+        ).unwrap();
+        assert_eq!(pinned_index, 1);
+
+        drop(conn);
+        let reopened = Connection::open(&path).unwrap();
+        init(&reopened).unwrap();
+        let after: (String, Option<String>) = reopened.query_row(
+            "SELECT id, reminder_ack_at FROM tasks WHERE title = 'ship it'",
+            [], |row| Ok((row.get(0)?, row.get(1)?)),
+        ).unwrap();
+        assert_eq!(after, (id, acknowledged));
+        let reopened_session: (String, String, Option<String>) = reopened.query_row(
+            "SELECT task_id, start_at, resumed_at FROM time_sessions WHERE end_at IS NULL",
+            [], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        ).unwrap();
+        assert_eq!(reopened_session, (task_id, started, resumed));
+        drop(reopened);
+        std::fs::remove_file(path).unwrap();
+        std::fs::remove_dir(dir).unwrap();
+    }
+
+    #[test]
+    fn uuid_upgrade_without_pinned_preserves_existing_data() {
+        let conn = Connection::open_in_memory().unwrap();
+        seed_legacy(&conn);
+        init(&conn).unwrap();
+        let task_id: String = conn.query_row(
+            "SELECT id FROM tasks WHERE title = 'ship it'", [], |row| row.get(0),
+        ).unwrap();
+        conn.execute_batch(
+            "DROP INDEX idx_tasks_pinned;
+             ALTER TABLE tasks DROP COLUMN pinned;
+             ALTER TABLE tasks DROP COLUMN repeat;
+             ALTER TABLE tasks DROP COLUMN subtasks;
+             ALTER TABLE tasks DROP COLUMN last_notified_at;
+             ALTER TABLE tasks DROP COLUMN reminder_ack_at;
+             UPDATE tasks SET notified = 1 WHERE title = 'ship it';
+             UPDATE time_sessions SET end_at = NULL, seconds = NULL, resumed_at = start_at;
+             UPDATE board_columns SET name = 'Custom backlog' WHERE id = 'todo';
+             UPDATE priority_profiles SET name = 'Urgent' WHERE priority = 1;
+             INSERT INTO settings (key, value) VALUES ('old-setting', 'kept');
+             INSERT INTO journal_entries (id, body, entry_date, created_at, updated_at)
+                 VALUES ('journal', 'kept', '2026-01-01', 'now', 'now');",
+        ).unwrap();
+
+        init(&conn).unwrap();
+        let task: (String, i64, Option<String>) = conn.query_row(
+            "SELECT id, pinned, reminder_ack_at FROM tasks WHERE title = 'ship it'",
+            [], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        ).unwrap();
+        assert_eq!(task.0, task_id);
+        assert_eq!(task.1, 0);
+        assert!(task.2.is_some());
+        let linked: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM task_labels WHERE task_id = ?1", [&task_id], |row| row.get(0),
+        ).unwrap();
+        assert_eq!(linked, 2);
+        let session: (String, String, Option<String>) = conn.query_row(
+            "SELECT task_id, start_at, resumed_at FROM time_sessions WHERE end_at IS NULL",
+            [], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
+        ).unwrap();
+        assert_eq!(session.0, task_id);
+        assert_eq!(session.2.as_deref(), Some(session.1.as_str()));
+        for (sql, expected) in [
+            ("SELECT name FROM board_columns WHERE id = 'todo'", "Custom backlog"),
+            ("SELECT name FROM priority_profiles WHERE priority = 1", "Urgent"),
+            ("SELECT value FROM settings WHERE key = 'old-setting'", "kept"),
+            ("SELECT body FROM journal_entries WHERE id = 'journal'", "kept"),
+        ] {
+            let actual: String = conn.query_row(sql, [], |row| row.get(0)).unwrap();
+            assert_eq!(actual, expected);
+        }
+        init(&conn).unwrap();
+        let acknowledged: Option<String> = conn.query_row(
+            "SELECT reminder_ack_at FROM tasks WHERE id = ?1", [&task_id], |row| row.get(0),
+        ).unwrap();
+        assert_eq!(acknowledged, task.2);
     }
 
     /// Adding the column before `migrate_ids_to_uuid` would silently drop it

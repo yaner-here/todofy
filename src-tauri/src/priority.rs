@@ -1,4 +1,4 @@
-//! Native reminder support and schema bootstrap. Profile editing and public
+//! Native reminder support and default profiles. Profile editing and public
 //! profile models are owned by TypeScript.
 use rusqlite::{params, Connection, OptionalExtension};
 
@@ -17,22 +17,7 @@ pub struct NativePriority {
     color: String,
 }
 
-pub fn init(conn: &Connection) -> rusqlite::Result<()> {
-    conn.execute_batch(
-        "CREATE TABLE IF NOT EXISTS priority_profiles (
-            priority           INTEGER PRIMARY KEY CHECK (priority BETWEEN 1 AND 4),
-            name               TEXT NOT NULL,
-            color              TEXT NOT NULL,
-            sound              TEXT,
-            volume             INTEGER CHECK (volume IS NULL OR volume BETWEEN 0 AND 100),
-            ramp               INTEGER,
-            notification_style TEXT CHECK (notification_style IS NULL
-                                   OR notification_style IN ('custom', 'native')),
-            repeat_minutes     INTEGER CHECK (repeat_minutes IS NULL
-                                   OR repeat_minutes BETWEEN 0 AND 1440),
-            updated_at         TEXT NOT NULL
-        );",
-    )?;
+pub fn seed(conn: &Connection) -> rusqlite::Result<()> {
     let time = crate::seeds::data()["seedTime"].as_str().expect("missing seed time");
     for profile in defaults() {
         let priority = profile["priority"].as_i64().expect("missing priority");
@@ -127,7 +112,7 @@ mod tests {
         let first = profiles.iter().find(|profile| profile.priority == 1).unwrap();
         assert_eq!(reminder_label(Some(first)), "Urgent");
         assert_eq!(reminder_accent(Some(first)), "#123456");
-        init(&conn).unwrap();
+        seed(&conn).unwrap();
         assert_eq!(list(&conn).unwrap()[0].name, "Urgent");
     }
 }
